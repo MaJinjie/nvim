@@ -38,6 +38,7 @@ local function push_and_pop_dir(state, action)
 end
 return {
   "nvim-neo-tree/neo-tree.nvim",
+  enabled = false,
   branch = "v3.x",
   dependencies = {
     "nvim-lua/plenary.nvim",
@@ -66,6 +67,39 @@ return {
       end,
     },
   },
+  keys = function()
+    return {
+      {
+        "<leader>e",
+        function()
+          require("neo-tree.command").execute({ toggle = true, dir = require("lazyvim.util").root() })
+        end,
+        desc = "Explorer NeoTree (root dir)",
+      },
+      {
+        "<leader>E",
+        function()
+          require("neo-tree.command").execute({ toggle = true, dir = vim.loop.cwd() })
+        end,
+        desc = "Explorer NeoTree (cwd)",
+      },
+      { "<leader>fe", "<cmd> Neotree reveal <cr>", desc = "focus file", noremap = true },
+      {
+        "<leader>ge",
+        function()
+          require("neo-tree.command").execute({ source = "git_status", toggle = true })
+        end,
+        desc = "Git explorer",
+      },
+      {
+        "<leader>be",
+        function()
+          require("neo-tree.command").execute({ source = "buffers", toggle = true })
+        end,
+        desc = "Buffer explorer",
+      },
+    }
+  end,
   config = function()
     -- If you want icons for diagnostic errors, you'll need to define them somewhere:
     vim.fn.sign_define("DiagnosticSignError", { text = " ", texthl = "DiagnosticSignError" })
@@ -98,7 +132,7 @@ return {
           if node.type == "directory" or node:has_children() then
             if not node:is_expanded() then -- if unexpanded, expand
               state.commands.toggle_node(state)
-            else -- if expanded and has children, seleect the next child
+            else                           -- if expanded and has children, seleect the next child
               require("neo-tree.ui.renderer").focus_node(state, node:get_child_ids()[1])
             end
           else -- if not a directory just open it
@@ -200,8 +234,8 @@ return {
           ["-"] = "open_split",
           ["y"] = "copy_to_clipboard", -- takes text input for destination, also accepts the optional config.show_path option like "add":
           ["Y"] = "copy_selector",
-          ["p"] = "paste_from_clipboard",
-          ["P"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
+          ["P"] = "paste_from_clipboard",
+          ["p"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
           ["w"] = "open_with_window_picker",
           ["c"] = "close_all_subnodes",
           ["C"] = "close_all_nodes",
@@ -292,11 +326,11 @@ return {
           },
         },
         follow_current_file = {
-          enabled = false, -- This will find and focus the file in the active buffer every time
+          enabled = false,                      -- This will find and focus the file in the active buffer every time
           --               -- the current file is changed while the tree is open.
-          leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+          leave_dirs_open = false,              -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
         },
-        group_empty_dirs = false, -- when true, empty folders will be grouped together
+        group_empty_dirs = false,               -- when true, empty folders will be grouped together
         hijack_netrw_behavior = "open_default", -- netrw disabled, opening a directory opens neo-tree
         -- in whatever position is specified in window.position
         -- "open_current",  -- netrw disabled, opening a directory opens within the
@@ -307,9 +341,10 @@ return {
         window = {
           mappings = {
             ["<C-w>"] = "navigate_up",
+            ["H"] = "navigate_up",
             ["L"] = "navigate_down",
-            ["."] = "my_set_root",
-            ["H"] = "toggle_hidden",
+            ["/"] = "my_set_root",
+            ["."] = "toggle_hidden",
             ["f"] = "fuzzy_finder",
             ["F"] = "fuzzy_finder_directory",
             ["#"] = "fuzzy_sorter", -- fuzzy sorting using the fzy algorithm
@@ -353,11 +388,11 @@ return {
       },
       buffers = {
         follow_current_file = {
-          enabled = true, -- This will find and focus the file in the active buffer every time
+          enabled = true,          -- This will find and focus the file in the active buffer every time
           --              -- the current file is changed while the tree is open.
           leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
         },
-        group_empty_dirs = true, -- when true, empty folders will be grouped together
+        group_empty_dirs = true,   -- when true, empty folders will be grouped together
         show_unloaded = true,
         window = {
           mappings = {
@@ -398,10 +433,10 @@ return {
       popup_border_style = "rounded",
       enable_git_status = true,
       enable_diagnostics = true,
-      enable_normal_mode_for_inputs = false, -- Enable normal mode for input dialogs.
+      enable_normal_mode_for_inputs = false,                             -- Enable normal mode for input dialogs.
       open_files_do_not_replace_types = { "terminal", "trouble", "qf" }, -- when opening files, do not use windows containing these filetypes or buftypes
-      sort_case_insensitive = false, -- used when sorting files and directories in the tree
-      sort_function = nil, -- use a custom function for sorting files and directories in the tree
+      sort_case_insensitive = false,                                     -- used when sorting files and directories in the tree
+      sort_function = nil,                                               -- use a custom function for sorting files and directories in the tree
       -- sort_function = function (a,b)
       --       if a.type == b.type then
       --           return a.path > b.path
@@ -483,6 +518,6 @@ return {
       },
     })
 
-    vim.cmd([[nnoremap \ :Neotree reveal<cr>]])
+    vim.cmd([[nnoremap <C-\> :Neotree reveal<cr>]])
   end,
 }

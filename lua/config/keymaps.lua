@@ -27,12 +27,19 @@
 
 local add_map = vim.api.nvim_set_keymap
 
-add_map("i", "<C-h>", "<Left>", { desc = "Move left", nowait = true, noremap = true, silent = true })
-add_map("i", "<C-l>", "<Right>", { desc = "Move right", nowait = true, noremap = true, silent = true })
 add_map("i", "<C-b>", "<Esc>^i", { desc = "beginning of line", nowait = true, noremap = true, silent = true })
 add_map("i", "<C-e>", "<End>", { desc = "end of line", nowait = true, noremap = true, silent = true })
-add_map("n", "<C-b>", "^", { desc = "beginning of line", nowait = true, noremap = true, silent = true })
-add_map("n", "<C-e>", "$", { desc = "end of line", nowait = true, noremap = true, silent = true })
 
--- add_map("i", "<C-k>", "<Up>", { desc = "Move up", nowait = true, noremap = true, silent = true })
--- add_map("i", "<C-j>", "<Down>", { desc = "Move down", nowait = true, noremap = true, silent = true })
+-- c-v paste
+add_map("i", "<C-v>", "<C-r>+", { desc = "insert mode copy", silent = true, nowait = true })
+add_map("c", "<C-v>", "<C-r>+", { desc = "insert mode copy", silent = true, nowait = true })
+
+add_map('n', "<leader>vh", "v$", { desc = "visual v$" })
+add_map('n', "<leader>vl", "v^", { desc = "visual v^" })
+add_map('n', "<leader>vn", "^v$", { desc = "visual ^v$" })
+
+-- 删除到行首 尾
+add_map('o', "<leader>l", "$", { desc = "visual v$" })
+add_map('o', "<leader>h", "^", { desc = "visual v$" })
+
+-- add_map("n", "d", "\"d", { desc = "insert mode copy", noremap = true, silent = true, nowait = true })
