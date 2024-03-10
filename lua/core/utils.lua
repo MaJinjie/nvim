@@ -34,6 +34,7 @@ M.remove_disabled_keys = function(chadrc_mappings, default_mappings)
       end
     end
   end
+  vim.inspect(keys_to_disable)
 
   -- make a copy as we need to modify default_mappings
   for section_name, section_mappings in pairs(default_mappings) do
