@@ -1,4 +1,35 @@
+local api = require "nvim-tree.api"
+
 return {
+  {
+    "nvim-telescope/telescope.nvim",
+    init = false,
+    opts = require("custom.plugins.configs.telescope_extensions").telescope(),
+  },
+  {
+    "nvim-tree/nvim-tree.lua",
+    keys = {
+      {
+        "<leader>/",
+        function()
+          local currentBuf = vim.api.nvim_get_current_buf()
+          local currentBufFt = vim.api.nvim_get_option_value("filetype", { buf = currentBuf })
+          if currentBufFt == "NvimTree" then
+            vim.cmd "NvimTreeToggle"
+          else
+            vim.cmd "NvimTreeFocus"
+          end
+        end,
+        desc = "Toggle nvimtree",
+      },
+    },
+    opts = require("custom.plugins.configs.nvimtree").options,
+    init = false,
+  },
+  {
+    "numToStr/Comment.nvim",
+    init = false,
+  },
   {
     "williamboman/mason.nvim",
     opts = {
@@ -63,7 +94,6 @@ return {
       require "plugins.configs.lspconfig"
     end,
   },
-
   {
     "folke/neodev.nvim",
     opts = {
@@ -72,7 +102,7 @@ return {
         -- these settings will be used for your Neovim config directory
         runtime = true, -- runtime path
         types = true, -- full signature, docs and completion of vim.api, vim.treesitter, vim.lsp and others
-        plugins = { "nvim-ufo" }, -- installed opt or start plugins in packpath
+        plugins = { "nvim-tree.lua" }, -- installed opt or start plugins in packpath
         -- you can also specify the list of plugins to make available as a workspace library
         -- plugins = { "nvim-treesitter", "plenary.nvim", "telescope.nvim" },
       },

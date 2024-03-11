@@ -133,13 +133,13 @@ cmp.setup.cmdline({ "/", "?" }, {
     completeopt = "menu,menuone",
     keyword_length = 1,
   },
-  mapping = select_mappings({ "c" }, "<CR>", "<C-o>", "<Tab>", "<S-tab>"),
+  mapping = select_mappings({ "c" }, "<CR>", "<C-o>", "<Tab>", "<S-Tab>"),
   sources = {
     { name = "buffer", keyword_length = 3 },
   },
 })
 cmp.setup.cmdline({ ":" }, {
-  mapping = select_mappings({ "c" }, "<CR>", "<C-o>", "<Tab>", "<S-tab>"),
+  mapping = select_mappings({ "c" }, "<CR>", "<C-o>", "<Tab>", "<S-Tab>"),
   sources = cmp.config.sources(
     { { name = "path", keyword_length = 1 } },
     { { name = "cmdline", keyword_length = 2 } },

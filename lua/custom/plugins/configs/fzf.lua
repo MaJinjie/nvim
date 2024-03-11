@@ -1,3 +1,29 @@
+local winopts = function()
+  return {
+    h = {
+      width = vim.o.columns > 100 and 0.6 or 0.85,
+      height = 20,
+      preview = {
+        hidden = "hidden",
+        layout = "horizontal",
+      },
+    },
+    v = {
+      width = 0.8,
+      height = 0.9,
+      preview = {
+        hidden = "nohidden",
+        layout = "vertical",
+      },
+    },
+  }
+end
+local winopts_fn = function(layout, opts)
+  return function()
+    return vim.tbl_deep_extend("force", winopts()[layout], opts or {})
+  end
+end
+
 return {
   winopts = {
     border = { "┌", "─", "┐", "│", "┘", "─", "└", "│" },
@@ -7,173 +33,51 @@ return {
     },
   },
   -- files buffer
-  buffers = {
-    ignore_current_buffer = true,
-    winopts = {
-      height = 20,
-      width = 80,
-      preview = {
-        hidden = "hidden",
-      },
-    },
-  },
-  oldfiles = {
-    ignore_current_buffer = true,
-    winopts = {
-      height = 20,
-      width = 80,
-      preview = {
-        hidden = "hidden",
-      },
-    },
-  },
+  buffers = { ignore_current_buffer = true, winopts_fn = winopts_fn "h" },
+  oldfiles = { ignore_current_buffer = true, winopts_fn = winopts_fn "h" },
   files = {
-    winopts = {
-      height = 20,
-      width = 80,
-      preview = {
-        hidden = "hidden",
-      },
+    winopts_fn = winopts_fn("h", {
       prompt = "Fzf❱ ",
       cwd_prompt = false,
       ignore_current_buffer = true,
-    },
+    }),
     fd_opts = "--color=always --hidden --follow --max-depth=6 " .. "--size=-1M",
   },
   -- grep
   grep = {
-    winopts = {
-      height = 0.9,
-      width = 0.8,
-      preview = {
-        layout = "vertical",
-      },
-    },
+    winopts_fn = winopts_fn "v",
     prompt = "Fzf❱ ",
     input_prompt = "Rg❱ ",
     -- search = "",
     rg_opts = "--column --line-number --no-heading "
       .. "--color=always --smart-case --max-columns=120 --max-depth=6 "
       .. "--hidden --follow --max-columns-preview --max-filesize 1M",
-    rg_glob = false,
+    rg_glob = true,
+    glob_flag = "--iglob", -- for case sensitive globs use '--glob'
+    glob_separator = "%s%-%-", -- query separator pattern (lua): ' --',
   },
   -- autocmds commands keymaps help_tags registers
-  autocmds = {
-    winopts = {
-      height = 0.9,
-      width = 0.8,
-      preview = {
-        layout = "vertical",
-      },
-    },
-  },
-  commands = {
-    winopts = {
-      height = 0.9,
-      width = 0.8,
-      preview = {
-        layout = "vertical",
-      },
-    },
-  },
-  keymaps = {
-    winopts = {
-      height = 0.9,
-      width = 0.8,
-      preview = {
-        layout = "vertical",
-      },
-    },
-    fzf_opts = { ["--query"] = "'" },
-  },
-  helptags = {
-    winopts = {
-      height = 0.9,
-      width = 0.8,
-      preview = {
-        layout = "vertical",
-      },
-    },
-  },
-  registers = {
-    winopts = {
-      height = 0.9,
-      width = 0.8,
-      preview = {
-        layout = "vertical",
-      },
-    },
-  },
-  manpages = {
-    winopts = {
-      height = 0.80,
-      width = 0.70,
-      preview = {
-        layout = "horizontal",
-        hidden = "hidden",
-      },
-    },
-  },
+  autocmds = { winopts_fn = winopts_fn "v" },
+  commands = { winopts_fn = winopts_fn "v" },
+  keymaps = { winopts_fn = winopts_fn "v", fzf_opts = { ["--query"] = "'" } },
+  helptags = { winopts_fn = winopts_fn "v" },
+  registers = { winopts_fn = winopts_fn "v" },
+  manpages = { winopts_fn = winopts_fn("h", { height = 0.8, width = 0.7 }) },
   marks = {},
   spell_suggest = {},
   --git
   git = {
-    files = {
-      winopts = {
-        preview = {
-          horizontal = "right:50%",
-        },
-      },
-    },
+    files = { winopts = { preview = { horizontal = "right:50%" } } },
     branches = {},
-    commits = {
-      winopts = {
-        height = 0.9,
-        width = 0.8,
-        preview = {
-          layout = "vertical",
-        },
-      },
-    },
-    bcommits = {
-      winopts = {
-        height = 0.9,
-        width = 0.8,
-        preview = {
-          layout = "vertical",
-        },
-      },
-    },
+    commits = { winopts_fn = winopts_fn "v" },
+    bcommits = { winopts_fn = winopts_fn "v" },
     tags = {},
     stash = {},
-    status = {
-      winopts = {
-        height = 0.9,
-        width = 0.8,
-        preview = {
-          layout = "vertical",
-          vertical = "up:50%",
-        },
-      },
-    },
+    status = { winopts_fn = winopts_fn("v", { preview = { vertical = "up:60%" } }) },
   },
   -- jumps changes
-  jumps = {
-    winopts = {
-      preview = {
-        layout = "vertical",
-        vertical = "up:40%",
-      },
-    },
-  },
-  changes = {
-    winopts = {
-      preview = {
-        layout = "vertical",
-        vertical = "up:40%",
-      },
-    },
-  },
+  jumps = { winopts_fn = winopts_fn("v", { preview = { vertical = "up:40%" } }) },
+  changes = { winopts_fn = winopts_fn("v", { preview = { vertical = "up:40%" } }) },
   fzf_opts = {
     ["--prompt"] = "❱ ",
     -- ["--border"] = "sharp",

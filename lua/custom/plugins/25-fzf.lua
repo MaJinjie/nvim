@@ -1,3 +1,101 @@
+local add_items = require("custom.plugins.configs.commander").add_items
+
+add_items "ff" {
+  {
+    cmd = function()
+      require("fzf-lua").commands()
+    end,
+    desc = "commands",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").autocmds()
+    end,
+    desc = "autocmds",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").keymaps()
+    end,
+    desc = "keymaps",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").filetypes()
+    end,
+    desc = "filetypes",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").colorschemes()
+    end,
+    desc = "colorschemes",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").spell_suggest()
+    end,
+    desc = "spell suggest",
+  },
+  -- live_grep
+  {
+    cmd = function()
+      require("fzf-lua").live_grep_native()
+    end,
+    desc = "rg native",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").live_grep_glob()
+    end,
+    desc = "rg glob",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").live_grep_resume()
+    end,
+    desc = "rg resume",
+  },
+  -- grep
+  {
+    cmd = function()
+      require("fzf-lua").grep_cword()
+    end,
+    desc = "rg cword",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").grep_cWORD()
+    end,
+    desc = "rg cWORD",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").grep_visual()
+    end,
+    desc = "rg visual",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").grep_project()
+    end,
+    desc = "rg project",
+  },
+  -- git
+  {
+    cmd = function()
+      require("fzf-lua").git_branches()
+    end,
+    desc = "git branches",
+  },
+  {
+    cmd = function()
+      require("fzf-lua").git_commits()
+    end,
+    desc = "git commits",
+  },
+}
+
 return {
   "ibhagwan/fzf-lua",
   keys = {
@@ -5,7 +103,7 @@ return {
     {
       "<leader>s.",
       function()
-        require("fzf-lua").grep_project { cwd = vim.fn.expand "%:p:h" }
+        require("fzf-lua").live_grep_glob { cwd = vim.fn.expand "%:p:h" }
       end,
       desc = "rg .",
     },
@@ -20,14 +118,14 @@ return {
         else
           cwd = wd
         end
-        require("fzf-lua").grep_project { cwd = cwd }
+        require("fzf-lua").live_grep_glob { cwd = cwd }
       end,
       desc = "rg .",
     },
     {
       "<leader>sc",
       function()
-        require("fzf-lua").grep_project { cwd = "~/.config/nvim" }
+        require("fzf-lua").live_grep_glob { cwd = "~/.config/nvim" }
       end,
       desc = "rg cfiles",
     },
@@ -157,103 +255,6 @@ return {
     },
     { "<leader>tt", "<cmd> FzfLua <cr>", desc = "fzf" },
   },
-  commander = {
-    -- commands keymaps registers colors spellsuggest autocmds
-    {
-      cmd = function()
-        require("fzf-lua").commands()
-      end,
-      desc = "commands",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").autocmds()
-      end,
-      desc = "autocmds",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").keymaps()
-      end,
-      desc = "keymaps",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").filetypes()
-      end,
-      desc = "filetypes",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").colorschemes()
-      end,
-      desc = "colorschemes",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").spell_suggest()
-      end,
-      desc = "spell suggest",
-    },
-    -- live_grep
-    {
-      cmd = function()
-        require("fzf-lua").live_grep_native()
-      end,
-      desc = "lrg native",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").live_grep_glob()
-      end,
-      desc = "lrg glob",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").live_grep_resume()
-      end,
-      desc = "lrg resume",
-    },
-    -- grep
-    {
-      cmd = function()
-        require("fzf-lua").grep_cword()
-      end,
-      desc = "rg lcword",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").grep_cWORD()
-      end,
-      desc = "rg ucWORD",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").grep_visual()
-      end,
-      desc = "rg visual",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").grep_project()
-      end,
-      desc = "rg project",
-    },
-    -- git
-    {
-      cmd = function()
-        require("fzf-lua").git_branches()
-      end,
-      desc = "git branches",
-    },
-    {
-      cmd = function()
-        require("fzf-lua").git_commits()
-      end,
-      desc = "git commits",
-    },
-  },
-  -- optional for icon support
   dependencies = { "nvim-tree/nvim-web-devicons" },
   opts = require "custom.plugins.configs.fzf",
 }
