@@ -45,7 +45,9 @@ return {
         ["<Esc>"] = { "<Esc><Cmd>nohlsearch<CR>", desc = "esc nohlsearch", noremap = true },
         ["<Leader>W"] = { "<Cmd>w<CR>", desc = "Save all" },
       },
-      t = {},
+      t = {
+        ["<Esc><Esc>"] = { "<c-\\><c-n>", desc = "Enter Normal Mode" },
+      },
     },
   },
 }

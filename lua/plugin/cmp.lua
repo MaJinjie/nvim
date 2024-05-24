@@ -27,6 +27,33 @@ return {
     "hrsh7th/nvim-cmp",
     opts = function(_, opts)
       local cmp = require "cmp"
+
+      -- vim.api.nvim_set_hl(0, "Pmenu", { bg = "#22252A", fg = "NONE" })
+      -- vim.api.nvim_set_hl(0, "PmenuSel", { bg = "#569CD6", fg = "NONE" })
+
+      vim.api.nvim_set_hl(0, "CmpItemAbbrMatch", { bg = "NONE", fg = "#569CD6" })
+      vim.api.nvim_set_hl(0, "CmpItemAbbrMatchFuzzy", { link = "CmpIntemAbbrMatch" })
+      vim.api.nvim_set_hl(0, "CmpItemMenu", { fg = "#C792EA", bg = "NONE", italic = true })
+
+      opts.formatting = {
+        fields = { "abbr", "kind", "menu" },
+        format = function(entry, vim_item)
+          local kind = require("lspkind").cmp_format { mode = "symbol_text" }(entry, vim_item)
+          local strings = vim.split(kind.kind, "%s", { trimempty = true })
+          kind.kind = "  " .. (strings[1] or "") .. ""
+          kind.menu = " (" .. (strings[2] or "") .. ")"
+          return kind
+        end,
+      }
+      opts.window = {
+        completion = cmp.config.window.bordered {
+          border = "",
+          winhighlight = "Normal:Pmenu,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+          scrolloff = 1,
+          scrollbar = false,
+        },
+      }
+
       opts.mapping["<A-K>"] = cmp.mapping(cmp.mapping.scroll_docs(-1), { "i", "s" })
       opts.mapping["<A-J>"] = cmp.mapping(cmp.mapping.scroll_docs(1), { "i", "s" })
       opts.mapping["<C-Z>"] = cmp.mapping(function()
@@ -36,9 +63,6 @@ return {
           cmp.complete()
         end
       end, { "i", "s" })
-      opts.window.completion.border = nil
-      opts.window.documentation.border = nil
-      opts.formatting.fields = { "abbr", "kind" }
       return opts
     end,
   },
