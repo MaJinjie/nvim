@@ -48,10 +48,7 @@ return {
         ["<Leader>W"] = { "<Cmd>w<CR>", desc = "Save all" },
       },
       t = {
-<<<<<<< HEAD
-=======
         ["<Esc>"] = { "<Esc>", nowait = false },
->>>>>>> 2abdd95 (init commit)
         ["<Esc><Esc>"] = { "<c-\\><c-n>", desc = "Enter Normal Mode" },
       },
     },
