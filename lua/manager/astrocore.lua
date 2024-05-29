@@ -24,7 +24,7 @@ return {
         scrolloff = 8,
         sidescrolloff = 8,
         swapfile = false,
-        guifont = "Hack Nerd Font,JetBrainsMono Nerd Font:h13",
+        guifont = "JetBrainsMono Nerd Font,Hack Nerd Font:h13",
         tabstop = 4,
         shiftwidth = 4,
         softtabstop = -1,
@@ -41,11 +41,17 @@ return {
     mappings = {
       -- first key is the mode
       n = {
+        ["zh"] = "zH",
+        ["zl"] = "zL",
         ["z;"] = { "<Cmd>e #<CR>", desc = "Previous buffer" },
         ["<Esc>"] = { "<Esc><Cmd>nohlsearch<CR>", desc = "esc nohlsearch", noremap = true },
         ["<Leader>W"] = { "<Cmd>w<CR>", desc = "Save all" },
       },
       t = {
+<<<<<<< HEAD
+=======
+        ["<Esc>"] = { "<Esc>", nowait = false },
+>>>>>>> 2abdd95 (init commit)
         ["<Esc><Esc>"] = { "<c-\\><c-n>", desc = "Enter Normal Mode" },
       },
     },
