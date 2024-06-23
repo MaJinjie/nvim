@@ -36,17 +36,6 @@ return {
       g = {
         transparency = 0.8,
 
-        -- vim-visual-multi
-        VM_silent_exit = 1,
-        VM_show_warnings = 0,
-        VM_mouse_mappings = 1,
-        VM_maps = {
-          ["Select Cursor Down"] = "<S-Down>",
-          ["Select Cursor Up"] = "<S-Up>",
-          ["Find Under"] = "\\n",
-          ["Add Cursor Down"] = "<S-A-n>",
-          ["Add Cursor Up"] = "<S-A-p>",
-        },
         -- neovide
         neovide_scale_factor = 0.87,
         neovide_padding_top = 5,
@@ -201,19 +190,6 @@ return {
               { name = "buffer" },
             },
           }
-        end,
-      },
-    },
-    -- vim-visual-multi
-    visual_multi_exit = {
-      {
-        event = "User",
-        pattern = "visual_multi_exit",
-        desc = "Avoid spurious 'hit-enter-prompt' when exiting vim-visual-multi",
-        callback = function()
-          local old_cmdheight = vim.o.cmdheight
-          vim.o.cmdheight = 1
-          vim.schedule(function() vim.o.cmdheight = old_cmdheight end)
         end,
       },
     },
