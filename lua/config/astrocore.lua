@@ -81,9 +81,6 @@ return {
           desc = "Grep word in cwd",
         },
         ["<Leader>fu"] = { "<Cmd> Telescope undo <Cr>", desc = "Find Undotree" },
-        -- flash
-        ["s"] = { function() require("flash").jump() end, desc = "Flash" },
-        ["S"] = { function() require("flash").treesitter() end, desc = "Flash Treesitter" },
         -- treej
         ["\\j"] = { "<Cmd> TSJToggle <Cr>", desc = "Toggle Treesitter Join" },
         -- zen-mode
@@ -94,11 +91,6 @@ return {
         -- aerial
         ["<Leader>fy"] = { "<Cmd> AerialToggle <Cr>", desc = "Symbols outline" },
         ["<Leader>fY"] = { "<Cmd> AerialNavToggle <Cr>", desc = "Symbols nav outline" },
-        -- spider
-        ["w"] = { "<Cmd>lua require('spider').motion('w')<CR>", desc = "Next word" },
-        ["e"] = { "<Cmd>lua require('spider').motion('e')<CR>", desc = "Next end of word" },
-        ["b"] = { "<Cmd>lua require('spider').motion('b')<CR>", desc = "Previous word" },
-        ["ge"] = { "<Cmd>lua require('spider').motion('ge')<CR>", desc = "Previous end of word" },
         -- spectre
         ["<Leader>fr"] = {
           function() require("spectre").open_file_search { select_word = true } end,
@@ -108,38 +100,8 @@ return {
           function() require("spectre").open { select_word = true } end,
           desc = "Spectre",
         },
-        -- grapple
-        ["<Bslash>a"] = { "<Cmd>Grapple tag<CR>", desc = "Add file" },
-        ["<Bslash>A"] = { "<Cmd>Grapple untag<CR>", desc = "Remove file" },
-        ["<Bslash>w"] = { "<Cmd>Grapple toggle_tags<CR>", desc = "Toggle a file" },
-        ["<Bslash>W"] = { "<Cmd>Telescope grapple tags<CR>", desc = "Toggle a file using telescope" },
-        ["<C-n>"] = { "<Cmd>Grapple cycle forward<CR>", desc = "Select next tag" },
-        ["<C-p>"] = { "<Cmd>Grapple cycle backward<CR>", desc = "Select previous tag" },
         -- overseer
         ["<Leader>T"] = { desc = require("astroui").get_icon("Overseer", 1, true) .. "Overseer" },
-      },
-      x = {
-        -- flash
-        ["s"] = { function() require("flash").jump() end, desc = "Flash" },
-        ["R"] = { function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-        ["S"] = { function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-        -- spider
-        ["w"] = { "<Cmd>lua require('spider').motion('w')<CR>", desc = "Next word" },
-        ["e"] = { "<Cmd>lua require('spider').motion('e')<CR>", desc = "Next end of word" },
-        ["b"] = { "<Cmd>lua require('spider').motion('b')<CR>", desc = "Previous word" },
-        ["ge"] = { "<Cmd>lua require('spider').motion('ge')<CR>", desc = "Previous end of word" },
-      },
-      o = {
-        -- flash
-        ["r"] = { function() require("flash").remote() end, desc = "Remote Flash" },
-        ["R"] = { function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-        ["s"] = { function() require("flash").jump() end, desc = "Flash" },
-        ["S"] = { function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-        -- spider
-        ["w"] = { "<Cmd>lua require('spider').motion('w')<CR>", desc = "Next word" },
-        ["e"] = { "<Cmd>lua require('spider').motion('e')<CR>", desc = "Next end of word" },
-        ["b"] = { "<Cmd>lua require('spider').motion('b')<CR>", desc = "Previous word" },
-        ["ge"] = { "<Cmd>lua require('spider').motion('ge')<CR>", desc = "Previous end of word" },
       },
       i = {
         ["<C-Cr>"] = { "<Esc>o", noremap = true, silent = true },
