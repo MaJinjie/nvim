@@ -1,7 +1,6 @@
 ---@type LazySpec
 return {
   "NeogitOrg/neogit",
-  dependencies = { "nvim-lua/plenary.nvim" },
   event = "User AstroGitFile",
   opts = function(_, opts)
     local utils = require "astrocore"
@@ -20,4 +19,19 @@ return {
       signs = { section = fold_signs, item = fold_signs },
     })
   end,
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    { "AstroNvim/astroui", opts = function(_, opts) opts.icons.Neogit = "󰰔" end },
+    {
+      "AstroNvim/astrocore",
+      opts = function(_, opts)
+        local iterator = require "uts.iterator"
+        local mappings = iterator(opts.mappings, false)
+
+        mappings "n" {
+          ["<Leader>gn"] = { "<Cmd>Neogit<CR>", desc = "Open Neogit Tab Page" },
+        }
+      end,
+    },
+  },
 }

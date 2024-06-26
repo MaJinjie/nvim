@@ -77,6 +77,35 @@ return {
         vim.cmd.SatelliteEnable()
       end,
     },
+    dependencies = {
+      {
+        "AstroNvim/astrocore",
+        opts = function(_, opts)
+          local iterator = require "uts.iterator"
+          local mappings = iterator(opts.mappings, false)
+
+          mappings "n" {
+            ["<Leader>uz"] = { "<Cmd> ZenMode <Cr>", desc = "Toggle ZenMode" },
+          }
+        end,
+      },
+    },
   },
-  { "folke/twilight.nvim", cmd = "Twilight" },
+  {
+    "folke/twilight.nvim",
+    cmd = "Twilight",
+    dependencies = {
+      {
+        "AstroNvim/astrocore",
+        opts = function(_, opts)
+          local iterator = require "uts.iterator"
+          local mappings = iterator(opts.mappings, false)
+
+          mappings "n" {
+            ["<Leader>uT"] = { "<Cmd> Twilight <Cr>", desc = "Toggle Twilight" },
+          }
+        end,
+      },
+    },
+  },
 }

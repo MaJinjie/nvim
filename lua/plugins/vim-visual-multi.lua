@@ -6,10 +6,11 @@ return {
     {
       "AstroNvim/astrocore",
       opts = function(_, opts)
-        local iterator = require "utils.iterator"
+        local iterator = require "uts.iterator"
         local g, autocmds = iterator(opts.options.g), iterator(opts.autocmds)
 
         g {
+          VM_theme = "sand",
           VM_silent_exit = 1,
           VM_show_warnings = 0,
           VM_mouse_mappings = 1,

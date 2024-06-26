@@ -7,8 +7,8 @@ return {
     dependencies = {
       "AstroNvim/astrocore",
       opts = function(_, opts)
-        local iterator = require "utils.iterator"
-        local mappings = iterator(opts.mappings, true)
+        local iterator = require "uts.iterator"
+        local mappings = iterator(opts.mappings, false)
 
         mappings "n" {
           ["s"] = { function() require("flash").jump() end, desc = "Flash" },
@@ -35,8 +35,8 @@ return {
       {
         "AstroNvim/astrocore",
         opts = function(_, opts)
-          local iterator = require "utils.iterator"
-          local mappings = iterator(opts.mappings, true)
+          local iterator = require "uts.iterator"
+          local mappings = iterator(opts.mappings, false)
 
           mappings { "n", "x", "o" } {
             ["w"] = { "<Cmd>lua require('spider').motion('w')<CR>", desc = "Next word" },
@@ -56,8 +56,8 @@ return {
       {
         "AstroNvim/astrocore",
         opts = function(_, opts)
-          local iterator = require "utils.iterator"
-          local mappings = iterator(opts.mappings, true)
+          local iterator = require "uts.iterator"
+          local mappings = iterator(opts.mappings, false)
 
           mappings "n" {
             ["<Bslash>a"] = { "<Cmd>Grapple tag<CR>", desc = "Add file" },

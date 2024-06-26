@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
   {
     "mrcjkb/rustaceanvim",
@@ -54,5 +55,90 @@ return {
       completion = { cmp = { enabled = true } },
       null_ls = { enabled = true, name = "crates.nvim" },
     },
+    dependencies = {
+      {
+        "AstroNvim/astrocore",
+        opts = function(_, opts)
+          local uts, iterator = require "uts", require "uts.iterator"
+          local autocmds = iterator(opts.autocmds)
+
+          autocmds {
+            CmpSourceCargo = {
+              {
+                event = "BufRead",
+                desc = "Load crates.nvim into Cargo buffers",
+                pattern = "Cargo.toml",
+                callback = function()
+                  require "crates"
+                  require("cmp").setup.buffer {
+                    sources = {
+                      { name = "nvim_lsp", priority = 1000 },
+                      { name = "crates", priority = 750 },
+                      { name = "buffer", priority = 500 },
+                      { name = "path", priority = 250 },
+                    },
+                  }
+                end,
+              },
+            },
+          }
+        end,
+      },
+    },
+  },
+  {
+    "AstroNvim/astrolsp",
+    ---@param opts AstroLSPOpts
+    opts = function(_, opts)
+      local iterrator = require "uts.iterator"
+      local user_opts = iterrator(opts, true)
+
+      user_opts "force" {
+        handlers = { rust_analyzer = false }, -- disable setup of `rust_analyzer`
+        config = {
+          rust_analyzer = {
+            settings = {
+              ["rust-analyzer"] = {
+                check = {
+                  command = "clippy",
+                  extraArgs = {
+                    "--no-deps",
+                  },
+                },
+                assist = {
+                  importEnforceGranularity = true,
+                  importPrefix = "crate",
+                },
+                completion = {
+                  postfix = {
+                    enable = false,
+                  },
+                },
+                inlayHints = {
+                  lifetimeElisionHints = {
+                    enable = true,
+                    useParameterNames = true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      }
+    end,
+  },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    opts = function(_, opts)
+      if opts.ensure_installed ~= "all" then
+        opts.ensure_installed = require("astrocore").list_insert_unique(opts.ensure_installed, { "rust" })
+      end
+    end,
+  },
+  {
+    "jay-babu/mason-nvim-dap.nvim",
+    opts = function(_, opts)
+      opts.ensure_installed = require("astrocore").list_insert_unique(opts.ensure_installed, { "codelldb" })
+    end,
   },
 }

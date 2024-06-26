@@ -159,4 +159,20 @@ return {
 
     return require("astrocore").extend_tbl(opts, require("astrocore").extend_tbl(user_opts, user_mappings))
   end,
+  dependencies = {
+    {
+      "AstroNvim/astrocore",
+      opts = function(_, opts)
+        local iterator = require "uts.iterator"
+        local mappings = iterator(opts.mappings, false)
+
+        mappings "n" {
+          ["<Leader>E"] = {
+            "<Cmd> Neotree toggle reveal_force_cwd dir=%:p:h <Cr>",
+            desc = "toggle Explorer reveal_force_cwd",
+          },
+        }
+      end,
+    },
+  },
 }

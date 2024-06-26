@@ -7,10 +7,9 @@ local lazy_spec = {
       maplocalleader = " ", -- This ensures the localleader key must be configured before Lazy is set up
     },
   },
-  { import = "config" },
+  { import = "ui" },
   { import = "core" },
   { import = "lsp" },
-  { import = "lang" },
   { import = "plugins" },
 }
 

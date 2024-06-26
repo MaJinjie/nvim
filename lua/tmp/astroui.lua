@@ -3,9 +3,7 @@ return {
   "AstroNvim/astroui",
   ---@type AstroUIOpts
   opts = {
-    -- change colorscheme
     colorscheme = "catppuccin",
-    -- AstroUI allows you to easily modify highlight groups easily for any and all colorschemes
     highlights = {
       init = {
         CmpItemAbbrMatch = { bg = "NONE", fg = "#569CD6" },
@@ -15,10 +13,8 @@ return {
         -- TreesitterContextBottom = { fg = "#569CD6", underline = true },
       },
     },
-    icons = {
-      Neogit = "󰰔",
-      Grapple = "󰛢",
-      Overseer = "",
-    },
+    icons = {},
+    status = {},
+    text_icons = {},
   },
 }

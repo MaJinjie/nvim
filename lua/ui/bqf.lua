@@ -1,8 +1,7 @@
 return {
   "kevinhwang91/nvim-bqf",
   ft = "qf",
-  dependencies = { "junegunn/fzf" },
-  opts = function(_, opts)
+  opts = function()
     local fn = vim.fn
 
     function _G.qftf(info)
@@ -50,7 +49,7 @@ return {
 
     vim.o.qftf = "{info -> v:lua._G.qftf(info)}"
 
-    local user_opts = {
+    return {
       auto_enable = true,
       auto_resize_height = true, -- highly recommended enable
       preview = {
@@ -91,6 +90,15 @@ return {
         },
       },
     }
-    return require("astrocore").extend_tbl(opts, user_opts)
   end,
+  dependencies = {
+    "junegunn/fzf",
+    {
+      "AstroNvim/astrocore",
+      ---@param opts AstroCoreOpts
+      opts = function(_, opts)
+        opts.signs.BqfSign = { text = " " .. require("astroui").get_icon "Selected", texthl = "BqfSign" }
+      end,
+    },
+  },
 }

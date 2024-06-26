@@ -5,13 +5,18 @@ end
 local function is_visible(cmp) return cmp.core.view:visible() or vim.fn.pumvisible() == 1 end
 
 -- stylua: ignore
+---@type LazySpec
 return {
   {
     "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp-signature-help"
+    },
     opts = function(_, opts)
       local cmp, luasnip = require "cmp", require("luasnip")
 
       table.insert(opts.sources, { name = "lazydev", group_index = 0 })
+      table.insert(opts.sources, { name = "nvim_lsp_signature_help" })
 
       opts.formatting = {
         fields = { "abbr", "kind", "menu" },
@@ -40,24 +45,14 @@ return {
       opts.mapping["<C-Y>"] = nil
       opts.mapping["<C-E>"] = nil
 
-      opts.mapping["<C-J>"] = cmp.mapping(function(fallback)
-        if has_words_before() then
-          if is_visible(cmp) then cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
-          else cmp.complete() end
-        else
-          if is_visible(cmp) then cmp.abort() end
-          fallback()
-        end
+      cmp.mapping(function()
+        if is_visible(cmp) then cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
+        else cmp.complete() end
       end, { "i", "s" })
 
-      opts.mapping["<C-K>"] = cmp.mapping(function(fallback)
-        if has_words_before() then
-          if is_visible(cmp) then cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
-          else cmp.complete() end
-        else
-          if is_visible(cmp) then cmp.abort() end
-          fallback()
-        end
+      opts.mapping["<C-K>"] = cmp.mapping(function()
+        if is_visible(cmp) then cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
+        else cmp.complete() end
       end, { "i", "s" })
 
       opts.mapping["<Tab>"] = cmp.mapping(function(fallback)
@@ -86,8 +81,6 @@ return {
       opts.mapping["<C-C>"] = cmp.mapping(function(fallback)
         if is_visible(cmp) then cmp.abort() else fallback() end
       end, { "i", "s" })
-
-      return opts
     end,
   },
   {
@@ -152,5 +145,4 @@ return {
       vim.tbl_map(function(val) cmp.setup.cmdline(val.type, val) end, opts)
     end,
   },
-  
 }
