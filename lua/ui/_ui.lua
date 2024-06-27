@@ -48,22 +48,14 @@ return {
   },
   {
     "lukas-reineke/indent-blankline.nvim",
-    opts = function(_, opts) opts.scope = { show_start = false, show_end = true } end,
+    opts = { scope = { show_start = false, show_end = true } },
   },
   {
     "rcarriga/nvim-notify",
-    opts = function(_, opts)
-      local iterator = require "uts.iterator"
-      local user_opts = iterator(opts, true)
-
-      user_opts "force" {
-        stages = "slide",
-        fps = 5,
-        timeout = 1200,
-      }
-
-      opts.stages = "static"
-      vim.print(opts)
-    end,
+    opts = {
+      stages = "slide",
+      fps = 5,
+      timeout = 1200,
+    },
   },
 }

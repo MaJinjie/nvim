@@ -17,16 +17,11 @@ return {
   },
   {
     "AstroNvim/astrolsp",
-    optss = function(_, opts)
-      local iterrator = require "uts.iterator"
-      local user_opts = iterrator(opts, true)
-
-      user_opts "error" {
-        config = {
-          lua_ls = { settings = { Lua = { hint = { enable = true, arrayIndex = "Disable" } } } },
-        },
-      }
-    end,
+    opts = {
+      config = {
+        lua_ls = { settings = { Lua = { hint = { enable = true, arrayIndex = "Disable" } } } },
+      },
+    },
   },
   {
     "nvim-treesitter/nvim-treesitter",

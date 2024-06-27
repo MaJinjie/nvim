@@ -24,14 +24,13 @@ return {
     { "AstroNvim/astroui", opts = function(_, opts) opts.icons.Neogit = "󰰔" end },
     {
       "AstroNvim/astrocore",
-      opts = function(_, opts)
-        local iterator = require "uts.iterator"
-        local mappings = iterator(opts.mappings, false)
-
-        mappings "n" {
-          ["<Leader>gn"] = { "<Cmd>Neogit<CR>", desc = "Open Neogit Tab Page" },
-        }
-      end,
+      opts = {
+        mappings = {
+          n = {
+            ["<Leader>gn"] = { "<Cmd>Neogit<CR>", desc = "Open Neogit Tab Page" },
+          },
+        },
+      },
     },
   },
 }

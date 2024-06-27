@@ -96,9 +96,7 @@ return {
     {
       "AstroNvim/astrocore",
       ---@param opts AstroCoreOpts
-      opts = function(_, opts)
-        opts.signs.BqfSign = { text = " " .. require("astroui").get_icon "Selected", texthl = "BqfSign" }
-      end,
+      opts = { signs = { BqfSign = { text = " " .. require("astroui").get_icon "Selected", texthl = "BqfSign" } } },
     },
   },
 }

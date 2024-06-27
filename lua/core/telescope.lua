@@ -54,14 +54,11 @@ layout_config.vertical.default = layout_config.vertical[1]
 return {
   "nvim-telescope/telescope.nvim",
   opts = function(_, opts)
-    local uts, iterator = require "uts", require "uts.iterator"
-    local extensions = iterator(uts.or_default(opts, "extensions"))
-    local user_opts = iterator(opts, true)
-
     local actions, actions_layout = require "telescope.actions", require "telescope.actions.layout"
     local fb_actions = require "telescope._extensions.file_browser.actions"
 
-    user_opts "force" {
+    local user_opts = {}
+    user_opts = {
       defaults = {
         layout_strategy = "flex",
         layout_config = {
@@ -113,7 +110,7 @@ return {
       },
     }
 
-    extensions {
+    user_opts.extensions = {
       frecency = {
         layout_strategy = "center",
 
@@ -220,6 +217,8 @@ return {
         side_by_side = false,
       },
     }
+
+    return vim.tbl_deep_extend("force", opts, user_opts)
   end,
   dependencies = {
     "nvim-lua/plenary.nvim",
@@ -231,35 +230,33 @@ return {
     "debugloop/telescope-undo.nvim",
     {
       "AstroNvim/astrocore",
-      opts = function(_, opts)
-        local iterator = require "uts.iterator"
-        local mappings = iterator(opts.mappings, false)
-
-        mappings "n" {
-          ["<Leader>fg"] = { function() require("telescope.builtin").git_files() end, desc = "Find git files" },
-          ["<Leader>fo"] = {
-            function() require("telescope").extensions.frecency.frecency() end,
-            desc = "Find history",
+      opts = {
+        mappings = {
+          n = {
+            ["<Leader>fg"] = { function() require("telescope.builtin").git_files() end, desc = "Find git files" },
+            ["<Leader>fo"] = {
+              function() require("telescope").extensions.frecency.frecency() end,
+              desc = "Find history",
+            },
+            ["<Leader>fe"] = {
+              function() require("telescope").extensions.file_browser.file_browser { path = vim.fn.expand "%:p:h" } end,
+              desc = "Find currentDir files",
+            },
+            ['<Leader>f"'] = { function() require("telescope.builtin").registers() end, desc = "Find Registers" },
+            ["<Leader>fH"] = { "<Cmd> Telescope helpgrep <Cr>", desc = "Grep help" },
+            ["<Leader>fL"] = { "<Cmd> Telescope lazy <Cr>", desc = "Find lazyplugins" },
+            ["<Leader>fw"] = {
+              function() require("telescope").extensions.egrepify.egrepify { cwd = vim.fn.expand "%:p:h" } end,
+              desc = "Grep word in current file directory",
+            },
+            ["<Leader>fW"] = {
+              function() require("telescope").extensions.egrepify.egrepify { cwd = vim.uv.cwd() } end,
+              desc = "Grep word in cwd",
+            },
+            ["<Leader>fu"] = { "<Cmd> Telescope undo <Cr>", desc = "Find Undotree" },
           },
-          ["<Leader>fe"] = {
-            function() require("telescope").extensions.file_browser.file_browser { path = vim.fn.expand "%:p:h" } end,
-            desc = "Find currentDir files",
-          },
-          ['<Leader>f"'] = { function() require("telescope.builtin").registers() end, desc = "Find Registers" },
-          ["<Leader>fH"] = { "<Cmd> Telescope helpgrep <Cr>", desc = "Grep help" },
-          ["<Leader>fL"] = { "<Cmd> Telescope lazy <Cr>", desc = "Find lazyplugins" },
-          ["<Leader>fw"] = {
-            function() require("telescope").extensions.egrepify.egrepify { cwd = vim.fn.expand "%:p:h" } end,
-            desc = "Grep word in current file directory",
-          },
-          ["<Leader>fW"] = {
-            function() require("telescope").extensions.egrepify.egrepify { cwd = vim.uv.cwd() } end,
-            desc = "Grep word in cwd",
-          },
-          ["<Leader>fu"] = { "<Cmd> Telescope undo <Cr>", desc = "Find Undotree" },
-        }
-        return opts
-      end,
+        },
+      },
     },
   },
 }

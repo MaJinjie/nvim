@@ -16,21 +16,20 @@ return {
   dependencies = {
     {
       "AstroNvim/astrocore",
-      opts = function(_, opts)
-        local iterator = require "uts.iterator"
-        local mappings = iterator(opts.mappings, false)
-
-        mappings "n" {
-          ["<Leader>fr"] = {
-            function() require("spectre").open_file_search { select_word = true } end,
-            desc = "Spectre (current file)",
+      opts = {
+        mappings = {
+          n = {
+            ["<Leader>fr"] = {
+              function() require("spectre").open_file_search { select_word = true } end,
+              desc = "Spectre (current file)",
+            },
+            ["<Leader>fR"] = {
+              function() require("spectre").open { select_word = true } end,
+              desc = "Spectre",
+            },
           },
-          ["<Leader>fR"] = {
-            function() require("spectre").open { select_word = true } end,
-            desc = "Spectre",
-          },
-        }
-      end,
+        },
+      },
     },
   },
 }

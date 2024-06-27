@@ -9,7 +9,9 @@ local map_dirEntry = {}
 return {
   "nvim-neo-tree/neo-tree.nvim",
   opts = function(_, opts)
-    local user_opts = {
+    local user_opts, user_mappings = {}, {}
+
+    user_opts = {
       close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
       filesystem = {
         filtered_items = {
@@ -34,7 +36,7 @@ return {
       },
     }
 
-    local user_mappings = {
+    user_mappings = {
       commands = {
         open_and_close = function(state)
           state.commands.open(state)
@@ -157,22 +159,21 @@ return {
       },
     }
 
-    return require("astrocore").extend_tbl(opts, require("astrocore").extend_tbl(user_opts, user_mappings))
+    return vim.tbl_deep_extend("force", opts, vim.tbl_extend("error", user_opts, user_mappings))
   end,
   dependencies = {
     {
       "AstroNvim/astrocore",
-      opts = function(_, opts)
-        local iterator = require "uts.iterator"
-        local mappings = iterator(opts.mappings, false)
-
-        mappings "n" {
-          ["<Leader>E"] = {
-            "<Cmd> Neotree toggle reveal_force_cwd dir=%:p:h <Cr>",
-            desc = "toggle Explorer reveal_force_cwd",
+      opts = {
+        mappings = {
+          n = {
+            ["<Leader>E"] = {
+              "<Cmd> Neotree toggle reveal_force_cwd dir=%:p:h <Cr>",
+              desc = "toggle Explorer reveal_force_cwd",
+            },
           },
-        }
-      end,
+        },
+      },
     },
   },
 }

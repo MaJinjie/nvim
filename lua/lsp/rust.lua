@@ -58,11 +58,8 @@ return {
     dependencies = {
       {
         "AstroNvim/astrocore",
-        opts = function(_, opts)
-          local uts, iterator = require "uts", require "uts.iterator"
-          local autocmds = iterator(opts.autocmds)
-
-          autocmds {
+        opts = {
+          autocmds = {
             CmpSourceCargo = {
               {
                 event = "BufRead",
@@ -81,51 +78,45 @@ return {
                 end,
               },
             },
-          }
-        end,
+          },
+        },
       },
     },
   },
   {
     "AstroNvim/astrolsp",
-    ---@param opts AstroLSPOpts
-    opts = function(_, opts)
-      local iterrator = require "uts.iterator"
-      local user_opts = iterrator(opts, true)
-
-      user_opts "force" {
-        handlers = { rust_analyzer = false }, -- disable setup of `rust_analyzer`
-        config = {
-          rust_analyzer = {
-            settings = {
-              ["rust-analyzer"] = {
-                check = {
-                  command = "clippy",
-                  extraArgs = {
-                    "--no-deps",
-                  },
+    opts = {
+      handlers = { rust_analyzer = false }, -- disable setup of `rust_analyzer`
+      config = {
+        rust_analyzer = {
+          settings = {
+            ["rust-analyzer"] = {
+              check = {
+                command = "clippy",
+                extraArgs = {
+                  "--no-deps",
                 },
-                assist = {
-                  importEnforceGranularity = true,
-                  importPrefix = "crate",
+              },
+              assist = {
+                importEnforceGranularity = true,
+                importPrefix = "crate",
+              },
+              completion = {
+                postfix = {
+                  enable = false,
                 },
-                completion = {
-                  postfix = {
-                    enable = false,
-                  },
-                },
-                inlayHints = {
-                  lifetimeElisionHints = {
-                    enable = true,
-                    useParameterNames = true,
-                  },
+              },
+              inlayHints = {
+                lifetimeElisionHints = {
+                  enable = true,
+                  useParameterNames = true,
                 },
               },
             },
           },
         },
-      }
-    end,
+      },
+    },
   },
   {
     "nvim-treesitter/nvim-treesitter",

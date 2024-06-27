@@ -4,16 +4,13 @@ return {
   {
     "AstroNvim/astrolsp",
     opts = function(_, opts)
-      local iterator = require "uts.iterator"
-      local user_opts = iterator(opts, true)
-
-      user_opts "force" {
+      opts.config = vim.tbl_deep_extend("force", opts.config, {
         clangd = {
           capabilities = {
             offsetEncoding = "utf-8",
           },
         },
-      }
+      })
 
       if is_linux_arm then opts.servers = require("astrocore").list_insert_unique(opts.servers, { "clangd" }) end
     end,
@@ -22,11 +19,8 @@ return {
     "p00f/clangd_extensions.nvim",
     dependencies = {
       "AstroNvim/astrocore",
-      opts = function(_, opts)
-        local iterator = require "uts.iterator"
-        local user_opts = iterator(opts, false)
-
-        user_opts "autocmds" {
+      opts = {
+        autocmds = {
           clangd_extensions = {
             {
               event = "LspAttach",
@@ -54,8 +48,8 @@ return {
               end,
             },
           },
-        }
-      end,
+        },
+      },
     },
   },
   {

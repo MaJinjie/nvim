@@ -8,14 +8,13 @@ return {
     dependencies = {
       {
         "AstroNvim/astrocore",
-        opts = function(_, opts)
-          local iterator = require "uts.iterator"
-          local mappings = iterator(opts.mappings, false)
-
-          mappings "n" {
-            ["\\j"] = { "<Cmd> TSJToggle <Cr>", desc = "Toggle Treesitter Join" },
-          }
-        end,
+        opts = {
+          mappings = {
+            n = {
+              ["\\j"] = { "<Cmd> TSJToggle <Cr>", desc = "Toggle Treesitter Join" },
+            },
+          },
+        },
       },
     },
   },

@@ -25,11 +25,8 @@ return {
     "nvim-tree/nvim-web-devicons",
     {
       "AstroNvim/astrocore",
-      opts = function(_, opts)
-        local iterator = require "uts.iterator"
-        local user_opts = iterator(opts, false)
-
-        user_opts "autocmds" {
+      opts = {
+        autocmds = {
           leetcode_autostart = {
             {
               event = "VimEnter",
@@ -58,8 +55,8 @@ return {
               end,
             },
           },
-        }
-      end,
+        },
+      },
     },
   },
 }

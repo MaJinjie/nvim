@@ -80,14 +80,13 @@ return {
     dependencies = {
       {
         "AstroNvim/astrocore",
-        opts = function(_, opts)
-          local iterator = require "uts.iterator"
-          local mappings = iterator(opts.mappings, false)
-
-          mappings "n" {
-            ["<Leader>uz"] = { "<Cmd> ZenMode <Cr>", desc = "Toggle ZenMode" },
-          }
-        end,
+        opts = {
+          mappings = {
+            n = {
+              ["<Leader>uz"] = { "<Cmd> ZenMode <Cr>", desc = "Toggle ZenMode" },
+            },
+          },
+        },
       },
     },
   },
@@ -97,14 +96,13 @@ return {
     dependencies = {
       {
         "AstroNvim/astrocore",
-        opts = function(_, opts)
-          local iterator = require "uts.iterator"
-          local mappings = iterator(opts.mappings, false)
-
-          mappings "n" {
-            ["<Leader>uT"] = { "<Cmd> Twilight <Cr>", desc = "Toggle Twilight" },
-          }
-        end,
+        opts = {
+          mappings = {
+            n = {
+              ["<Leader>uT"] = { "<Cmd> Twilight <Cr>", desc = "Toggle Twilight" },
+            },
+          },
+        },
       },
     },
   },

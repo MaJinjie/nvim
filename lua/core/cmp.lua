@@ -4,21 +4,17 @@ local function has_words_before()
 end
 local function is_visible(cmp) return cmp.core.view:visible() or vim.fn.pumvisible() == 1 end
 
--- stylua: ignore
 ---@type LazySpec
 return {
   {
     "hrsh7th/nvim-cmp",
-    dependencies = {
-      "hrsh7th/cmp-nvim-lsp-signature-help"
-    },
     opts = function(_, opts)
-      local cmp, luasnip = require "cmp", require("luasnip")
+      local cmp, luasnip = require "cmp", require "luasnip"
+      local user_opts = {}
 
       table.insert(opts.sources, { name = "lazydev", group_index = 0 })
-      table.insert(opts.sources, { name = "nvim_lsp_signature_help" })
 
-      opts.formatting = {
+      user_opts.formatting = {
         fields = { "abbr", "kind", "menu" },
         format = function(entry, vim_item)
           local kind = require("lspkind").cmp_format { mode = "symbol_text" }(entry, vim_item)
@@ -28,7 +24,7 @@ return {
           return kind
         end,
       }
-      opts.window = {
+      user_opts.window = {
         completion = cmp.config.window.bordered {
           border = "",
           winhighlight = "Normal:Pmenu,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
@@ -36,51 +32,84 @@ return {
           scrollbar = false,
         },
       }
-      opts.view = { docs = { auto_open = false } }
-      opts.completion = { completeopt = "menu,menuone,popup" }
+      user_opts.view = { docs = { auto_open = false } }
+      user_opts.completion = { completeopt = "menu,menuone,popup" }
 
-      opts.mapping["<C-P>"] = nil
-      opts.mapping["<C-N>"] = nil
-      opts.mapping["<C-Space>"] = nil
-      opts.mapping["<C-Y>"] = nil
-      opts.mapping["<C-E>"] = nil
+      user_opts.mapping = {
+        ["<C-P>"] = nil,
+        ["<C-N>"] = nil,
+        ["<C-Space>"] = nil,
+        ["<C-Y>"] = nil,
+        ["<C-E>"] = nil,
+        ["<C-J>"] = cmp.mapping(function()
+          if is_visible(cmp) then
+            cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
+          else
+            cmp.complete()
+          end
+        end, { "i", "s" }),
+        ["<C-K>"] = cmp.mapping(function()
+          if is_visible(cmp) then
+            cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
+          else
+            cmp.complete()
+          end
+        end, { "i", "s" }),
 
-      cmp.mapping(function()
-        if is_visible(cmp) then cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
-        else cmp.complete() end
-      end, { "i", "s" })
+        ["<Tab>"] = cmp.mapping(function(fallback)
+          if luasnip.locally_jumpable(1) then
+            luasnip.jump(1)
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
 
-      opts.mapping["<C-K>"] = cmp.mapping(function()
-        if is_visible(cmp) then cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
-        else cmp.complete() end
-      end, { "i", "s" })
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+          if luasnip.locally_jumpable(-1) then
+            luasnip.jump(-1)
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
 
-      opts.mapping["<Tab>"] = cmp.mapping(function(fallback)
-        if luasnip.locally_jumpable(1) then luasnip.jump(1)
-        else fallback() end
-      end, { "i", "s" })
+        ["<C-U>"] = cmp.mapping(function(fallback)
+          if is_visible(cmp) and cmp.visible_docs() then
+            cmp.scroll_docs(-4)
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
 
-      opts.mapping["<S-Tab>"] = cmp.mapping(function(fallback)
-        if luasnip.locally_jumpable(-1) then luasnip.jump(-1)
-        else fallback() end
-      end, { "i", "s" })
+        ["<C-D>"] = cmp.mapping(function(fallback)
+          if is_visible(cmp) and cmp.visible_docs() then
+            cmp.scroll_docs(4)
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
 
-      opts.mapping["<C-U>"] = cmp.mapping(function(fallback)
-        if is_visible(cmp) and cmp.visible_docs() then cmp.scroll_docs(-4) else fallback() end
-      end, { "i", "s" })
+        ["<C-/>"] = cmp.mapping(function(fallback)
+          if is_visible(cmp) then
+            if cmp.visible_docs() then
+              cmp.close_docs()
+            else
+              cmp.open_docs()
+            end
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
 
-      opts.mapping["<C-D>"] = cmp.mapping(function(fallback)
-        if is_visible(cmp) and cmp.visible_docs() then cmp.scroll_docs(4) else fallback() end
-      end, { "i", "s" })
+        ["<C-C>"] = cmp.mapping(function(fallback)
+          if is_visible(cmp) then
+            cmp.abort()
+          else
+            fallback()
+          end
+        end, { "i", "s" }),
+      }
 
-      opts.mapping["<C-/>"] = cmp.mapping(function(fallback)
-        if is_visible(cmp) then if cmp.visible_docs() then cmp.close_docs() else cmp.open_docs() end
-        else fallback() end
-      end, { "i", "s" })
-
-      opts.mapping["<C-C>"] = cmp.mapping(function(fallback)
-        if is_visible(cmp) then cmp.abort() else fallback() end
-      end, { "i", "s" })
+      return require("astrocore").extend_tbl(opts, user_opts)
     end,
   },
   {
@@ -89,60 +118,65 @@ return {
     dependencies = { "hrsh7th/nvim-cmp", "hrsh7th/cmp-nvim-lua" },
     opts = function()
       local cmp = require "cmp"
+      local user_opts = {}
 
-      local mappings = {
+      user_opts.mapping = {
         ["<C-C>"] = cmp.mapping(function(fallback)
-          if is_visible(cmp) then cmp.abort() else fallback() end
+          if is_visible(cmp) then
+            cmp.abort()
+          else
+            fallback()
+          end
         end, { "c" }),
 
         ["<C-J>"] = cmp.mapping(function()
-          if is_visible(cmp) then cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
-          else cmp.complete() end
+          if is_visible(cmp) then
+            cmp.select_next_item { behavior = cmp.SelectBehavior.Insert }
+          else
+            cmp.complete()
+          end
         end, { "c" }),
 
         ["<C-K>"] = cmp.mapping(function()
-          if is_visible(cmp) then cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
-          else cmp.complete() end
+          if is_visible(cmp) then
+            cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
+          else
+            cmp.complete()
+          end
         end, { "c" }),
 
         ["<Tab>"] = cmp.mapping(function(fallback)
           if is_visible(cmp) then
             if #cmp.get_entries() and not cmp.get_selected_entry() then cmp.select_next_item() end
             cmp.confirm()
-          else fallback() end
+          else
+            fallback()
+          end
         end, { "c" }),
 
         ["<CR>"] = cmp.mapping(cmp.mapping.confirm(), { "c" }),
       }
 
-      local formatting = { fields = { "abbr" } }
-      local completion = { completeopt = "menu,menuone,noselect" }
+      user_opts.formatting = { fields = { "abbr" } }
+      user_opts.completion = { completeopt = "menu,menuone,noselect" }
 
-      return {
-        {
-          type = { "/", "?" },
-          mapping = mappings,
-          formatting = formatting,
-          completion = completion,
-          sources = { { name = "buffer" } },
-        },
-        {
-          type = ":",
-          mapping = mappings,
-          formatting = formatting,
-          completion = completion,
-          sources = {
-            { name = "cmdline", option = { ignore_cmds = { "Man", "!" } }, group_index = 1 },
-            { name = "nvim_lua", group_index = 2 },
-            { name = "lazydev", group_index = 2 },
-            { name = "path", group_index = 2 }
-          }
-        },
-      }
+      return user_opts
     end,
     config = function(_, opts)
       local cmp = require "cmp"
-      vim.tbl_map(function(val) cmp.setup.cmdline(val.type, val) end, opts)
+
+      for type, sources in pairs {
+        ["/"] = { { name = "buffer" } },
+        ["?"] = { { name = "buffer" } },
+        [":"] = {
+          { name = "cmdline", option = { ignore_cmds = { "Man", "!" } }, group_index = 1 },
+          { name = "nvim_lua", group_index = 2 },
+          { name = "lazydev", group_index = 2 },
+          { name = "path", group_index = 2 },
+        },
+      } do
+        cmp.setup.cmdline(type, vim.tbl_extend("keep", opts, { sources = sources }))
+      end
     end,
   },
 }
