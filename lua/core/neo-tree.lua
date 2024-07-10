@@ -8,9 +8,8 @@ local map_dirEntry = {}
 ---@type LazyPluginSpec
 return {
   "nvim-neo-tree/neo-tree.nvim",
-  opts = function(_, opts)
+  opts = function(plugin, opts)
     local user_opts, user_mappings = {}, {}
-
     user_opts = {
       close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
       filesystem = {
@@ -27,6 +26,9 @@ return {
             ".gitignore",
             ".zshrc",
             ".zshenv",
+          },
+          always_show_by_pattern = {
+            ".config",
           },
           never_show = { ".git", ".bkt" },
           never_show_by_pattern = { -- uses glob style patterns
@@ -134,6 +136,17 @@ return {
           E = "toggle_auto_expand_width",
           o = { "show_help", nowait = false, config = { title = "Order by", prefix_key = "o" } },
         },
+        fuzzy_finder_mappings = { -- define keymaps for filter popup window in fuzzy_finder_mode
+          ["<C-L>"] = function(state) require("neo-tree.sources.filesystem").reset_search(state, true, true) end,
+          ["<C-H>"] = function(state)
+            require("neo-tree.sources.filesystem").reset_search(state, false, false)
+            require("neo-tree.command").execute { dir = context_dir(state), action = "focus" }
+          end,
+          ["<Cr>"] = function(state)
+            require("neo-tree.sources.filesystem").reset_search(state, false, true)
+            require("neo-tree.command").execute { action = "close" }
+          end,
+        },
       },
       filesystem = {
         window = {
@@ -159,7 +172,7 @@ return {
       },
     }
 
-    return vim.tbl_deep_extend("force", opts, vim.tbl_extend("error", user_opts, user_mappings))
+    return vim.tbl_deep_extend("force", opts, vim.tbl_deep_extend("error", user_opts, user_mappings))
   end,
   dependencies = {
     {
@@ -167,8 +180,12 @@ return {
       opts = {
         mappings = {
           n = {
+            ["<Leader>e"] = {
+              "<Cmd> Neotree toggle source=last <Cr>",
+              desc = "toggle Explorer",
+            },
             ["<Leader>E"] = {
-              "<Cmd> Neotree toggle reveal_force_cwd dir=%:p:h <Cr>",
+              "<Cmd> Neotree toggle reveal_force_cwd <Cr>",
               desc = "toggle Explorer reveal_force_cwd",
             },
           },

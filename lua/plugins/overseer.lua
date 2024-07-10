@@ -1,3 +1,4 @@
+---@type LazyPluginSpec
 return {
   "stevearc/overseer.nvim",
   cmd = {
@@ -13,5 +14,5 @@ return {
     "OverseerTaskAction ",
     "OverseerClearCache",
   },
-  opts = {},
+  opts = function() end,
 }

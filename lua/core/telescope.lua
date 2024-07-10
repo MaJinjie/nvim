@@ -1,262 +1,406 @@
---[[
-themes: dropdown cursor ivy
-layout_strategy: 
-layout_config:
---]]
-local layout_config = {
-  bottom_pane = {
-    {
-      height = 13,
-      preview_cutoff = 120,
-    },
-  },
-  center = {
-    {
-      height = 14,
-      width = 60,
-      preview_cutoff = 150,
-    },
-    {
-      height = 0.7,
-      width = 0.8,
-      preview_cutoff = 15,
-    },
-  },
-  horizontal = {
-    {
-      height = 15,
-      width = 60,
-      preview_cutoff = 1200,
-    },
-    {
-      height = 0.8,
-      width = 0.9,
-      preview_width = 0.6,
-      preview_cutoff = 120,
-    },
-  },
-  vertical = {
-    {
-      height = 0.95,
-      width = 0.85,
-      preview_height = 0.4,
-      preview_cutoff = 15,
-    },
-  },
-}
-
-layout_config.bottom_pane.default = layout_config.bottom_pane[1]
-layout_config.center.default = layout_config.center[1]
-layout_config.horizontal.default = layout_config.horizontal[2]
-layout_config.vertical.default = layout_config.vertical[1]
-
+-- stylua: ignore
+local vimgrep_arguments = { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case", "--trim" }
+local find_command = { "rg", "--files", "--color", "never" }
 ---@type LazySpec
 return {
-  "nvim-telescope/telescope.nvim",
-  opts = function(_, opts)
-    local actions, actions_layout = require "telescope.actions", require "telescope.actions.layout"
-    local fb_actions = require "telescope._extensions.file_browser.actions"
+  {
+    "nvim-telescope/telescope.nvim",
+    opts = function(_, opts)
+      local actions, action_layout = require "telescope.actions", require "telescope.actions.layout"
+      local astrocore = require "astrocore"
 
-    local user_opts = {}
-    user_opts = {
-      defaults = {
-        layout_strategy = "flex",
-        layout_config = {
-          prompt_position = "top",
-          bottom_pane = layout_config.bottom_pane.default,
-          center = layout_config.center.default,
-          horizontal = layout_config.horizontal.default,
-          vertical = layout_config.vertical.default,
-          flex = {
-            flip_columns = 120,
-            flip_lines = 15,
-            horizontal = layout_config.horizontal.default,
-            vertical = layout_config.vertical.default,
+      local user_opts = {
+        defaults = {
+          layout_strategy = "flex",
+          sorting_strategy = "ascending",
+          dynamic_preview_title = true,
+          file_ignore_patterns = { ".git/", ".github/" },
+          layout_config = {
+            prompt_position = "top",
+            bottom_pane = {
+              height = 13,
+              preview_cutoff = 120,
+            },
+            center = {
+              height = 14,
+              width = 60,
+              preview_cutoff = 150,
+            },
+            horizontal = {
+              height = 0.8,
+              width = 0.9,
+              preview_width = 0.6,
+              preview_cutoff = 120,
+            },
+            vertical = {
+              height = 0.95,
+              width = 0.85,
+              preview_height = 0.4,
+              preview_cutoff = 15,
+            },
+            flex = {
+              flip_columns = 120,
+              flip_lines = 15,
+              horizontal = {
+                height = 0.8,
+                width = 0.9,
+                preview_width = 0.6,
+                preview_cutoff = 120,
+              },
+              vertical = {
+                height = 0.95,
+                width = 0.85,
+                preview_height = 0.4,
+                preview_cutoff = 15,
+              },
+            },
+          },
+          mappings = {
+            i = {
+              ["<bs>"] = false,
+              ["<C-u>"] = false,
+              ["<C-h>"] = false,
+              ["<C-l>"] = false,
+              ["<C-a>"] = false,
+              ["<C-e>"] = false,
+
+              ["<C-d>"] = actions.results_scrolling_down,
+              ["<A-j>"] = actions.preview_scrolling_down,
+              ["<A-k>"] = actions.preview_scrolling_up,
+
+              ["<Esc>"] = actions.close,
+              ["<C-s>"] = actions.select_horizontal,
+              ["<C-v>"] = actions.select_vertical,
+              ["<C-t>"] = actions.select_tab,
+              ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
+              ["<C-g>"] = actions.to_fuzzy_refine,
+              ["<C-/>"] = action_layout.toggle_preview,
+
+              ["<A-/>"] = actions.which_key,
+              ["<A-a>"] = actions.toggle_all,
+              ["<A-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+            },
+          },
+          vimgrep_arguments = vimgrep_arguments,
+          history = {
+            path = "~/.local/share/nvim/telescope_history.sqlite3",
+            limit = 100,
           },
         },
-        mappings = {
-          i = {
-            ["<C-u>"] = false,
-
-            ["<Esc>"] = actions.close,
-            ["<C-s>"] = actions.select_horizontal,
-            ["<C-v>"] = actions.select_vertical,
-            ["<C-t>"] = actions.select_tab,
-            ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
-            ["<C-g>"] = actions.to_fuzzy_refine,
-            ["<C-/>"] = actions_layout.toggle_preview,
-
-            ["<A-a>"] = actions.toggle_all,
-            ["<A-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
-            ["<A-j>"] = actions.preview_scrolling_down,
-            ["<A-k>"] = actions.preview_scrolling_up,
+        pickers = {
+          buffers = { layout_strategy = "center", mappings = { i = { ["<C-d>"] = actions.delete_buffer } } },
+          find_files = { layout_strategy = "center" },
+          git_files = { layout_strategy = "center" },
+          current_buffer_fuzzy_find = { layout_strategy = "vertical", preview = { hide_on_startup = true } },
+        },
+        extensions = {
+          fzf = {
+            fuzzy = false, -- false will only do exact matching
+            override_generic_sorter = true, -- override the generic sorter
+            override_file_sorter = true, -- override the file sorter
+            case_mode = "smart_case", -- or "ignore_case" or "respect_case"
           },
         },
-        vimgrep_arguments = {
-          "rg",
-          "--color=never",
-          "--no-heading",
-          "--with-filename",
-          "--line-number",
-          "--column",
-          "--smart-case",
-          "--trim",
-        },
-      },
-      pickers = {
-        buffers = { layout_strategy = "center", mappings = { i = { ["<C-d>"] = actions.delete_buffer } } },
-        find_files = { layout_strategy = "center" },
-        git_files = { layout_strategy = "center" },
-      },
-    }
+      }
 
-    user_opts.extensions = {
-      frecency = {
-        layout_strategy = "center",
+      if astrocore.is_available "flash.nvim" then
+        user_opts.defaults.mappings.i["<C-z>"] = function(prompt_bufnr)
+          require("flash").jump {
+            pattern = "^",
+            search = {
+              mode = "search",
+              exclude = {
+                function(win) return vim.bo[vim.api.nvim_win_get_buf(win)].filetype ~= "TelescopeResults" end,
+              },
+            },
+            action = function(match)
+              local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+              picker:set_selection(match.pos[1] - 1)
+            end,
+          }
+        end
+      end
+      if astrocore.is_available "trouble.nvim" then
+        user_opts.defaults.mappings.i["<C-x>"] = function(prompt_bufnr)
+          require("trouble.sources.telescope").open(prompt_bufnr)
+        end
+      end
 
-        workspaces = {
-          ["conf"] = vim.fn.expand "$XDG_CONFIG_HOME",
-          ["zsh"] = vim.fn.expand "$XDG_CONFIG_HOME/zsh",
-          ["nvim"] = vim.fn.expand "$XDG_CONFIG_HOME/nvim",
-          ["home"] = vim.fn.expand "$HOME",
-          ["rustNote"] = vim.fn.expand "$HOME/notes/languages/rust/new",
-          ["rustStudy"] = vim.fn.expand "$HOME/study/rust-examples",
-        },
-      },
-      file_browser = {
-        layout_strategy = "bottom_pane",
-
-        cwd_to_path = true,
-        hide_parent_dir = true,
-        grouped = true,
-        collapse_dirs = true,
-        quiet = true,
-        hidden = false,
-        respect_gitignore = true,
-        no_ignore = false,
-        mappings = {
-          i = {
-            ["/"] = fb_actions.open_dir,
-            ["<C-w>"] = fb_actions.goto_parent_dir,
-            ["<C-t>"] = fb_actions.toggle_browser,
-            ["<C-h>"] = fb_actions.toggle_hidden,
-            ["<C-c>"] = fb_actions.change_cwd,
-            ["<S-enter>"] = fb_actions.create_from_prompt,
-          },
-        },
-      },
-      lazy = {
-        layout_strategy = "center",
-
-        mappings = {
-          open_in_browser = "<C-o>",
-          open_in_file_browser = "<C-b>",
-          open_in_find_files = "<C-f>",
-          open_in_live_grep = "<C-g>",
-          open_in_terminal = "<C-t>",
-          open_lazy_root_find_files = "<C-c>f",
-          open_lazy_root_live_grep = "<C-c>g",
-          change_cwd_to_plugin = "<C-c>d",
-        },
-      },
-      helpgrep = {
-        ignore_paths = { vim.fn.stdpath "state" .. "/lazy/readme" },
-        default_grep = function() require("telescope").extensions.egrepify.egrepify {} end,
-      },
-      egrepify = {
-        layout_strategy = "vertical",
-
-        prefixes = {
-          ["#"] = {
-            -- in the above example #lua,md -> input: lua,md -> output: --glob="*.{lua,md}"
-            flag = "iglob",
-            cb = function(input) return string.format([[*.{%s}]], input) end,
-          },
-          ["#!"] = {
-            -- in the above example #lua,md -> input: lua,md -> output: --glob="!*.{lua,md}"
-            flag = "iglob",
-            cb = function(input) return string.format([[!*.{%s}]], input) end,
-          },
-          -- filter for (partial) folder names
-          [">"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[%s*/**]], input) end,
-          },
-          [">!"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[!%s*/**]], input) end,
-          },
-          ["<"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[**/%s*/*]], input) end,
-          },
-          ["<!"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[!**/%s*/*]], input) end,
-          },
-          -- filter for (partial) file names
-          ["&"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[**/%s*/**]], input) end,
-          },
-          ["&!"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[!**/%s*/**]], input) end,
-          },
-          ["@"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[%s]], input) end,
-          },
-          ["@!"] = {
-            flag = "iglob",
-            cb = function(input) return string.format([[!%s]], input) end,
-          },
-        },
-      },
-      undo = {
-        side_by_side = false,
-      },
-    }
-
-    return vim.tbl_deep_extend("force", opts, user_opts)
-  end,
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-    "nvim-telescope/telescope-frecency.nvim",
-    "nvim-telescope/telescope-file-browser.nvim",
-    "tsakirist/telescope-lazy.nvim",
-    "catgoose/telescope-helpgrep.nvim",
-    "fdschmidt93/telescope-egrepify.nvim",
-    "debugloop/telescope-undo.nvim",
-    {
+      return vim.tbl_deep_extend("force", opts, user_opts)
+    end,
+    specs = {
       "AstroNvim/astrocore",
-      opts = {
-        mappings = {
-          n = {
-            ["<Leader>fg"] = { function() require("telescope.builtin").git_files() end, desc = "Find git files" },
-            ["<Leader>fo"] = {
-              function() require("telescope").extensions.frecency.frecency() end,
-              desc = "Find history",
-            },
-            ["<Leader>fe"] = {
-              function() require("telescope").extensions.file_browser.file_browser { path = vim.fn.expand "%:p:h" } end,
-              desc = "Find currentDir files",
-            },
-            ['<Leader>f"'] = { function() require("telescope.builtin").registers() end, desc = "Find Registers" },
-            ["<Leader>fH"] = { "<Cmd> Telescope helpgrep <Cr>", desc = "Grep help" },
-            ["<Leader>fL"] = { "<Cmd> Telescope lazy <Cr>", desc = "Find lazyplugins" },
-            ["<Leader>fw"] = {
-              function() require("telescope").extensions.egrepify.egrepify { cwd = vim.fn.expand "%:p:h" } end,
-              desc = "Grep word in current file directory",
-            },
-            ["<Leader>fW"] = {
-              function() require("telescope").extensions.egrepify.egrepify { cwd = vim.uv.cwd() } end,
-              desc = "Grep word in cwd",
-            },
-            ["<Leader>fu"] = { "<Cmd> Telescope undo <Cr>", desc = "Find Undotree" },
+      opts = function()
+        local map = require("utils").keymap.set
+
+        map.n = {
+          ["<Leader>gf"] = { function() require("telescope.builtin").git_files() end, desc = "Find Git Files" },
+
+          ["<Leader>fo"] = {
+            function()
+              require("telescope").extensions.frecency.frecency {
+                prompt_title = "Frecency Files",
+              }
+            end,
+            desc = "Find Frecency Files",
           },
-        },
-      },
+          ["<Leader>fe"] = {
+            function() require("telescope").extensions.file_browser.file_browser { path = vim.fn.expand "%:p:h" } end,
+            desc = "Browser CurrentDir Files",
+          },
+          ['<Leader>f"'] = { function() require("telescope.builtin").registers() end, desc = "Find Registers" },
+          ["<Leader>fH"] = { function() require("telescope").extensions.helpgrep.helpgrep() end, desc = "Grep Help" },
+          ["<Leader>fL"] = { function() require("telescope").extensions.lazy.lazy() end, desc = "Find Lazyplugins" },
+          ["<Leader>fg"] = {
+            function() require("telescope").extensions.egrepify.egrepify { prompt_title = "Live Grep" } end,
+            desc = "Grep word in current file directory",
+          },
+          ["<Leader>fG"] = {
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Live Grep (Hidden)",
+                vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--hidden" }),
+              }
+            end,
+            desc = "Grep word in cwd",
+          },
+          ["<Leader>fc"] = {
+            function()
+              require("telescope.builtin").find_files {
+                prompt_title = "Find Nvim Files",
+                cwd = vim.fn.stdpath "config" .. "/lua",
+                find_command = vim.list_extend(find_command, { "--glob", "*.lua" }),
+              }
+            end,
+          },
+          ["<Leader>fC"] = {
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Grep Nvim Files",
+                cwd = vim.fn.stdpath "config",
+                vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--glob", "*.lua" }),
+              }
+            end,
+          },
+          ["<Leader>fa"] = {
+            function()
+              require("telescope.builtin").git_files {
+                prompt_title = "Find Config Files",
+                recurse_submodules = false,
+                toplevel = vim.env.HOME,
+                gitdir = vim.env.HOME .. "/.dotfiles",
+              }
+            end,
+            desc = "Find config files",
+          },
+          ["<Leader>fB"] = {
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Grep Buffers",
+                grep_open_files = true,
+              }
+            end,
+            desc = "Live grep open files",
+          },
+          ["<Leader>fu"] = { function() require("telescope").extensions.undo.undo() end, desc = "Find Undotree" },
+          ["<Leader>ff"] = {
+            function() require("telescope").extensions.corrode.corrode { layout_strategy = "center" } end,
+            desc = "Find files",
+          },
+          ["<Leader>fF"] = {
+            function()
+              require("telescope").extensions.corrode.corrode {
+                layout_strategy = "center",
+                hidden = true,
+                no_ignore = true,
+              }
+            end,
+            desc = "Find all files",
+          },
+        }
+      end,
     },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      { "nvim-telescope/telescope-smart-history.nvim", dependencies = "kkharji/sqlite.lua" },
+    },
+  },
+  {
+    "nvim-telescope/telescope-frecency.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      opts = function(_, opts)
+        local extensions = require("utils").tbl_get(opts, "extensions")
+        extensions.frecency = {
+          layout_strategy = "center",
+
+          workspaces = {
+            ["Conf"] = vim.fn.expand "$XDG_CONFIG_HOME",
+            ["Zsh"] = vim.fn.expand "$XDG_CONFIG_HOME/zsh",
+            ["Nvim"] = vim.fn.expand "$XDG_CONFIG_HOME/nvim",
+            ["Home"] = vim.fn.expand "$HOME",
+            ["Study"] = vim.fn.expand "$HOME/study",
+            ["Note"] = vim.fn.expand "$HOME/notes",
+
+            ["CppNote"] = vim.fn.expand "$HOME/notes/languages/cpp",
+            ["AssemNote"] = vim.fn.expand "$HOME/notes/languages/assembler",
+            ["RustNote"] = vim.fn.expand "$HOME/notes/languages/rust/new",
+
+            ["RustStudy"] = vim.fn.expand "$HOME/study/rust-examples",
+            ["CppStudy"] = vim.fn.expand "$HOME/study/cpp",
+            ["AssemStudy"] = vim.fn.expand "$HOME/study/assembler",
+          },
+        }
+      end,
+    },
+    config = function() require("telescope").load_extension "frecency" end,
+  },
+  {
+    "nvim-telescope/telescope-file-browser.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      opts = function(_, opts)
+        local extensions = require("utils").tbl_get(opts, "extensions")
+        extensions.file_browser = {
+          layout_strategy = "bottom_pane",
+
+          cwd_to_path = true,
+          hide_parent_dir = true,
+          grouped = true,
+          collapse_dirs = true,
+          quiet = true,
+          hidden = false,
+          respect_gitignore = true,
+          no_ignore = false,
+          mappings = {
+            i = {
+              ["/"] = function(...) require("telescope._extensions.file_browser.actions").open_dir(...) end,
+              ["<C-w>"] = function(prompt_bufnr, bypass)
+                local current_picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+                if current_picker:_get_prompt() == "" then
+                  require("telescope._extensions.file_browser.actions").goto_parent_dir(prompt_bufnr, bypass)
+                else
+                  vim.me.api.feedkeys("<C-S-w>", "tn")
+                end
+              end,
+              ["<C-g>"] = function(...) require("telescope._extensions.file_browser.actions").toggle_hidden(...) end,
+              ["<C-c>"] = function(...) require("telescope._extensions.file_browser.actions").goto_cwd(...) end,
+            },
+          },
+        }
+      end,
+    },
+    config = function() require("telescope").load_extension "file_browser" end,
+  },
+  {
+    "fdschmidt93/telescope-egrepify.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      opts = function(_, opts)
+        local extensions = require("utils").tbl_get(opts, "extensions")
+        extensions.egrepify = {
+          layout_strategy = "vertical",
+
+          prefixes = {
+            ["#"] = {
+              -- in the above example #lua,md -> input: lua,md -> output: --glob="*.{lua,md}"
+              flag = "iglob",
+              cb = function(input) return string.format([[*.{%s}]], input) end,
+            },
+            ["#!"] = {
+              -- in the above example #lua,md -> input: lua,md -> output: --glob="!*.{lua,md}"
+              flag = "iglob",
+              cb = function(input) return string.format([[!*.{%s}]], input) end,
+            },
+            -- filter for (partial) folder names
+            [">>"] = {
+              flag = "iglob",
+              cb = function(input) return string.format([[%s*/**]], input) end,
+            },
+            [">!"] = {
+              flag = "iglob",
+              cb = function(input) return string.format([[!%s*/**]], input) end,
+            },
+            ["<<"] = {
+              flag = "iglob",
+              cb = function(input) return string.format([[**/%s*/*]], input) end,
+            },
+            ["<!"] = {
+              flag = "iglob",
+              cb = function(input) return string.format([[!**/%s*/*]], input) end,
+            },
+            ["@"] = {
+              flag = "iglob",
+              cb = function(input) return string.format([[%s]], input) end,
+            },
+            ["@!"] = {
+              flag = "iglob",
+              cb = function(input) return string.format([[!%s]], input) end,
+            },
+          },
+        }
+      end,
+    },
+    config = function() require("telescope").load_extension "egrepify" end,
+  },
+  {
+    "catgoose/telescope-helpgrep.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      opts = function(_, opts)
+        local extensions = require("utils").tbl_get(opts, "extensions")
+        extensions.helpgrep = {
+          ignore_paths = { vim.fn.stdpath "state" .. "/lazy/readme" },
+          default_grep = function(...) require("telescope").extensions.egrepify.egrepify(...) end,
+        }
+      end,
+    },
+    config = function() require("telescope").load_extension "helpgrep" end,
+  },
+  {
+    "tsakirist/telescope-lazy.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      opts = function(_, opts)
+        local extensions = require("utils").tbl_get(opts, "extensions")
+        extensions.lazy = {
+          layout_strategy = "center",
+
+          mappings = {
+            open_in_browser = "<C-o>",
+            open_in_file_browser = "<C-b>",
+            open_in_find_files = "<C-f>",
+            open_in_live_grep = "<C-g>",
+            open_in_terminal = "<C-t>",
+            open_lazy_root_find_files = "<C-c>f",
+            open_lazy_root_live_grep = "<C-c>g",
+            change_cwd_to_plugin = "<C-c>d",
+          },
+        }
+      end,
+    },
+    config = function() require("telescope").load_extension "lazy" end,
+  },
+  {
+    "debugloop/telescope-undo.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      opts = function(_, opts)
+        local extensions = require("utils").tbl_get(opts, "extensions")
+        extensions.undo = { side_by_side = false }
+      end,
+    },
+    config = function() require("telescope").load_extension "undo" end,
+  },
+  {
+    "fdschmidt93/telescope-corrode.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      opts = function(_, opts)
+        local extensions = require("utils").tbl_get(opts, "extensions")
+        extensions.corrode = { layout_strategy = "center" }
+      end,
+    },
+    config = function() require("telescope").load_extension "corrode" end,
   },
 }

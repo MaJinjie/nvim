@@ -77,33 +77,27 @@ return {
         vim.cmd.SatelliteEnable()
       end,
     },
-    dependencies = {
-      {
-        "AstroNvim/astrocore",
-        opts = {
-          mappings = {
-            n = {
-              ["<Leader>uz"] = { "<Cmd> ZenMode <Cr>", desc = "Toggle ZenMode" },
-            },
-          },
-        },
-      },
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local nmap, nswap = require("utils").keymap.set.n, require("utils").keymap.swap.n
+
+        nmap { ["<Leader>uZ"] = { "<Cmd> ZenMode <Cr>", desc = "Toggle ZenMode" } }
+        nswap { ["<Leader>uz"] = "<Leader>uZ" }
+      end,
     },
   },
   {
     "folke/twilight.nvim",
     cmd = "Twilight",
-    dependencies = {
-      {
-        "AstroNvim/astrocore",
-        opts = {
-          mappings = {
-            n = {
-              ["<Leader>uT"] = { "<Cmd> Twilight <Cr>", desc = "Toggle Twilight" },
-            },
-          },
-        },
-      },
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local nmap, nswap = require("utils").keymap.set.n, require("utils").keymap.swap.n
+
+        nmap { ["<Leader>uT"] = { "<Cmd> Twilight <Cr>", desc = "Toggle Twilight" } }
+        nswap { ["<Leader>ut"] = "<Leader>uT" }
+      end,
     },
   },
 }

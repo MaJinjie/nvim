@@ -1,3 +1,4 @@
+---@type LazyPluginSpec
 return {
   "nvim-pack/nvim-spectre",
   cmd = "Spectre",
@@ -13,23 +14,21 @@ return {
       resume_last_search = { map = "L" },
     },
   },
-  dependencies = {
-    {
-      "AstroNvim/astrocore",
-      opts = {
-        mappings = {
-          n = {
-            ["<Leader>fr"] = {
-              function() require("spectre").open_file_search { select_word = true } end,
-              desc = "Spectre (current file)",
-            },
-            ["<Leader>fR"] = {
-              function() require("spectre").open { select_word = true } end,
-              desc = "Spectre",
-            },
-          },
+  specs = {
+    "AstroNvim/astrocore",
+    opts = function()
+      local nmap = require("utils").keymap.set.n
+
+      nmap {
+        ["<Leader>fr"] = {
+          function() require("spectre").open_file_search { select_word = true } end,
+          desc = "Spectre (current file)",
         },
-      },
-    },
+        ["<Leader>fR"] = {
+          function() require("spectre").open { select_word = true } end,
+          desc = "Spectre",
+        },
+      }
+    end,
   },
 }
