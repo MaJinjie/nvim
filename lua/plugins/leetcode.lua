@@ -12,11 +12,13 @@ return {
     },
     hooks = {
       ["question_enter"] = {
-        -- 隐藏desc窗口
         function()
+          local bufnr = vim.api.nvim_get_current_buf()
+
           vim.cmd.Leet "desc"
           vim.bo.shiftwidth = 4
           vim.bo.tabstop = 4
+          vim.b[bufnr].autoformat = false
         end,
         -- 设置映射键
         function()

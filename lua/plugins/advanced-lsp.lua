@@ -64,6 +64,7 @@ return {
       --symbol_in_winbar
       user_opts.symbol_in_winbar = {
         hide_keyword = true,
+        separator = "› ",
       }
 
       --finder

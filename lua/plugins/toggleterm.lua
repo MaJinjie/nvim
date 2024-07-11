@@ -68,9 +68,9 @@ return {
     opts = function()
       local map = require("utils").keymap.set
       map.n = {
-        ["<Leader>tf"] = { "<Cmd>ToggleTerm direction=float<CR>", desc = "ToggleTerm float" },
-        ["<Leader>th"] = { "<Cmd>ToggleTerm direction=horizontal<CR>", desc = "ToggleTerm horizontal split" },
-        ["<Leader>tv"] = { "<Cmd>ToggleTerm direction=vertical<CR>", desc = "ToggleTerm vertical split" },
+        ["<Leader>tf"] = { "<Cmd>ToggleTerm direction=float<CR>", desc = "[toggleterm] float" },
+        ["<Leader>th"] = { "<Cmd>ToggleTerm direction=horizontal<CR>", desc = "[toggleterm] horizontal split" },
+        ["<Leader>tv"] = { "<Cmd>ToggleTerm direction=vertical<CR>", desc = "[toggleterm] vertical split" },
       }
     end,
   },
