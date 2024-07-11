@@ -135,6 +135,6 @@ return {
     opts.mappings = keymap.merge_mappings(opts.mappings)
 
     require("astrocore").setup(opts)
-    keymap.report_override_mappings { title = "Override Key Mappings" }
+    -- keymap.report_override_mappings { title = "Override Key Mappings" }
   end,
 }

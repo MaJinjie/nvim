@@ -10,6 +10,33 @@ return {
       ["rust"] = { before = {}, after = "fn main() {}" },
       ["cpp"] = { before = { "#include <bits/stdc++.h>", "using namespace std;" }, after = "int main() {}" },
     },
+    hooks = {
+      ["question_enter"] = {
+        -- 隐藏desc窗口
+        function()
+          vim.cmd.Leet "desc"
+          vim.bo.shiftwidth = 4
+          vim.bo.tabstop = 4
+        end,
+        -- 设置映射键
+        function()
+          require("astrocore").set_mappings({
+            n = {
+              ["<LocalLeader>t"] = { "<Cmd> Leet test <CR>", desc = "[leetcode] test" },
+              ["<LocalLeader>r"] = { "<Cmd> Leet submit <CR>", desc = "[leetcode] run" },
+              ["<LocalLeader>R"] = { "<Cmd> Leet reset <CR>", desc = "[leetcode] reset" },
+              ["<LocalLeader>l"] = { "<Cmd> Leet list <CR>", desc = "[leetcode] list" },
+              ["<LocalLeader>L"] = { "<Cmd> Leet last_submit <CR>", desc = "[leetcode] last_submit" },
+              ["<LocalLeader>q"] = { "<Cmd> Leet exit <CR>", desc = "[leetcode] exit" },
+              ["<LocalLeader>c"] = { "<Cmd> Leet console <CR>", desc = "[leetcode] console" },
+              ["<LocalLeader>i"] = { "<Cmd> Leet info <CR>", desc = "[leetcode] info" },
+
+              ["<Leader>e"] = { "<Cmd> Leet desc toggle <CR>", desc = "[leetcode] desc toggle" },
+            },
+          }, { buffer = true })
+        end,
+      },
+    },
   },
   specs = {
     "AstroNvim/astrocore",
@@ -52,5 +79,13 @@ return {
     "MunifTanjim/nui.nvim",
     "rcarriga/nvim-notify",
     "nvim-tree/nvim-web-devicons",
+    {
+      "nvim-treesitter/nvim-treesitter",
+      opts = function(_, opts)
+        if opts.ensure_installed ~= "all" then
+          opts.ensure_installed = require("astrocore").list_insert_unique(opts.ensure_installed, { "html" })
+        end
+      end,
+    },
   },
 }

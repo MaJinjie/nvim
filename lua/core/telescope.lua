@@ -83,7 +83,7 @@ return {
           },
           vimgrep_arguments = vimgrep_arguments,
           history = {
-            path = "~/.local/share/nvim/telescope_history.sqlite3",
+            path = vim.fn.stdpath "data" .. "/telescope_history.sqlite3",
             limit = 100,
           },
         },
@@ -152,47 +152,35 @@ return {
           ["<Leader>fH"] = { function() require("telescope").extensions.helpgrep.helpgrep() end, desc = "Grep Help" },
           ["<Leader>fL"] = { function() require("telescope").extensions.lazy.lazy() end, desc = "Find Lazyplugins" },
           ["<Leader>fg"] = {
-            function() require("telescope").extensions.egrepify.egrepify { prompt_title = "Live Grep" } end,
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Live Grep",
+                default_text = vim.v.count > 0 and vim.fn.expand "<cword>" or "",
+              }
+            end,
             desc = "Grep word in current file directory",
           },
           ["<Leader>fG"] = {
             function()
               require("telescope").extensions.egrepify.egrepify {
                 prompt_title = "Live Grep (Hidden)",
-                vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--hidden" }),
+                default_text = vim.v.count > 0 and vim.fn.expand "<cword>" or "",
+                vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--hidden", "--no-ignore" }),
               }
             end,
             desc = "Grep word in cwd",
           },
-          ["<Leader>fc"] = {
-            function()
-              require("telescope.builtin").find_files {
-                prompt_title = "Find Nvim Files",
-                cwd = vim.fn.stdpath "config" .. "/lua",
-                find_command = vim.list_extend(find_command, { "--glob", "*.lua" }),
-              }
-            end,
-          },
-          ["<Leader>fC"] = {
-            function()
-              require("telescope").extensions.egrepify.egrepify {
-                prompt_title = "Grep Nvim Files",
-                cwd = vim.fn.stdpath "config",
-                vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--glob", "*.lua" }),
-              }
-            end,
-          },
-          ["<Leader>fa"] = {
-            function()
-              require("telescope.builtin").git_files {
-                prompt_title = "Find Config Files",
-                recurse_submodules = false,
-                toplevel = vim.env.HOME,
-                gitdir = vim.env.HOME .. "/.dotfiles",
-              }
-            end,
-            desc = "Find config files",
-          },
+          -- ["<Leader>fC"] = {
+          --   function()
+          --     require("telescope.builtin").git_files {
+          --       prompt_title = "Find Config Files",
+          --       recurse_submodules = false,
+          --       toplevel = vim.env.HOME,
+          --       gitdir = vim.env.HOME .. "/.dotfiles",
+          --     }
+          --   end,
+          --   desc = "Find config files",
+          -- },
           ["<Leader>fB"] = {
             function()
               require("telescope").extensions.egrepify.egrepify {
@@ -203,20 +191,6 @@ return {
             desc = "Live grep open files",
           },
           ["<Leader>fu"] = { function() require("telescope").extensions.undo.undo() end, desc = "Find Undotree" },
-          ["<Leader>ff"] = {
-            function() require("telescope").extensions.corrode.corrode { layout_strategy = "center" } end,
-            desc = "Find files",
-          },
-          ["<Leader>fF"] = {
-            function()
-              require("telescope").extensions.corrode.corrode {
-                layout_strategy = "center",
-                hidden = true,
-                no_ignore = true,
-              }
-            end,
-            desc = "Find all files",
-          },
         }
       end,
     },
@@ -394,6 +368,50 @@ return {
   },
   {
     "fdschmidt93/telescope-corrode.nvim",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local nmap = require("utils").keymap.set.n
+
+        nmap {
+          ["<Leader>ff"] = {
+            function() require("telescope.builtin").find_files { layout_strategy = "center" } end,
+            desc = "Find files",
+          },
+          ["<Leader>fF"] = {
+            function()
+              require("telescope.builtin").find_files {
+                layout_strategy = "center",
+                find_command = vim.list_extend(find_command, { "--hidden", "--no-ignore" }),
+              }
+            end,
+            desc = "Find all files",
+          },
+          ["<Leader>fc"] = {
+            function()
+              require("telescope.builtin").find_files {
+                layout_strategy = "center",
+                prompt_title = "Find Nvim Files",
+                cwd = vim.fn.stdpath "config",
+                find_command = vim.list_extend(find_command, { "--glob", "{lua,after}/**/*" }),
+              }
+            end,
+            desc = "Find nvim config files",
+          },
+          ["<Leader>fC"] = {
+            function()
+              require("telescope.builtin").git_files {
+                prompt_title = "Find Config Files",
+                recurse_submodules = false,
+                toplevel = vim.env.HOME,
+                gitdir = vim.env.HOME .. "/.dotfiles",
+              }
+            end,
+            desc = "Find config files",
+          },
+        }
+      end,
+    },
     dependencies = {
       "nvim-telescope/telescope.nvim",
       opts = function(_, opts)
