@@ -15,10 +15,22 @@ return {
         function()
           local bufnr = vim.api.nvim_get_current_buf()
 
-          vim.cmd.Leet "desc"
-          vim.bo.shiftwidth = 4
-          vim.bo.tabstop = 4
-          vim.b[bufnr].autoformat = false
+          for key, value in pairs {
+            shiftwidth = 4,
+            tabstop = 4,
+            autoformat = false,
+          } do
+            vim.b[bufnr][key] = value
+          end
+
+          vim.diagnostic.config(require("astrocore").diagnostics[0])
+        end,
+        function()
+          require("cmp").setup.buffer {
+            sources = {
+              { name = "buffer" },
+            },
+          }
         end,
         -- 设置映射键
         function()
@@ -56,19 +68,6 @@ return {
               local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
               if #lines > 1 or (#lines == 1 and lines[1]:len() > 0) then return end -- return if buffer is non-empty
               require("leetcode").start(true)
-            end,
-          },
-        },
-        leetcode_cmp = {
-          {
-            event = "BufRead",
-            pattern = "*/.local/nvim/leetcode/*",
-            callback = function()
-              require("cmp").setup.buffer {
-                sources = {
-                  { name = "buffer" },
-                },
-              }
             end,
           },
         },
