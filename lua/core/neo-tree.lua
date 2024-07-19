@@ -26,10 +26,9 @@ return {
             ".gitignore",
             ".zshrc",
             ".zshenv",
-          },
-          always_show_by_pattern = {
             ".config",
           },
+          always_show_by_pattern = {},
           never_show = { ".git", ".bkt" },
           never_show_by_pattern = { -- uses glob style patterns
             ".null-ls_*",
