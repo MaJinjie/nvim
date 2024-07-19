@@ -29,4 +29,29 @@ return {
       opts.ensure_installed = require("astrocore").list_insert_unique(opts.ensure_installed, { "prettierd" })
     end,
   },
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = "MarkdownPreviewToggle",
+    build = "cd app && yarn install",
+    ft = "markdown",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local nmap = require("utils").keymap.set.n
+
+        nmap {
+          ["<Leader>lm"] = { "<Cmd> MarkdownPreviewToggle <CR>", desc = "[markdown-preview] Toggle markdownPreview" },
+        }
+
+        vim.cmd [[ 
+          function OpenMarkdownPreview (url)
+            " execute "silent ! firefox --new-window " . a:url
+            execute "silent ! firefox " . a:url
+          endfunction
+          let g:mkdp_browserfunc = 'OpenMarkdownPreview'
+        ]]
+      end,
+    },
+  },
+  { "ellisonleao/glow.nvim", cmd = "Glow", opts = { height_ratio = 0.9 } },
 }

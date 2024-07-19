@@ -20,7 +20,12 @@ return {
       end,
     },
   },
-  { "lukas-reineke/headlines.nvim", ft = { "markdown", "norg", "org", "rmd" }, opts = {} },
+  {
+    "lukas-reineke/headlines.nvim",
+    enabled = false,
+    ft = { "markdown", "norg", "org", "rmd" },
+    opts = {},
+  },
   {
     "nvim-treesitter/nvim-treesitter",
     opts = {
