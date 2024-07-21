@@ -23,7 +23,7 @@ end
 ---@param fv any|fun(value: T): any Any value or Function
 ---@param t T[] List
 ---@return table<T,any>  Table of transformed values
-function M.tbl_assign(fv, t)
+function M.list_assign(fv, t)
   vim.validate {
     t = { t, "t" },
   }

@@ -64,15 +64,6 @@ function M.merge_mappings(in_keymappings)
   }
   local ret_keymappings = in_keymappings or {}
 
-  for mode, mappings in pairs(g_keymappings) do
-    local ret_mappings = get_mappings(mode, ret_keymappings)
-    local override_mappings = get_mappings(mode, g_override_keymappings)
-    for key, mapping in pairs(mappings) do
-      if ret_mappings[key] and mapping ~= false then override_mappings[key] = ret_mappings[key] end
-      ret_mappings[key] = mapping
-    end
-  end
-
   for mode, keys in pairs(g_swap_keys) do
     local ret_mappings = get_mappings(mode, ret_keymappings)
     for lkey, rkey in pairs(keys) do
@@ -81,6 +72,15 @@ function M.merge_mappings(in_keymappings)
       else
         notifier.error(string.format("要求 %s 存在，否则 %s 行为不合法", rkey, lkey))
       end
+    end
+  end
+
+  for mode, mappings in pairs(g_keymappings) do
+    local ret_mappings = get_mappings(mode, ret_keymappings)
+    local override_mappings = get_mappings(mode, g_override_keymappings)
+    for key, mapping in pairs(mappings) do
+      if ret_mappings[key] and mapping ~= false then override_mappings[key] = ret_mappings[key] end
+      ret_mappings[key] = mapping
     end
   end
 
@@ -98,7 +98,7 @@ local function set_mappings(in_modes, in_mappings) handle_mappings(in_modes, in_
 ---@param in_modes string|string[] 模式或模式组成的列表
 ---@param in_mappings table<string, boolean> key-false表
 local function del_mappings(in_modes, in_mappings)
-  in_mappings = require("utils").tbl_assign(false, in_mappings)
+  in_mappings = require("utils").list_assign(false, in_mappings)
   handle_mappings(in_modes, in_mappings, g_keymappings)
 end
 

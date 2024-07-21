@@ -82,8 +82,8 @@ return {
       opts = function()
         local nmap, nswap = require("utils").keymap.set.n, require("utils").keymap.swap.n
 
-        nmap { ["<Leader>uZ"] = { "<Cmd> ZenMode <Cr>", desc = "Toggle ZenMode" } }
-        nswap { ["<Leader>uz"] = "<Leader>uZ" }
+        nswap { ["<Leader>uZ"] = "<Leader>uz" }
+        nmap { ["<Leader>uz"] = { "<Cmd> ZenMode <Cr>", desc = "Toggle ZenMode" } }
       end,
     },
   },
@@ -95,8 +95,8 @@ return {
       opts = function()
         local nmap, nswap = require("utils").keymap.set.n, require("utils").keymap.swap.n
 
-        nmap { ["<Leader>uT"] = { "<Cmd> Twilight <Cr>", desc = "Toggle Twilight" } }
-        nswap { ["<Leader>ut"] = "<Leader>uT" }
+        nswap { ["<Leader>uT"] = "<Leader>ut" }
+        nmap { ["<Leader>ut"] = { "<Cmd> Twilight <Cr>", desc = "Toggle Twilight" } }
       end,
     },
   },

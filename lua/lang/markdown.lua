@@ -36,20 +36,28 @@ return {
     ft = "markdown",
     specs = {
       "AstroNvim/astrocore",
-      opts = function()
+      opts = function(_, opts)
         local nmap = require("utils").keymap.set.n
+        local g = opts.options.g
 
         nmap {
           ["<Leader>lm"] = { "<Cmd> MarkdownPreviewToggle <CR>", desc = "[markdown-preview] Toggle markdownPreview" },
         }
 
-        vim.cmd [[ 
-          function OpenMarkdownPreview (url)
-            " execute "silent ! firefox --new-window " . a:url
-            execute "silent ! firefox " . a:url
-          endfunction
-          let g:mkdp_browserfunc = 'OpenMarkdownPreview'
-        ]]
+        g.mkdp_auto_start = 0
+        g.mkdp_auto_close = 0
+        g.mkdp_combine_preview = 1
+        g.mkdp_refresh_slow = 0
+
+        -- g.mkdp_browser = ""
+
+        -- vim.cmd [[
+        --   function OpenMarkdownPreview (url)
+        --     " execute "silent ! firefox --new-window " . a:url
+        --     execute "silent ! firefox " . a:url
+        --   endfunction
+        --   let g:mkdp_browserfunc = 'OpenMarkdownPreview'
+        -- ]]
       end,
     },
   },

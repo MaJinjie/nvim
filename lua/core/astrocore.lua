@@ -128,6 +128,7 @@ return {
       on_keys = {},
       sessions = {},
       filetypes = {},
+      commands = {},
     })
   end,
   config = function(_, opts)

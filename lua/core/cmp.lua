@@ -196,20 +196,20 @@ return {
                 local source = string.match(arg, "source=(%a+)")
                 if source then
                   table.insert(snippet_sources, source)
-                elseif not _args.bang then
+                else
                   table.insert(snippet_filetypes, arg)
                 end
               end
 
               if #snippet_sources == 0 then snippet_sources = { "lua" } end
-              if #snippet_filetypes == 0 and not _args.bang then snippet_filetypes = { vim.bo.filetype } end
+              if #snippet_filetypes == 0 then snippet_filetypes = { vim.bo.filetype } end
 
               require("luasnip.loaders").edit_snippet_files {
                 ft_filter = function(filetype)
-                  if #snippet_filetypes then
-                    return vim.tbl_contains(snippet_filetypes, filetype, {})
-                  else
+                  if _args.bang then
                     return true
+                  else
+                    return vim.tbl_contains(snippet_filetypes, filetype, {})
                   end
                 end,
                 format = function(_file, _source)
@@ -219,7 +219,7 @@ return {
                 end,
               }
             end,
-            desc = "Edit snippets",
+            desc = "Edit code snippets",
             nargs = "*",
             bang = true,
             complete = function(_arg, _cmd, _pos)
