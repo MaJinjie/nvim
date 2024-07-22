@@ -116,6 +116,18 @@ return {
 
         map.n = {
           ["<Leader>fg"] = { function() require("telescope.builtin").git_files() end, desc = "Find Git Files" },
+
+          ["<Leader>fC"] = {
+            function()
+              require("telescope.builtin").git_files {
+                prompt_title = "Find Config Files",
+                recurse_submodules = false,
+                toplevel = vim.env.HOME,
+                gitdir = vim.env.HOME .. "/.dotfiles",
+              }
+            end,
+            desc = "Find config files",
+          },
         }
       end,
     },
@@ -149,21 +161,15 @@ return {
         extensions.frecency = {
           layout_strategy = "center",
 
+          hide_current_buffer = true,
+          show_scores = true,
           workspaces = {
-            ["Conf"] = vim.fn.expand "$XDG_CONFIG_HOME",
-            ["Zsh"] = vim.fn.expand "$XDG_CONFIG_HOME/zsh",
-            ["Nvim"] = vim.fn.expand "$XDG_CONFIG_HOME/nvim",
-            ["Home"] = vim.fn.expand "$HOME",
-            ["Study"] = vim.fn.expand "$HOME/study",
-            ["Note"] = vim.fn.expand "$HOME/notes",
-
-            ["CppNote"] = vim.fn.expand "$HOME/notes/languages/cpp",
-            ["AssemNote"] = vim.fn.expand "$HOME/notes/languages/assembler",
-            ["RustNote"] = vim.fn.expand "$HOME/notes/languages/rust/new",
-
-            ["RustStudy"] = vim.fn.expand "$HOME/study/rust-examples",
-            ["CppStudy"] = vim.fn.expand "$HOME/study/cpp",
-            ["AssemStudy"] = vim.fn.expand "$HOME/study/assembler",
+            ["CONF"] = vim.fn.expand "$XDG_CONFIG_HOME",
+            ["ZSH"] = vim.fn.expand "$XDG_CONFIG_HOME/zsh",
+            ["NVIM"] = vim.fn.expand "$XDG_CONFIG_HOME/nvim",
+            ["HOME"] = vim.fn.expand "$HOME",
+            ["STUDY"] = vim.fn.expand "$HOME/study",
+            ["NOTE"] = vim.fn.expand "$HOME/notes",
           },
         }
       end,
@@ -254,6 +260,15 @@ return {
             end,
             desc = "[egrepify] Live grep open files",
           },
+          ["<Leader>sc"] = {
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Grep Nvim Files",
+                cwd = vim.fn.stdpath "config",
+              }
+            end,
+            desc = "[egrepify] Grep nvim config files",
+          },
         }
       end,
     },
@@ -276,21 +291,17 @@ return {
               cb = function(input) return string.format([[!*.{%s}]], input) end,
             },
             -- filter for (partial) folder names
+            ["<>"] = {
+              flag = "iglob",
+              cb = function(input) return string.format([[**/%s*/**]], input) end,
+            },
             [">>"] = {
               flag = "iglob",
               cb = function(input) return string.format([[%s*/**]], input) end,
             },
-            [">!"] = {
-              flag = "iglob",
-              cb = function(input) return string.format([[!%s*/**]], input) end,
-            },
             ["<<"] = {
               flag = "iglob",
               cb = function(input) return string.format([[**/%s*/*]], input) end,
-            },
-            ["<!"] = {
-              flag = "iglob",
-              cb = function(input) return string.format([[!**/%s*/*]], input) end,
             },
             ["@"] = {
               flag = "iglob",
@@ -384,58 +395,53 @@ return {
     config = function() require("telescope").load_extension "undo" end,
   },
   {
-    "fdschmidt93/telescope-corrode.nvim",
+    "nvim-telescope/telescope-media-files.nvim",
+    dependencies = "nvim-telescope/telescope.nvim",
+    config = function() require("telescope").load_extension "media_files" end,
+  },
+  {
+    "mollerhoj/telescope-recent-files.nvim",
     specs = {
       "AstroNvim/astrocore",
       opts = function()
-        local nmap = require("utils").keymap.set.n
+        local map = require("utils").keymap.set
 
-        nmap {
+        map.n {
           ["<Leader>ff"] = {
-            function() require("telescope.builtin").find_files { layout_strategy = "center" } end,
-            desc = "Find files",
+            function()
+              require("telescope").extensions["recent-files"].recent_files {
+                prompt_title = "Find Files",
+                layout_strategy = "center",
+              }
+            end,
+            desc = "[recent-files] Find files",
           },
           ["<Leader>fF"] = {
             function()
-              require("telescope.builtin").find_files {
+              require("telescope").extensions["recent-files"].recent_files {
+                prompt_title = "Find Files(all)",
                 layout_strategy = "center",
-                find_command = vim.list_extend(find_command, { "--hidden", "--no-ignore" }),
+                hidden = true,
+                no_ignore = true,
               }
             end,
-            desc = "Find all files",
+            desc = "[recent-files] Find files",
           },
+
           ["<Leader>fc"] = {
             function()
-              require("telescope.builtin").find_files {
+              require("telescope").extensions["recent-files"].recent_files {
                 layout_strategy = "center",
                 prompt_title = "Find Nvim Files",
                 cwd = vim.fn.stdpath "config",
-                find_command = vim.list_extend(find_command, { "--glob", "{lua,after}/**/*" }),
               }
             end,
-            desc = "Find nvim config files",
-          },
-          ["<Leader>fC"] = {
-            function()
-              require("telescope.builtin").git_files {
-                prompt_title = "Find Config Files",
-                recurse_submodules = false,
-                toplevel = vim.env.HOME,
-                gitdir = vim.env.HOME .. "/.dotfiles",
-              }
-            end,
-            desc = "Find config files",
+            desc = "[recent-files] Find nvim config files",
           },
         }
       end,
     },
-    dependencies = {
-      "nvim-telescope/telescope.nvim",
-      opts = function(_, opts)
-        local extensions = require("utils").tbl_get(opts, "extensions")
-        extensions.corrode = { layout_strategy = "center" }
-      end,
-    },
-    config = function() require("telescope").load_extension "corrode" end,
+    dependencies = "nvim-telescope/telescope.nvim",
+    config = function() require("telescope").load_extension "recent-files" end,
   },
 }
