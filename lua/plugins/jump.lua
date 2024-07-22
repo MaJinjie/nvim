@@ -8,17 +8,11 @@ return {
       opts = function()
         local map = require("utils").keymap.set
 
-        map {
-          [{ "n", "x", "o" }] = {
-            ["w"] = { "<Cmd>lua require('spider').motion('w')<CR>", desc = "Next word" },
-            ["e"] = { "<Cmd>lua require('spider').motion('e')<CR>", desc = "Next end of word" },
-            ["b"] = { "<Cmd>lua require('spider').motion('b')<CR>", desc = "Previous word" },
-            ["ge"] = { "<Cmd>lua require('spider').motion('ge')<CR>", desc = "Previous end of word" },
-          },
-          i = {
-            ["<C-f>"] = { "<Esc>l<cmd>lua require('spider').motion('w')<CR>i", desc = "Previous word" },
-            ["<C-b>"] = { "<Esc><cmd>lua require('spider').motion('b')<CR>i", desc = "Next world" },
-          },
+        map[{ "n", "x", "o" }] {
+          ["w"] = { "<Cmd>lua require('spider').motion('w')<CR>", desc = "Next word" },
+          ["e"] = { "<Cmd>lua require('spider').motion('e')<CR>", desc = "Next end of word" },
+          ["b"] = { "<Cmd>lua require('spider').motion('b')<CR>", desc = "Previous word" },
+          ["ge"] = { "<Cmd>lua require('spider').motion('ge')<CR>", desc = "Previous end of word" },
         }
       end,
     },

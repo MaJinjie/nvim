@@ -38,7 +38,7 @@ return {
                 end,
               }
             end,
-            desc = "[telescope] Find image and Paste",
+            desc = "[img-clip] Find image and Paste",
           },
         }
       end,

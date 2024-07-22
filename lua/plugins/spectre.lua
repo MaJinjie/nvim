@@ -17,14 +17,14 @@ return {
   specs = {
     "AstroNvim/astrocore",
     opts = function()
-      local nmap = require("utils").keymap.set.n
+      local map = require("utils").keymap.set
 
-      nmap {
-        ["<Leader>fr"] = {
+      map.n {
+        ["<Leader>sr"] = {
           function() require("spectre").open_file_search { select_word = true } end,
           desc = "[spectre] curfile",
         },
-        ["<Leader>fR"] = {
+        ["<Leader>sR"] = {
           function() require("spectre").open { select_word = true } end,
           desc = "[spectre] workspace",
         },

@@ -17,42 +17,15 @@ return {
           file_ignore_patterns = { ".git/", ".github/" },
           layout_config = {
             prompt_position = "top",
-            bottom_pane = {
-              height = 13,
-              preview_cutoff = 120,
-            },
-            center = {
-              height = 14,
-              width = 60,
-              preview_cutoff = 150,
-            },
-            horizontal = {
-              height = 0.8,
-              width = 0.9,
-              preview_width = 0.6,
-              preview_cutoff = 120,
-            },
-            vertical = {
-              height = 0.95,
-              width = 0.85,
-              preview_height = 0.4,
-              preview_cutoff = 15,
-            },
+            bottom_pane = { height = 13, preview_cutoff = 120 },
+            center = { height = 14, width = 60, preview_cutoff = 150 },
+            horizontal = { height = 0.8, width = 0.9, preview_width = 0.6, preview_cutoff = 120 },
+            vertical = { height = 0.95, width = 0.85, preview_height = 0.4, preview_cutoff = 15 },
             flex = {
               flip_columns = 120,
               flip_lines = 15,
-              horizontal = {
-                height = 0.8,
-                width = 0.9,
-                preview_width = 0.6,
-                preview_cutoff = 120,
-              },
-              vertical = {
-                height = 0.95,
-                width = 0.85,
-                preview_height = 0.4,
-                preview_cutoff = 15,
-              },
+              horizontal = { height = 0.8, width = 0.9, preview_width = 0.6, preview_cutoff = 120 },
+              vertical = { height = 0.95, width = 0.85, preview_height = 0.4, preview_cutoff = 15 },
             },
           },
           mappings = {
@@ -61,7 +34,7 @@ return {
               ["<C-u>"] = false,
               ["<C-h>"] = false,
               ["<C-l>"] = false,
-              ["<C-a>"] = false,
+              ["<C-b>"] = false,
               ["<C-e>"] = false,
 
               ["<C-d>"] = actions.results_scrolling_down,
@@ -91,6 +64,7 @@ return {
           buffers = { layout_strategy = "center", mappings = { i = { ["<C-d>"] = actions.delete_buffer } } },
           find_files = { layout_strategy = "center" },
           git_files = { layout_strategy = "center" },
+          oldfiles = { layout_strategy = "center" },
           current_buffer_fuzzy_find = { layout_strategy = "vertical", preview = { hide_on_startup = true } },
         },
         extensions = {
@@ -131,66 +105,17 @@ return {
     specs = {
       "AstroNvim/astrocore",
       opts = function()
-        local map = require("utils").keymap.set
+        local keymap = require("utils").keymap
+        local map, swap, del = keymap.set, keymap.swap, keymap.del
+
+        del.n { "<Leader>fa", "<Leader>fw", "<Leader>fW", "<Leader>ft", "<Leader>fT" }
+
+        swap.n {
+          ['<Leader>f"'] = "<Leader>fr",
+        }
 
         map.n = {
-          ["<Leader>gf"] = { function() require("telescope.builtin").git_files() end, desc = "Find Git Files" },
-
-          ["<Leader>fo"] = {
-            function()
-              require("telescope").extensions.frecency.frecency {
-                prompt_title = "Frecency Files",
-              }
-            end,
-            desc = "Find Frecency Files",
-          },
-          ["<Leader>fe"] = {
-            function() require("telescope").extensions.file_browser.file_browser { path = vim.fn.expand "%:p:h" } end,
-            desc = "Browser CurrentDir Files",
-          },
-          ['<Leader>f"'] = { function() require("telescope.builtin").registers() end, desc = "Find Registers" },
-          ["<Leader>fH"] = { function() require("telescope").extensions.helpgrep.helpgrep() end, desc = "Grep Help" },
-          ["<Leader>fL"] = { function() require("telescope").extensions.lazy.lazy() end, desc = "Find Lazyplugins" },
-          ["<Leader>fg"] = {
-            function()
-              require("telescope").extensions.egrepify.egrepify {
-                prompt_title = "Live Grep",
-                default_text = vim.v.count > 0 and vim.fn.expand "<cword>" or "",
-              }
-            end,
-            desc = "Grep word in current file directory",
-          },
-          ["<Leader>fG"] = {
-            function()
-              require("telescope").extensions.egrepify.egrepify {
-                prompt_title = "Live Grep (Hidden)",
-                default_text = vim.v.count > 0 and vim.fn.expand "<cword>" or "",
-                vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--hidden", "--no-ignore" }),
-              }
-            end,
-            desc = "Grep word in cwd",
-          },
-          -- ["<Leader>fC"] = {
-          --   function()
-          --     require("telescope.builtin").git_files {
-          --       prompt_title = "Find Config Files",
-          --       recurse_submodules = false,
-          --       toplevel = vim.env.HOME,
-          --       gitdir = vim.env.HOME .. "/.dotfiles",
-          --     }
-          --   end,
-          --   desc = "Find config files",
-          -- },
-          ["<Leader>fB"] = {
-            function()
-              require("telescope").extensions.egrepify.egrepify {
-                prompt_title = "Grep Buffers",
-                grep_open_files = true,
-              }
-            end,
-            desc = "Live grep open files",
-          },
-          ["<Leader>fu"] = { function() require("telescope").extensions.undo.undo() end, desc = "Find Undotree" },
+          ["<Leader>fg"] = { function() require("telescope.builtin").git_files() end, desc = "Find Git Files" },
         }
       end,
     },
@@ -201,6 +126,22 @@ return {
   },
   {
     "nvim-telescope/telescope-frecency.nvim",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local map = require("utils").keymap.set
+        map.n {
+          ["<Leader>fO"] = {
+            function()
+              require("telescope").extensions.frecency.frecency {
+                prompt_title = "Frecency Files",
+              }
+            end,
+            desc = "[frecency] Find Frecency Files",
+          },
+        }
+      end,
+    },
     dependencies = {
       "nvim-telescope/telescope.nvim",
       opts = function(_, opts)
@@ -231,6 +172,18 @@ return {
   },
   {
     "nvim-telescope/telescope-file-browser.nvim",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local map = require("utils").keymap.set
+        map.n {
+          ["<Leader>fe"] = {
+            function() require("telescope").extensions.file_browser.file_browser { path = vim.fn.expand "%:p:h" } end,
+            desc = "[file-browser] Browser files",
+          },
+        }
+      end,
+    },
     dependencies = {
       "nvim-telescope/telescope.nvim",
       opts = function(_, opts)
@@ -268,6 +221,42 @@ return {
   },
   {
     "fdschmidt93/telescope-egrepify.nvim",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local map = require("utils").keymap.set
+        map.n {
+          ["<Leader>ss"] = {
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Live Grep",
+                default_text = vim.v.count > 0 and vim.fn.expand "<cword>" or "",
+              }
+            end,
+            desc = "[egrepify] Grep word in current file directory",
+          },
+          ["<Leader>sS"] = {
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Live Grep (all)",
+                default_text = vim.v.count > 0 and vim.fn.expand "<cword>" or "",
+                vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--hidden", "--no-ignore" }),
+              }
+            end,
+            desc = "[egrepify] Grep word in cwd",
+          },
+          ["<Leader>sb"] = {
+            function()
+              require("telescope").extensions.egrepify.egrepify {
+                prompt_title = "Grep Buffers",
+                grep_open_files = true,
+              }
+            end,
+            desc = "[egrepify] Live grep open files",
+          },
+        }
+      end,
+    },
     dependencies = {
       "nvim-telescope/telescope.nvim",
       opts = function(_, opts)
@@ -319,6 +308,18 @@ return {
   },
   {
     "catgoose/telescope-helpgrep.nvim",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local map = require("utils").keymap.set
+        map.n {
+          ["<Leader>fH"] = {
+            function() require("telescope").extensions.helpgrep.helpgrep() end,
+            desc = "[helpgrep,egrepify] Grep Help",
+          },
+        }
+      end,
+    },
     dependencies = {
       "nvim-telescope/telescope.nvim",
       opts = function(_, opts)
@@ -333,6 +334,15 @@ return {
   },
   {
     "tsakirist/telescope-lazy.nvim",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local map = require("utils").keymap.set
+        map.n {
+          ["<Leader>pf"] = { function() require("telescope").extensions.lazy.lazy() end, desc = "Find Lazyplugins" },
+        }
+      end,
+    },
     dependencies = {
       "nvim-telescope/telescope.nvim",
       opts = function(_, opts)
@@ -357,6 +367,13 @@ return {
   },
   {
     "debugloop/telescope-undo.nvim",
+    specs = {
+      "AstroNvim/astrocore",
+      opts = function()
+        local map = require("utils").keymap.set
+        map.n { ["<Leader>fu"] = { function() require("telescope").extensions.undo.undo() end, desc = "Find Undotree" } }
+      end,
+    },
     dependencies = {
       "nvim-telescope/telescope.nvim",
       opts = function(_, opts)
