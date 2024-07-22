@@ -143,7 +143,7 @@ return {
       opts = function()
         local map = require("utils").keymap.set
         map.n {
-          ["<Leader>fO"] = {
+          ["<Leader>fr"] = {
             function()
               require("telescope").extensions.frecency.frecency {
                 prompt_title = "Frecency Files",
