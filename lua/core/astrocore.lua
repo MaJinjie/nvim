@@ -35,7 +35,7 @@ return {
         },
       },
       i = {
-        ["<C-a>"] = {
+        ["<C-b>"] = {
           function()
             local lnum, _ = (table.unpack or unpack)(vim.api.nvim_win_get_cursor(0))
             vim.api.nvim_win_set_cursor(0, { lnum, vim.fn.indent(lnum) })
@@ -91,39 +91,9 @@ return {
           guifont = "JetBrainsMono Nerd Font,Hack Nerd Font:h13",
           softtabstop = -1,
         },
-        g = {
-          transparency = 0.8,
-
-          -- neovide
-          neovide_scale_factor = 0.85,
-          neovide_padding_top = 5,
-          neovide_padding_bottom = 0,
-          neovide_padding_right = 0,
-          neovide_padding_left = 0,
-          neovide_transparency = 0.8,
-          neovide_window_blurred = true,
-          neovide_hide_mouse_when_typing = true,
-          -- neovide_flatten_floating_zindex = "20",
-          -- neovide_floating_shadow = false,
-          neovide_remember_window_size = true,
-        },
+        g = { transparency = 0.8 },
       },
-      autocmds = {
-        -- 退出插入模式时，取消切换输入法
-        Ime_input = {
-          {
-            event = { "InsertEnter", "InsertLeave" },
-            pattern = "*",
-            callback = function(args)
-              if args.event:match "Enter$" then
-                vim.g.neovide_input_ime = true
-              else
-                vim.g.neovide_input_ime = false
-              end
-            end,
-          },
-        },
-      },
+      autocmds = {},
       signs = {},
       on_keys = {},
       sessions = {},

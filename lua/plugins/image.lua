@@ -53,7 +53,7 @@ return {
       has_breadcrumbs = true,
       show_workspace = true,
 
-      has_line_number = true,
+      has_line_number = false,
       watermark = "NeoVim",
       bg_x_padding = 10,
       bg_y_padding = 80,
