@@ -42,7 +42,29 @@ return {
   {
     "folke/flash.nvim",
     event = "User AstroFile",
-    opts = { label = { after = false, before = true } },
+    opts = {
+      label = { after = false, before = true },
+      modes = {
+        char = {
+          config = function(opts)
+            -- autohide flash when in operator-pending mode
+            opts.autohide = opts.autohide or (vim.fn.mode(true):find "no" and vim.v.operator ~= "d")
+
+            -- disable jump labels when not enabled, when using a count,
+            -- or when recording/executing registers
+            -- opts.jump_labels = opts.jump_labels
+            --   and vim.v.count == 0
+            --   and vim.fn.reg_executing() == ""
+            --   and vim.fn.reg_recording() == ""
+            -- print(opts.autohide, opts.jump_labels)
+
+            -- Show jump labels only in operator-pending mode
+            opts.jump_labels = vim.v.count == 0 and vim.fn.mode(true):match "^n$"
+          end,
+          label = { exclude = "hjkliarydc" },
+        },
+      },
+    },
     specs = {
       "AstroNvim/astrocore",
       opts = function()

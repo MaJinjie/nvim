@@ -264,7 +264,7 @@ return {
             function()
               require("telescope").extensions.egrepify.egrepify {
                 prompt_title = "Grep Nvim Files",
-                cwd = vim.fn.stdpath "config",
+                cwd = vim.fn.stdpath "config" .. "/lua",
               }
             end,
             desc = "[egrepify] Grep nvim config files",
@@ -280,7 +280,7 @@ return {
           layout_strategy = "vertical",
 
           prefixes = {
-            ["#"] = {
+            ["##"] = {
               -- in the above example #lua,md -> input: lua,md -> output: --glob="*.{lua,md}"
               flag = "iglob",
               cb = function(input) return string.format([[*.{%s}]], input) end,
@@ -303,7 +303,7 @@ return {
               flag = "iglob",
               cb = function(input) return string.format([[**/%s*/*]], input) end,
             },
-            ["@"] = {
+            ["@@"] = {
               flag = "iglob",
               cb = function(input) return string.format([[%s]], input) end,
             },
