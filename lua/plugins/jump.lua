@@ -94,6 +94,11 @@ return {
     },
   },
   { "keaising/im-select.nvim", event = "InsertEnter", opts = {} },
-  { "willothy/flatten.nvim", lazy = false, opts = { window = { open = "alternate" } }, priority = 1001 },
+  {
+    "willothy/flatten.nvim",
+    lazy = false,
+    opts = { window = { open = "alternate" } },
+    priority = 1001,
+  },
   { "windwp/nvim-autopairs", opts = { fast_wrap = { map = "<M-a>", end_key = ";" } } },
 }

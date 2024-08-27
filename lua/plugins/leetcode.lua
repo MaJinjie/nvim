@@ -5,7 +5,7 @@ return {
   opts = {
     arg = "Leet",
     lang = "cpp",
-    cn = { enabled = true, translator = false, translate_problems = true },
+    cn = { enabled = true, translator = false, translate_problems = false },
     injector = {
       ["rust"] = { before = {}, after = "fn main() {}" },
       ["cpp"] = { before = { "#include <bits/stdc++.h>", "using namespace std;" }, after = "int main() {}" },

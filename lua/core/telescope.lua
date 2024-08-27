@@ -117,6 +117,16 @@ return {
         map.n = {
           ["<Leader>fg"] = { function() require("telescope.builtin").git_files() end, desc = "Find Git Files" },
 
+          ["<Leader>fc"] = {
+            function()
+              require("telescope.builtin").find_files {
+                prompt_title = "Find Nvim Files",
+                cwd = vim.fn.stdpath "config",
+                find_command = vim.list_extend(find_command, { "--iglob", "!backup/**" }),
+              }
+            end,
+            desc = "Find nvim config files",
+          },
           ["<Leader>fC"] = {
             function()
               require("telescope.builtin").git_files {
@@ -350,7 +360,7 @@ return {
       opts = function()
         local map = require("utils").keymap.set
         map.n {
-          ["<Leader>pf"] = { function() require("telescope").extensions.lazy.lazy() end, desc = "Find Lazyplugins" },
+          ["<Leader>fL"] = { function() require("telescope").extensions.lazy.lazy() end, desc = "Find Lazyplugins" },
         }
       end,
     },
@@ -398,50 +408,5 @@ return {
     "nvim-telescope/telescope-media-files.nvim",
     dependencies = "nvim-telescope/telescope.nvim",
     config = function() require("telescope").load_extension "media_files" end,
-  },
-  {
-    "mollerhoj/telescope-recent-files.nvim",
-    specs = {
-      "AstroNvim/astrocore",
-      opts = function()
-        local map = require("utils").keymap.set
-
-        map.n {
-          ["<Leader>ff"] = {
-            function()
-              require("telescope").extensions["recent-files"].recent_files {
-                prompt_title = "Find Files",
-                layout_strategy = "center",
-              }
-            end,
-            desc = "[recent-files] Find files",
-          },
-          ["<Leader>fF"] = {
-            function()
-              require("telescope").extensions["recent-files"].recent_files {
-                prompt_title = "Find Files(all)",
-                layout_strategy = "center",
-                hidden = true,
-                no_ignore = true,
-              }
-            end,
-            desc = "[recent-files] Find files",
-          },
-
-          ["<Leader>fc"] = {
-            function()
-              require("telescope").extensions["recent-files"].recent_files {
-                layout_strategy = "center",
-                prompt_title = "Find Nvim Files",
-                cwd = vim.fn.stdpath "config",
-              }
-            end,
-            desc = "[recent-files] Find nvim config files",
-          },
-        }
-      end,
-    },
-    dependencies = "nvim-telescope/telescope.nvim",
-    config = function() require("telescope").load_extension "recent-files" end,
   },
 }

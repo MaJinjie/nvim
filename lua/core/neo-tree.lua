@@ -27,6 +27,7 @@ return {
             ".zshrc",
             ".zshenv",
             ".config",
+            ".clangd",
           },
           always_show_by_pattern = {},
           never_show = { ".git", ".bkt" },
