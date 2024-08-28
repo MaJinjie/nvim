@@ -1,9 +1,8 @@
 return {
   "willothy/flatten.nvim",
   priority = 1001,
-  enable = false,
+  enabled = false,
   opts = function()
-    require("persistence").stop()
     return {
       window = {
         open = "alternate",

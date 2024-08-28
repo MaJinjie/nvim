@@ -4,3 +4,8 @@
 local map = vim.keymap.set
 
 map("i", "<C-e>", "<End>", { desc = "Jump to Current line end" })
+
+-- floating terminal
+--  stylua: ignore
+local lazyterm = function() LazyVim.terminal(nil, { cwd = LazyVim.root() }) end
+map("i", "<c-/>", lazyterm, { desc = "Terminal (Root Dir)" })
