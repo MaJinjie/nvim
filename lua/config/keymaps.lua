@@ -4,6 +4,8 @@
 local map = vim.keymap.set
 
 map("i", "<C-e>", "<End>", { desc = "Jump to Current line end" })
+map("n", "<leader>ww", "<C-W>p", { desc = "Switch to Other Window", remap = true })
+map("i", "<C-CR>", "<Esc>o", { desc = "Jump to Next line" })
 
 -- floating terminal
 --  stylua: ignore

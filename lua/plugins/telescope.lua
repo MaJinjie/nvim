@@ -1,47 +1,48 @@
-local find_command = { "rg", "--files", "--color", "never" }
-
-local gen_egrepfiy = function(_opts)
-  _opts = _opts or {}
-  return function()
-    local opts
-    if type(_opts) == "function" then
-      opts = _opts()
-    end
-    require("telescope").extensions.egrepify.egrepify(opts or _opts)
-  end
-end
 return {
   "nvim-telescope/telescope.nvim",
   dependencies = { "fdschmidt93/telescope-egrepify.nvim" },
   keys = {
-    { "<leader>sg", gen_egrepfiy(), desc = "Grep (Root Dir)" },
+    {
+      "<leader>sg",
+      function()
+        require("telescope").extensions.egrepify.egrepify({ cwd = LazyVim.root() })
+      end,
+      desc = "Grep (Root Dir)",
+    },
     {
       "<leader>sG",
-      gen_egrepfiy(function()
-        local opts = { cwd = vim.fn.expand("%:p:h") }
-        return opts
-      end),
+      function()
+        require("telescope").extensions.egrepify.egrepify({ cwd = vim.uv.cwd() })
+      end,
       desc = "Grep (Cwd)",
     },
-    { "<leader>sB", gen_egrepfiy({ grep_open_files = true }), desc = "Grep Buffers" },
+    {
+      "<leader>sB",
+      function()
+        require("telescope").extensions.egrepify.egrepify({ grep_open_files = true })
+      end,
+      desc = "Grep Buffers",
+    },
     {
       "<leader>/",
-      gen_egrepfiy(function()
-        local opts = {}
+      function()
+        local opts = { cwd = LazyVim.root() }
         if vim.bo.filetype ~= "" then
-          local vimgrep_arguments = vim.deepcopy(require("telescope.config").values.vimgrep_arguments)
+          local vimgrep_arguments = LazyVim.get_plugin("telescope.nvim").opts.defaults.vimgrep_arguments
+          vimgrep_arguments = vim.deepcopy(vimgrep_arguments)
           opts.vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--type", vim.bo.filetype })
         end
-        return opts
-      end),
+        require("telescope").extensions.egrepify.egrepify(opts)
+      end,
     },
     {
       "<leader><space>",
       function()
-        local opts = {}
+        local opts = { cwd = LazyVim.root() }
         if vim.bo.filetype ~= "" then
-          local my_find_command = vim.deepcopy(require("telescope.config").values.find_command or find_command)
-          opts.find_command = vim.list_extend(my_find_command, { "--type", vim.bo.filetype })
+          local find_command = LazyVim.get_plugin("telescope.nvim").opts.defaults.find_command
+          find_command = vim.deepcopy(find_command)
+          opts.find_command = vim.list_extend(find_command, { "--type", vim.bo.filetype })
         end
         require("telescope.builtin").find_files(opts)
       end,
@@ -71,6 +72,16 @@ return {
           ["<C-u>"] = false,
         },
       },
+      vimgrep_arguments = {
+        "rg",
+        "--color=never",
+        "--no-heading",
+        "--with-filename",
+        "--line-number",
+        "--column",
+        "--smart-case",
+      },
+      find_command = { "rg", "--files", "--color", "never" },
     },
     pickers = {
       buffers = { layout_strategy = "center" },
