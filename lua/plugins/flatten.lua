@@ -1,6 +1,7 @@
 return {
   "willothy/flatten.nvim",
   priority = 1001,
+  enable = false,
   opts = function()
     require("persistence").stop()
     return {

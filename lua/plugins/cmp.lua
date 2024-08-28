@@ -7,61 +7,26 @@
 --   auto_brackets = { "python" }
 -- }
 -- ```
-local reset_mapping = function(fallback)
-  fallback()
-end
-local gen_mappings = function(modes, keymaps)
-  local cmp = require("cmp")
-  local types = require("cmp.types")
-  local keys = {}
-
-  keys["<C-e>"] = function(fallback)
-    if cmp.visible() then
-      cmp.abort()
-    else
-      fallback()
-    end
-  end
-
-  keys["<C-Space>"] = function()
-    if cmp.visible() then
-      cmp.close()
-    else
-      cmp.complete()
-    end
-  end
-
-  keys["<C-/>"] = function(fallback)
-    if cmp.visible() then
-      if cmp.visible_docs() then
-        cmp.close_docs()
-      else
-        cmp.open_docs()
-      end
-    else
-      fallback()
-    end
-  end
-
-  keys["<Down>"] = cmp.mapping.select_next_item({ behavior = types.cmp.SelectBehavior.Select })
-  keys["<Up>"] = cmp.mapping.select_prev_item({ behavior = types.cmp.SelectBehavior.Select })
-
-  keys = vim.tbl_extend("force", keys, keymaps or {})
-
-  return vim.tbl_map(function(value)
-    return cmp.mapping(value, modes)
-  end, keys)
-end
 return {
   {
     "hrsh7th/nvim-cmp",
     opts = function(_, opts)
-      local keymaps = gen_mappings({ "i", "s" })
+      local cmp = require("cmp")
+      local keymappings = {}
 
-      opts.mapping = vim.tbl_extend("force", opts.mapping, keymaps)
-      opts.completion = {
-        completeopt = "menu,menuone,noselect",
-      }
+      keymappings["<C-e>"] = function(fallback)
+        if LazyVim.cmp.visible() then
+          cmp.abort()
+        else
+          fallback()
+        end
+      end
+
+      keymappings = vim.tbl_map(function(value)
+        return cmp.mapping(value, { "i" })
+      end, keymappings)
+
+      opts.mapping = vim.tbl_extend("force", opts.mapping, keymappings)
     end,
   },
   {
@@ -70,23 +35,36 @@ return {
     dependencies = { "hrsh7th/nvim-cmp" },
     config = function()
       local cmp = require("cmp")
-      local keymaps = cmp.mapping.preset.cmdline(gen_mappings({ "c" }, {
-        ["<C-p>"] = reset_mapping,
-        ["<C-n>"] = reset_mapping,
-      }))
+      local keymappings = {}
+
+      keymappings["<C-e>"] = function(fallback)
+        if LazyVim.cmp.visible() then
+          cmp.abort()
+        else
+          fallback()
+        end
+      end
+
+      keymappings = vim.tbl_map(function(value)
+        return cmp.mapping(value, { "c" })
+      end, keymappings)
+
+      keymappings = cmp.mapping.preset.cmdline(keymappings)
 
       -- `/` cmdline setup.
       cmp.setup.cmdline({ "/", "?" }, {
-        completion = { completeopt = "menu,menuone,noselect" },
-        mapping = keymaps,
+        completion = { completeopt = "menu,menuone,noinsert,noselect" },
+        preselect = cmp.PreselectMode.None,
+        mapping = keymappings,
         sources = {
           { name = "buffer" },
         },
       })
       -- `:` cmdline setup.
       cmp.setup.cmdline(":", {
-        completion = { completeopt = "menu,menuone,noselect" },
-        mapping = keymaps,
+        completion = { completeopt = "menu,menuone,noinsert,noselect" },
+        preselect = cmp.PreselectMode.None,
+        mapping = keymappings,
         sources = cmp.config.sources({
           { name = "path" },
         }, {
