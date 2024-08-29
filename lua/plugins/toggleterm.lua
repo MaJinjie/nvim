@@ -50,7 +50,6 @@
   }
 }
 --]]
----@type LazySpec
 return {
   "akinsho/toggleterm.nvim",
   version = "*",
@@ -65,7 +64,6 @@ return {
   },
   opts = {
     size = function(term)
-      local cmp = require("cmp")
       if term.direction == "horizontal" then
         return vim.o.lines < 20 and vim.o.lines * 0.4 or 12
       elseif term.direction == "vertical" then

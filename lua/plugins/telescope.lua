@@ -70,17 +70,13 @@ return {
       mappings = {
         i = {
           ["<C-u>"] = false,
+          ["<C-Tab>"] = function(prompt_bufnr)
+            require("telescope.actions").select_tab(prompt_bufnr)
+          end,
         },
       },
-      vimgrep_arguments = {
-        "rg",
-        "--color=never",
-        "--no-heading",
-        "--with-filename",
-        "--line-number",
-        "--column",
-        "--smart-case",
-      },
+      -- stylua: ignore
+      vimgrep_arguments = { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
       find_command = { "rg", "--files", "--color", "never" },
     },
     pickers = {
