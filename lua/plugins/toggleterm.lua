@@ -65,7 +65,7 @@ return {
   opts = {
     size = function(term)
       if term.direction == "horizontal" then
-        return vim.o.lines < 20 and vim.o.lines * 0.4 or 12
+        return vim.o.lines < 20 and vim.o.lines * 0.4 or 10
       elseif term.direction == "vertical" then
         return vim.o.columns < 100 and 30 or 40
       end

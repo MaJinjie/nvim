@@ -13,6 +13,7 @@ return {
     opts = function(_, opts)
       local cmp = require("cmp")
       local keymappings = {}
+      -- local auto_select = true
 
       keymappings["<C-e>"] = function(fallback)
         if LazyVim.cmp.visible() then
@@ -21,11 +22,14 @@ return {
           fallback()
         end
       end
+      -- keymappings["<CR>"] = LazyVim.cmp.confirm({ select = auto_select })
 
       keymappings = vim.tbl_map(function(value)
         return cmp.mapping(value, { "i" })
       end, keymappings)
 
+      -- opts.completion = { completeopt = "menu,menuone,noinsert" .. (auto_select and "" or ",noselect") }
+      -- opts.preselect = auto_select and cmp.PreselectMode.Item or cmp.PreselectMode.None
       opts.mapping = vim.tbl_extend("force", opts.mapping, keymappings)
     end,
   },

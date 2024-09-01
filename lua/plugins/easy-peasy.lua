@@ -61,7 +61,6 @@ return {
       { "<leader>qS", function() require("persistence").save() end, desc = "Save Session" },
       { "<leader>ql", function() require("persistence").load() end, desc = "Restore Session" },
       { "<leader>qL", function() require("persistence").load({last = true}) end, desc = "Restore Last Session" },
-    }
-,
+    },
   },
 }
