@@ -63,4 +63,8 @@ return {
       { "<leader>qL", function() require("persistence").load({last = true}) end, desc = "Restore Last Session" },
     },
   },
+  {
+    "echasnovski/mini.pairs",
+    opts = { mappings = { ["'"] = false } },
+  },
 }
