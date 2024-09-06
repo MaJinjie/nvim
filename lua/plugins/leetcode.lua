@@ -7,34 +7,18 @@ return {
     lang = "typescript",
     cn = { enabled = true, translator = false, translate_problems = false },
     injector = {
-      ["rust"] = { before = {}, after = "fn main() {}" },
+      ["rust"] = { before = { "struct Solution {}" }, after = "fn main() {}" },
       ["cpp"] = { before = { "#include <bits/stdc++.h>", "using namespace std;" }, after = "int main() {}" },
     },
     hooks = {
       ["question_enter"] = {
-        -- function()
-        --   local bufnr = vim.api.nvim_get_current_buf()
-        --
-        --   for key, value in pairs({
-        --     shiftwidth = 4,
-        --     tabstop = 4,
-        --     autoformat = false,
-        --   }) do
-        --     vim.b[bufnr][key] = value
-        --   end
-        --
-        --   vim.diagnostic.config(require("astrocore").diagnostics[0])
-        -- end,
-        -- function()
-        --   require("cmp").setup.buffer({
-        --     sources = {
-        --       { name = "buffer" },
-        --     },
-        --   })
-        -- end,
         -- 设置映射键
         function()
           local map = vim.keymap.set
+          local opt = vim.opt_local
+
+          opt.shiftwidth = 4
+          opt.tabstop = 4
 
           map("n", "<localleader>t", "<cmd> Leet test <cr>", { desc = "leetcode test", buffer = true })
           map("n", "<localleader>r", "<cmd> Leet submit <cr>", { desc = "leetcode submit", buffer = true })
