@@ -3,6 +3,9 @@
 -- Add any additional options here
 
 vim.opt.guifont = "JetBrainsMono Nerd Font,Hack Nerd Font"
+vim.opt.swapfile = false
+vim.opt.shiftwidth = 3
+vim.opt.tabstop = 3
 
 -- neovide
 if vim.g.neovide then
