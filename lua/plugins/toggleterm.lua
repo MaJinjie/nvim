@@ -51,28 +51,28 @@
 }
 --]]
 return {
-  "akinsho/toggleterm.nvim",
-  version = "*",
-  cmd = "ToggleTerm",
-  keys = {
-    { "<leader>th", "<Cmd>ToggleTerm direction=horizontal<CR>", desc = "Horizontal split" },
-    { "<leader>tv", "<Cmd>ToggleTerm direction=vertical<CR>", desc = "Vertical split" },
-    { "<leader><Tab>t", "<Cmd>ToggleTerm direction=tab<CR>", desc = "Tab split" },
-    { mode = "n", "<C-'>", '<Cmd>execute v:count . "ToggleTerm"<CR>', desc = "Toggle terminal" }, -- requires terminal that supports binding <C-'>
-    { mode = "t", "<C-'>", "<Cmd>ToggleTerm<CR>", desc = "Toggle terminal" }, -- requires terminal that supports binding <C-'>
-    { mode = "i", "<C-'>", "<Esc><Cmd>ToggleTerm<CR>", desc = "Toggle terminal" }, -- requires terminal that supports binding <C-'>
-  },
-  opts = {
-    size = function(term)
-      if term.direction == "horizontal" then
-        return vim.o.lines < 20 and vim.o.lines * 0.4 or 10
-      elseif term.direction == "vertical" then
-        return vim.o.columns < 100 and 30 or 40
-      end
-    end,
-    direction = "horizontal",
-    open_mapping = [[<C-'>]],
-    auto_scroll = false,
-    shading_factor = -10,
-  },
+   "akinsho/toggleterm.nvim",
+   version = "*",
+   cmd = "ToggleTerm",
+   keys = {
+      { "<leader>th", "<Cmd>ToggleTerm direction=horizontal<CR>", desc = "Horizontal split" },
+      { "<leader>tv", "<Cmd>ToggleTerm direction=vertical<CR>", desc = "Vertical split" },
+      { "<leader><Tab>t", "<Cmd>ToggleTerm direction=tab<CR>", desc = "Tab split" },
+      { mode = "n", "<C-'>", '<Cmd>execute v:count . "ToggleTerm"<CR>', desc = "Toggle terminal" }, -- requires terminal that supports binding <C-'>
+      { mode = "t", "<C-'>", "<Cmd>ToggleTerm<CR>", desc = "Toggle terminal" }, -- requires terminal that supports binding <C-'>
+      { mode = "i", "<C-'>", "<Esc><Cmd>ToggleTerm<CR>", desc = "Toggle terminal" }, -- requires terminal that supports binding <C-'>
+   },
+   opts = {
+      size = function(term)
+         if term.direction == "horizontal" then
+            return vim.o.lines < 20 and vim.o.lines * 0.4 or 10
+         elseif term.direction == "vertical" then
+            return vim.o.columns < 100 and 30 or 40
+         end
+      end,
+      direction = "horizontal",
+      open_mapping = [[<C-'>]],
+      auto_scroll = false,
+      shading_factor = -10,
+   },
 }
