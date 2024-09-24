@@ -8,7 +8,7 @@ map("n", "<leader><localleader>lR", "<cmd>RustLsp! runables<cr>", { buffer = tru
 map("n", "<leader><localleader>e", "<cmd>RustLsp explainError current<cr>", { buffer = true })
 map("n", "<leader><localleader>E", "<cmd>RustLsp expandMacro<cr>", { buffer = true })
 
-map("n", "<leader><localleader>oc", "<cmd>RustLsp openCargo<cr>", { buffer = true })
+map("n", "<leader><localleader>o", "<cmd>RustLsp openCargo<cr>", { buffer = true })
 map("n", "<leader><localleader>p", "<cmd>RustLsp parentModule<cr>", { buffer = true })
 
 map("n", "<leader><localleader>t", "<cmd>RustLsp testables<cr>", { buffer = true })
