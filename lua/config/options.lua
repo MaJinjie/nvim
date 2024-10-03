@@ -7,6 +7,12 @@ vim.opt.swapfile = false
 vim.opt.shiftwidth = 3
 vim.opt.tabstop = 3
 
+vim.g.autoformat = false
+
+-- python
+vim.g.lazyvim_python_lsp = "pyright"
+vim.g.lazyvim_python_ruff = "ruff"
+
 -- neovide
 if vim.g.neovide then
    vim.g.neovide_scale_factor = 0.75
