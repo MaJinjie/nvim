@@ -5,8 +5,10 @@ return {
    branch = "master",
    build = "sh install.sh",
    opts = {
+      selected_interpreters = { "Python3_fifo" },
+      repl_enable = { "Python3_fifo" },
       interpreter_options = {
-         Python3_original = {
+         Python3_fifo = {
             interpreter = "python3.12",
             venv = {},
          },
