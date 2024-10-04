@@ -46,6 +46,7 @@ return {
    {
       "hrsh7th/cmp-cmdline",
       keys = { ":", "/", "?" },
+      event = "CmdLineEnter",
       dependencies = { "hrsh7th/nvim-cmp" },
       config = function()
          local cmp = require("cmp")
