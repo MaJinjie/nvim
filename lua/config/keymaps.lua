@@ -6,6 +6,6 @@ local map = vim.keymap.set
 map("i", "<C-e>", "<End>", { desc = "Jump to Current line end" })
 map("i", "<C-CR>", "<Esc>o", { desc = "Jump to Next line" })
 map({ "i", "x", "n", "s" }, "<C-s>", function()
-   vim.cmd("w")
    LazyVim.format.format({ force = true })
+   vim.cmd("w")
 end, { desc = "Save File And Format File" })
