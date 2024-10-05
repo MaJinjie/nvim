@@ -4,7 +4,7 @@ return {
    cmd = "Leet",
    opts = {
       arg = "leetcode",
-      lang = "cpp",
+      lang = "python",
       cn = { enabled = true, translator = false, translate_problems = false },
       injector = {
          ["rust"] = { before = { "struct Solution {}" }, after = "fn main() {}" },
