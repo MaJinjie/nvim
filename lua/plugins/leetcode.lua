@@ -1,4 +1,5 @@
 -- 检查-> 网络 -> search "graphql" + copy cookie
+---@type LazyPluginSpec
 return {
    "kawre/leetcode.nvim",
    lazy = "leetcode" ~= vim.fn.argv()[1],
@@ -10,7 +11,7 @@ return {
       injector = {
          ["rust"] = { before = { "struct Solution {}" }, after = "fn main() {}" },
          ["cpp"] = { before = { "#include <bits/stdc++.h>", "using namespace std;" }, after = "int main() {}" },
-         ["python3"] = { before = { "from typing import List" } },
+         -- ["python3"] = { before = { "from typing import List" } },
       },
       hooks = {
          ["question_enter"] = {
@@ -21,6 +22,7 @@ return {
 
                opt.shiftwidth = 4
                opt.tabstop = 4
+               vim.cmd("LspStop")
             end,
             -- 设置映射键
             function()
