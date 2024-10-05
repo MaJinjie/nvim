@@ -5,7 +5,7 @@ return {
    cmd = "Leet",
    opts = {
       arg = "leetcode",
-      lang = "python",
+      lang = "python3",
       cn = { enabled = true, translator = false, translate_problems = false },
       injector = {
          ["rust"] = { before = { "struct Solution {}" }, after = "fn main() {}" },
@@ -16,7 +16,7 @@ return {
             -- 设置选项
             function()
                local opt = vim.opt_local
-               LazyVim.format.enable(false, true) -- 取消自动格式化
+               -- LazyVim.format.enable(false, true) -- 取消自动格式化
 
                opt.shiftwidth = 4
                opt.tabstop = 4
