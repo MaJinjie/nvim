@@ -10,6 +10,7 @@ return {
       injector = {
          ["rust"] = { before = { "struct Solution {}" }, after = "fn main() {}" },
          ["cpp"] = { before = { "#include <bits/stdc++.h>", "using namespace std;" }, after = "int main() {}" },
+         ["python3"] = { before = { "from typing import List" } },
       },
       hooks = {
          ["question_enter"] = {
