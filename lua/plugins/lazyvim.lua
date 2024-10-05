@@ -1,16 +1,3 @@
-local symbols = {
-   rust = { "EnumMember", "Object", "TypeParameter", "Constant" },
-}
-
-local function get_filter_symbols(lang)
-   local default = LazyVim.config.kind_filter.default
-   if type(default) == "boolean" then
-      default = {}
-   end
-
-   return symbols[lang] == nil and true or vim.list_extend(symbols[lang], default)
-end
-
 return {
    {
       "folke/persistence.nvim",
@@ -71,8 +58,9 @@ return {
             up_and_jump = { "<C-k>", "Down" },
          },
          symbols = {
+            -- stylua: ignore
             filter = {
-               rust = get_filter_symbols("rust"),
+               rust = { "Module", "Struct", "Field", "Enum", "EnumMember", "Object", "Function", "Method", "TypeParameter", "Constant" },
             },
          },
       },
