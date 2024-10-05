@@ -53,14 +53,4 @@ return {
       opts = { use_default_keymaps = false },
    },
    { "keaising/im-select.nvim", event = "InsertEnter", opts = {} },
-   {
-      "folke/persistence.nvim",
-    -- stylua: ignore
-    keys = {
-      { "<leader>qs", function() require("persistence").select() end, desc = "Select Session" },
-      { "<leader>qS", function() require("persistence").save() end, desc = "Save Session" },
-      { "<leader>ql", function() require("persistence").load() end, desc = "Restore Session" },
-      { "<leader>qL", function() require("persistence").load({last = true}) end, desc = "Restore Last Session" },
-    },
-   },
 }
