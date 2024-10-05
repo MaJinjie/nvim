@@ -1,3 +1,4 @@
+-- 检查-> 网络 -> search "graphql" + copy cookie
 return {
    "kawre/leetcode.nvim",
    lazy = "leetcode" ~= vim.fn.argv()[1],
