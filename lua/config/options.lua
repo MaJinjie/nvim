@@ -27,3 +27,9 @@ if vim.g.neovide then
    -- vim.g.neovide_floating_shadow = false
    vim.g.neovide_remember_window_size = true
 end
+
+vim.filetype.add({
+   filename = {
+      [".bashenv"] = "sh",
+   },
+})
