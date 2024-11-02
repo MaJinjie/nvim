@@ -20,6 +20,14 @@ return {
       },
    },
    {
+      "stevearc/conform.nvim",
+      opts = {
+         formatters_by_ft = {
+            zsh = { "shfmt" },
+         },
+      },
+   },
+   {
       "williamboman/mason.nvim",
       opts = { ensure_installed = { "shellcheck", "bash-debug-adapter" } },
    },
