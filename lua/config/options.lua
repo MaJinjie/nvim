@@ -4,8 +4,8 @@
 
 vim.opt.guifont = "JetBrainsMono Nerd Font,Hack Nerd Font"
 vim.opt.swapfile = false
-vim.opt.shiftwidth = 3
-vim.opt.tabstop = 3
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
 
 vim.g.autoformat = false
 
@@ -31,5 +31,8 @@ end
 vim.filetype.add({
    filename = {
       [".bashenv"] = "sh",
+   },
+   pattern = {
+      [".*ignore"] = "gitignore",
    },
 })
