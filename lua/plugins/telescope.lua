@@ -7,33 +7,33 @@ return {
       {
          "<leader>sc",
          function()
-            require("telescope").extensions.egrepify.egrepify({ cwd = vim.fn.stdpath("config") })
+            _G.Grep({ cwd = vim.fn.stdpath("config") })
          end,
          desc = "Grep (Cwd)",
       },
       {
          "<leader>sg",
          function()
-            require("telescope").extensions.egrepify.egrepify({ cwd = LazyVim.root() })
+            _G.Grep({ cwd = LazyVim.root() })
          end,
          desc = "Grep (Root Dir)",
       },
       {
          "<leader>sG",
          function()
-            require("telescope").extensions.egrepify.egrepify({ cwd = vim.uv.cwd() })
+            _G.Grep({ cwd = vim.uv.cwd() })
          end,
          desc = "Grep (Cwd)",
       },
       {
          "<leader>sB",
          function()
-            require("telescope").extensions.egrepify.egrepify({ grep_open_files = true })
+            _G.Grep({ grep_open_files = true })
          end,
          desc = "Grep Buffers",
       },
       {
-         "<leader>/",
+         "<leader>s/",
          function()
             local opts = { cwd = LazyVim.root() }
             if vim.bo.filetype ~= "" then
@@ -41,11 +41,11 @@ return {
                vimgrep_arguments = vim.deepcopy(vimgrep_arguments)
                opts.vimgrep_arguments = vim.list_extend(vimgrep_arguments, { "--type", vim.bo.filetype })
             end
-            require("telescope").extensions.egrepify.egrepify(opts)
+            _G.Grep(opts)
          end,
       },
       {
-         "<leader><space>",
+         "<leader>f/",
          function()
             local opts = { cwd = LazyVim.root() }
             if vim.bo.filetype ~= "" then
@@ -53,7 +53,7 @@ return {
                find_command = vim.deepcopy(find_command)
                opts.find_command = vim.list_extend(find_command, { "--type", vim.bo.filetype })
             end
-            require("telescope.builtin").find_files(opts)
+            _G.Find(opts)
          end,
       },
       {
