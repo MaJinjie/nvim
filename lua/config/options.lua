@@ -29,10 +29,37 @@ if vim.g.neovide then
 end
 
 vim.filetype.add({
-   filename = {
-      [".bashenv"] = "sh",
-   },
    pattern = {
       [".*ignore"] = "gitignore",
    },
 })
+
+-- Custom Variables
+
+-- Custom Functions
+
+--- 文件查找
+---
+--- @param opts table 传递的选项
+function Find(opts)
+   if opts.gitdir then
+      if not opts.toplevel then
+         opts.toplevel = vim.fs.dirname(opts.gitdir)
+      end
+      local gitdir, toplevel = vim.env.GIT_DIR, vim.env.GIT_WORK_TREE
+      vim.env.GIT_DIR = opts.gitdir
+      vim.env.GIT_WORK_TREE = opts.toplevel
+      require("telescope.builtin").git_files(opts)
+      vim.env.GIT_DIR = gitdir
+      vim.env.GIT_WORK_TREE = toplevel
+   else
+      require("telescope.builtin").find_files(opts)
+   end
+end
+
+--- 文本内容查找
+---
+--- @param opts table 传递的选项
+function Grep(opts)
+   require("telescope").extensions.egrepify.egrepify(opts)
+end
