@@ -56,6 +56,17 @@ return {
             require("telescope.builtin").find_files(opts)
          end,
       },
+      {
+         "<leader>f.",
+         function()
+            _G.Find({
+               prompt_title = "Dot Files",
+               gitdir = vim.env.DOT_GIT_DIR,
+               toplevel = vim.env.DOT_GIT_WORK_TREE,
+            })
+         end,
+         desc = "Find Dot Files"
+      },
    },
    opts = {
       defaults = {
@@ -63,6 +74,12 @@ return {
          sorting_strategy = "ascending",
          dynamic_preview_title = true,
          file_ignore_patterns = { ".git/", ".github/" },
+         git_worktrees = {
+            {
+               gitdir = vim.env.DOT_GIT_DIR,
+               toplevel = vim.env.DOT_GIT_WORK_TREE,
+            },
+         },
          layout_config = {
             prompt_position = "top",
             bottom_pane = { height = 13, preview_cutoff = 120 },
