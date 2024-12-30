@@ -18,22 +18,31 @@ local colors = {
 	purple = t_colors:color("purple"),
 
 	bg = t_colors:color("bg1"),
+	bg0 = t_colors:color("bg0"),
 	bg1 = t_colors:color("bg1"),
 	bg2 = t_colors:color("bg2"),
 	bg3 = t_colors:color("bg3"),
 	bg4 = t_colors:color("bg4"),
 
 	fg = t_colors:color("fg4"),
+	fg0 = t_colors:color("fg0"),
 	fg1 = t_colors:color("fg1"),
 	fg2 = t_colors:color("fg2"),
 	fg3 = t_colors:color("fg3"),
 	fg4 = t_colors:color("fg4"),
 }
 
-colors.error = colors.red
-colors.warn = colors.yellow
-colors.info = colors.blue
-colors.hint = colors.aqua
+local c_diagnostics = {
+	error = "red",
+	warn = "yellow",
+}
+local c_sections = {
+	{ bg = "fg4" },
+	{ bg = "bg4" },
+	{ bg = "bg3" },
+	{ bg = "bg2" },
+	[0] = { bg = "bg1" },
+}
 
 local c_modes = {
 	normal = { bg = colors.fg, fg = colors.black, bold = true },
@@ -45,54 +54,83 @@ local c_modes = {
 	terminal = { bg = colors.green, fg = colors.black, bold = true },
 	none = {},
 }
+
 local separators = {
-	section = { "", "" }, -- 设置分隔符
-	component = { "", "" }, -- 设置组件间分隔符
-	space = { " ", " " }, -- 设置空格扩展
-	left_component = { " ", " " },
+	section = { left = "", right = "" }, -- 设置分隔符
+	component = { left = "", right = "" }, -- 设置组件间分隔符
 }
 
 --=============================== utils
 local utils = {}
 
-function utils:new(data)
-	local ret = vim.deepcopy(self)
-	ret[1] = data
-	return ret
+--- 连接多个sections
+---
+---  - 如果需要分隔符跟随组件的颜色动态变化，需要向下传递sep_hl字段，该字段将来会与静态颜色合并(no)
+---  - 分隔符和字段视为组合为一体
+---
+---@param sections table[]
+---@param opts {dir:"left"|"right"}
+function utils.sections(sections, opts)
+	local res = {}
+	local dir = opts.dir
+
+	local function merge_hl(section_hl, next_hl)
+		if type(section_hl) == "function" then
+			return function(self)
+				return merge_hl(section_hl(self), next_hl)
+			end
+		elseif type(section_hl) == "table" then
+			return vim.tbl_extend("force", { fg = section_hl.bg }, next_hl)
+		elseif type(section_hl) == "string" then
+			return merge_hl(vim.api.nvim_get_hl(0, { name = section_hl, link = false }), next_hl)
+		else
+			return next_hl
+		end
+	end
+
+	for i = 1, #sections do
+		local hl = sections[i].hl
+		local section = vim.tbl_extend("force", sections[i], { hl = c_sections[i] })
+
+		if sections[i].provider then
+			table.insert(section, { provider = sections[i].provider })
+			sections[i].provider = nil
+		end
+		table.insert(
+			section,
+			1 + (dir == "left" and 0 or #section),
+			{ provider = separators.section[1], hl = merge_hl(hl, c_sections[(i + 1) % #sections]) }
+		)
+		table.insert(res, 1 + (dir == "left" and 0 or #res), {
+			hl = c_sections[i],
+			section,
+		})
+	end
+
+	return res
 end
 
-function utils:get()
-	return self[1]
+---@param components table[]
+---@param opts {dir:"left"|"right"}
+function utils.components(components, opts)
+	local res = {}
+	local dir = opts.dir
+
+	return res
 end
 
----@param delimiter {left?:string,right?:string}
----@param hl? {left?:any,right?:any}
-function utils:fill(delimiter, hl)
-	local component = self[1]
-	assert(component)
+---@param component table
+---@param size {left?:number, right?:number}
+function utils.padding(component, size)
+	local res = component
 
-	hl = hl or {}
-	if not self._flattened then
-		table.insert(component, { provider = component.provider })
+	if component.provider then
+		table.insert(res, { provider = component.provider })
 		component.provider = nil
-		self._flattened = true
 	end
-
-	if delimiter.left then
-		table.insert(component, 1, {
-			provider = delimiter.left,
-			hl = hl.left,
-		})
+	for dir, len in pairs(size) do
+		table.insert(res, 1 + (dir == "left" and 0 or #res), string.rep(" ", len))
 	end
-
-	if delimiter.right ~= "" then
-		table.insert(component, {
-			provider = delimiter.right,
-			hl = hl.right,
-		})
-	end
-	self[1] = component
-	return self
 end
 
 --=============================== components
@@ -168,7 +206,7 @@ function components.branch()
 		condition = function()
 			return vim.b.gitsigns_head ~= nil
 		end,
-		hl = { fg = "white", bold = true },
+		hl = { fg = "white" },
 		provider = function()
 			return " " .. vim.b.gitsigns_head
 		end,
@@ -182,6 +220,11 @@ function components.diff()
 		end,
 	}
 end
+
+---@param opts? _util.root.detect.Opts
+function components.root(opts) end
+
+function components.filename() end
 
 function components.diagnostic()
 	local diagnostic = {
@@ -258,15 +301,19 @@ local sl_diagnostic = components.diagnostic()
 
 sl_mode = utils:new(sl_mode):fill({ left = " ", right = " " }):fill({ right = separators.section[1] }, {
 	right = function(self)
-		return { fg = self.mode_colors[self.mode].bg, bg = nil }
+		return { fg = self.mode_colors[self.mode].bg, bg = _colors.section2.bg }
 	end,
 })
+
+sl_branch = utils:new(sl_branch):fill({ left = " ", right = " " }):fill({ right = separators.section[1] }, {}):get()
 
 --=============================== setup
 M.colors = colors
 M.statusline = {
-	hl = { bg = "bg" },
-	sl_mode,
+	-- section1
+	{ provider = "hello", hl = { bg = "fg3", fg = "black" } },
+	{ provider = "hello", hl = { bg = "fg4" } },
+	-- section2
 }
 return M
 
