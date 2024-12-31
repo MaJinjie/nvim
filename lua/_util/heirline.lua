@@ -37,27 +37,34 @@ local c_diagnostics = {
 	warn = "yellow",
 }
 local c_sections = {
-	{ bg = "fg4" },
-	{ bg = "bg4" },
-	{ bg = "bg3" },
-	{ bg = "bg2" },
+	{ fg = "black", bg = "fg4" },
+	{ fg = "fg1", bg = "bg3" },
+	{ fg = "fg2", bg = "bg2" },
 	[0] = { bg = "bg1" },
+}
+local c_components = {
+	{ fg = "black" },
+	{ fg = "white" },
+	{ fg = "white" },
+	{ fg = "white" },
+	[0] = {},
 }
 
 local c_modes = {
-	normal = { bg = colors.fg, fg = colors.black, bold = true },
-	insert = { bg = colors.blue, fg = colors.black, bold = true },
-	visual = { bg = colors.yellow, fg = colors.black, bold = true },
-	select = { bg = colors.aqua, fg = colors.black, bold = true },
-	replace = { bg = colors.purple, fg = colors.black, bold = true },
-	command = { bg = colors.orange, fg = colors.black, bold = true },
-	terminal = { bg = colors.green, fg = colors.black, bold = true },
+	normal = { bg = "fg", fg = "black", bold = true },
+	insert = { bg = "blue", fg = "black", bold = true },
+	visual = { bg = "yellow", fg = "black", bold = true },
+	select = { bg = "aqua", fg = "black", bold = true },
+	replace = { bg = "purple", fg = "black", bold = true },
+	command = { bg = "orange", fg = "black", bold = true },
+	terminal = { bg = "green", fg = "black", bold = true },
 	none = {},
 }
 
 local separators = {
 	section = { left = "", right = "" }, -- 设置分隔符
 	component = { left = "", right = "" }, -- 设置组件间分隔符
+	padding = { left = " ", right = " " },
 }
 
 --=============================== utils
@@ -65,43 +72,48 @@ local utils = {}
 
 --- 连接多个sections
 ---
----  - 如果需要分隔符跟随组件的颜色动态变化，需要向下传递sep_hl字段，该字段将来会与静态颜色合并(no)
----  - 分隔符和字段视为组合为一体
+--- -- 1. 有condition a b c 依次递进，a若不满足，bc一定不显示，此时a的condition可以作为全局
+--- -- 2. 必须要有一个组件是一定显示的
+--- -- 两个条件满足其中之一
 ---
 ---@param sections table[]
----@param opts {dir:"left"|"right"}
-function utils.sections(sections, opts)
+---@param dir "left"|"right"
+function utils.sections(sections, dir)
 	local res = {}
-	local dir = opts.dir
 
-	local function merge_hl(section_hl, next_hl)
-		if type(section_hl) == "function" then
+	local function merge_hl(cur_hl, default_hl)
+		if type(cur_hl) == "function" then
 			return function(self)
-				return merge_hl(section_hl(self), next_hl)
+				return merge_hl(cur_hl(self), default_hl)
 			end
-		elseif type(section_hl) == "table" then
-			return vim.tbl_extend("force", { fg = section_hl.bg }, next_hl)
-		elseif type(section_hl) == "string" then
-			return merge_hl(vim.api.nvim_get_hl(0, { name = section_hl, link = false }), next_hl)
+		elseif type(cur_hl) == "table" then
+			return vim.tbl_extend("keep", { fg = cur_hl.bg }, default_hl)
+		elseif type(cur_hl) == "string" then
+			return merge_hl(vim.api.nvim_get_hl(0, { name = cur_hl, link = false }), default_hl)
 		else
-			return next_hl
+			return default_hl
 		end
+	end
+
+	if dir == "right" then
+		sections = vim.iter(sections):rev():totable()
 	end
 
 	for i = 1, #sections do
 		local hl = sections[i].hl
-		local section = vim.tbl_extend("force", sections[i], { hl = c_sections[i] })
+		local section = sections[i]
 
 		if sections[i].provider then
 			table.insert(section, { provider = sections[i].provider })
 			sections[i].provider = nil
 		end
-		table.insert(
-			section,
-			1 + (dir == "left" and 0 or #section),
-			{ provider = separators.section[1], hl = merge_hl(hl, c_sections[(i + 1) % #sections]) }
-		)
-		table.insert(res, 1 + (dir == "left" and 0 or #res), {
+		table.insert(section, 1 + (dir == "right" and 0 or #section), {
+			provider = separators.section[dir],
+			hl = merge_hl(hl, { fg = c_sections[i].bg, bg = c_sections[(i + 1) % (#sections + 1)].bg }),
+			-- 这里没有添加condition 也就是说如果section不显示，会显示一个额外的section分隔符
+			-- 同时,section不应该有condition
+		})
+		table.insert(res, 1 + (dir == "right" and 0 or #res), {
 			hl = c_sections[i],
 			section,
 		})
@@ -110,15 +122,31 @@ function utils.sections(sections, opts)
 	return res
 end
 
+---连接多个components
+---
 ---@param components table[]
----@param opts {dir:"left"|"right"}
-function utils.components(components, opts)
+---@param dir "left"|"right"
+function utils.components(components, dir)
 	local res = {}
-	local dir = opts.dir
+
+	for i = 1, #components do
+		if i > 1 then
+			table.insert(res, {
+				provider = separators.component[dir],
+				condition = function()
+					local condition1 = components[i - 1].condition
+					local condition2 = components[i].condition
+					return (not condition1 or condition1()) and (not condition2 or condition2())
+				end,
+			})
+		end
+		table.insert(res, components[i])
+	end
 
 	return res
 end
 
+---填充component
 ---@param component table
 ---@param size {left?:number, right?:number}
 function utils.padding(component, size)
@@ -129,8 +157,15 @@ function utils.padding(component, size)
 		component.provider = nil
 	end
 	for dir, len in pairs(size) do
-		table.insert(res, 1 + (dir == "left" and 0 or #res), string.rep(" ", len))
+		table.insert(res, 1 + (dir == "left" and 0 or #res), { provider = string.rep(separators.padding[dir], len) })
 	end
+	return res
+end
+
+---组合成一个新的component
+---@param ... table
+function utils.combine(...)
+	return vim.tbl_extend("force", ...)
 end
 
 --=============================== components
@@ -193,20 +228,21 @@ function components.mode()
 		update = {
 			"ModeChanged",
 			pattern = "*:*",
-			callback = function()
-				vim.print("hello")
-				vim.cmd("redrawstatus")
-			end,
+			-- callback = function()
+			-- 	vim.cmd("redrawstatus")
+			-- end,
 		},
 	}
 	return vi_mode
 end
+
+---获取git分支
 function components.branch()
 	return {
 		condition = function()
 			return vim.b.gitsigns_head ~= nil
 		end,
-		hl = { fg = "white" },
+		hl = { bold = true },
 		provider = function()
 			return " " .. vim.b.gitsigns_head
 		end,
@@ -218,103 +254,254 @@ function components.diff()
 		condition = function()
 			return vim.b.gitsigns_status and vim.b.gitsigns_status ~= ""
 		end,
+		provider = function()
+			return vim.b.gitsigns_status:gsub("%s", "")
+		end,
 	}
 end
 
+---获取当前文件的root
 ---@param opts? _util.root.detect.Opts
-function components.root(opts) end
-
-function components.filename() end
-
-function components.diagnostic()
-	local diagnostic = {
-		condition = function()
-			return vim.diagnostic.is_enabled({ bufnr = 0 })
+function components.dir(opts)
+	local dir_icon = {
+		init = function(self)
+			self.icon, self.icon_hl = require("mini.icons").get("directory", self.dir)
 		end,
-		update = { "DiagnosticChanged", "BufEnter" },
+		provider = function(self)
+			return self.icon and self.icon .. " " or ""
+		end,
+		hl = function(self)
+			return self.icon_hl
+		end,
+	}
+	local dir_name = {
+		provider = function(self)
+			local dir_name = vim.fn.fnamemodify(self.dir, ":t")
+			return dir_name
+		end,
+	}
+	return {
+		init = function(self)
+			self.dir = require("_util.root").root({ follow = true })
+		end,
+		dir_icon,
+		dir_name,
+	}
+end
+
+---获取当前文件名
+function components.file()
+	local file_icon = {
+		init = function(self)
+			self.icon, self.icon_hl = require("mini.icons").get("file", self.file)
+		end,
+		provider = function(self)
+			return self.icon and self.icon .. " " or ""
+		end,
+		hl = function(self)
+			return self.icon_hl
+		end,
+	}
+	local file_name = {
+		provider = function(self)
+			local filename = vim.fn.fnamemodify(self.file, ":t")
+			if filename == "" then
+				return "[No Name]"
+			end
+			return filename
+		end,
+	}
+	local file_flags = {
 		{
-			condition = function(self)
-				local count = #vim.diagnostic.count(0, { severity = self.severity })
-				if count > 0 then
-					self.count = count
-					return true
-				end
+			condition = function()
+				return vim.bo.modified
 			end,
-			static = {
-				severity = vim.diagnostic.severity.ERROR,
-				icon = t_icons.diagnostic.ERROR,
-				color = "error",
-			},
-			provider = function(self)
-				return self.icon .. self.count
-			end,
-			hl = function(self)
-				return { fg = self.color }
-			end,
+			provider = " ✎",
+			hl = { fg = "green" },
 		},
 		{
-			condition = function(self)
-				local count = #vim.diagnostic.count(0, { severity = self.severity })
-				if count > 0 then
-					self.count = count
-					return true
-				end
+			condition = function()
+				return not vim.bo.modifiable or vim.bo.readonly
 			end,
-			static = {
-				severity = vim.diagnostic.severity.WARN,
-				icon = t_icons.diagnostic.WARN,
-				color = "warn",
-			},
-			provider = function(self)
-				return self.icon .. self.count
-			end,
-			hl = function(self)
-				return { fg = self.color }
-			end,
+			provider = " ",
+			hl = { fg = "orange" },
 		},
 	}
+	return {
+		init = function(self)
+			self.file = vim.api.nvim_buf_get_name(0)
+		end,
+		condition = function()
+			return vim.bo.buftype == ""
+		end,
+		file_icon,
+		file_name,
+		file_flags,
+	}
+end
+
+function components.active_lsp()
+	return {
+		condition = function()
+			return #vim.lsp.get_clients({ bufnr = 0 }) > 0
+		end,
+		update = { "LspAttach", "LspDetach" },
+		provider = function()
+			local names = {}
+			for i, server in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
+				table.insert(names, server.name)
+			end
+			return " [" .. table.concat(names, " ") .. "]"
+		end,
+		hl = { fg = "green", bold = true },
+	}
+end
+
+---获取当前文件的诊断信息
+function components.diagnostic()
+	local severity_s = { "ERROR", "WARN" }
+	local diagnostic = {
+		condition = function()
+			return vim.diagnostic.is_enabled({ bufnr = 0 }) and #vim.diagnostic.get(0, { severity = severity_s }) > 0
+		end,
+		update = { "DiagnosticChanged", "BufEnter" },
+	}
+
+	for _, severity in ipairs(severity_s) do
+		table.insert(diagnostic, {
+			condition = function(self)
+				local count = #vim.diagnostic.count(0, { severity = self.severity })
+				if count > 0 then
+					self.count = count
+					return true
+				end
+			end,
+			static = {
+				severity = vim.diagnostic.severity[severity:upper()],
+				icon = t_icons.diagnostic[severity:upper()],
+				color = severity:lower(),
+			},
+			provider = function(self)
+				return self.icon .. self.count
+			end,
+			hl = function(self)
+				return { fg = self.color }
+			end,
+		})
+	end
 	return diagnostic
 end
 
----@param percentage boolean
-function components.rule(percentage)
-	return { provider = "%6(%l:%c%)" .. (percentage and " %P" or "") }
+function components.macro()
+	local macro = {
+		condition = function()
+			return vim.fn.reg_recording() ~= "" or vim.fn.reg_recorded() ~= ""
+		end,
+		update = {
+			"RecordingEnter",
+			"RecordingLeave",
+		},
+		{
+			provider = " ",
+			hl = function()
+				if vim.fn.reg_recording() ~= "" then
+					return { fg = "orange" }
+				end
+			end,
+		},
+		{
+			provider = function()
+				local recording = vim.fn.reg_recording()
+				return recording ~= "" and recording or vim.fn.reg_recorded()
+			end,
+		},
+	}
+	return macro
 end
 
+function components.showcmd()
+	vim.o.showcmd = true
+	vim.o.showcmdloc = "statusline"
+	local showcmd = {
+		provider = "%2(%S%)",
+	}
+	return showcmd
+end
+
+---获取标尺
+function components.rule()
+	return { provider = "%2l:%-2c" }
+end
+
+---获取百分比
+function components.percentage()
+	return { provider = "%3P" }
+end
+
+---占位符
 function components.placeholder()
-	return { provider = "%=" }
+	return { provider = "%=", hl = c_sections[0] }
 end
 
 --=============================== statusline
-local sl_mode = components.mode()
-local sl_placeholder = components.placeholder()
-local sl_rule = vim.tbl_extend("force", components.mode(), components.rule(true), {
-	update = {
-		"ModeChanged",
-		pattern = "*:*",
-	},
-})
-local sl_branch = components.branch()
-local sl_diagnostic = components.diagnostic()
+local statusline = {}
+--section left1
+statusline.mode = utils.padding(components.mode(), { left = 1, right = 1 })
 
---
+--section left2
+statusline.branch = utils.padding(components.branch(), { left = 1, right = 1 })
+statusline.diff = utils.padding(components.diff(), { left = 1, right = 1 })
+statusline.branch_diff = utils.components({
+	statusline.branch,
+	statusline.diff,
+}, "left")
 
-sl_mode = utils:new(sl_mode):fill({ left = " ", right = " " }):fill({ right = separators.section[1] }, {
-	right = function(self)
-		return { fg = self.mode_colors[self.mode].bg, bg = _colors.section2.bg }
-	end,
-})
+--section left3
+statusline.dir = utils.padding(components.dir(), { left = 1, right = 1 })
+statusline.file = utils.padding(components.file(), { left = 1, right = 1 })
+statusline.dir_file = utils.components({
+	statusline.dir,
+	statusline.file,
+}, "left")
 
-sl_branch = utils:new(sl_branch):fill({ left = " ", right = " " }):fill({ right = separators.section[1] }, {}):get()
+--section center
+statusline.active_lsp = components.active_lsp()
+
+--section right1
+statusline.diagnostic = { utils.padding(components.diagnostic(), { left = 1, right = 1 }) } -- 取消condition
+
+--section right2
+statusline.showcmd = utils.padding(components.showcmd(), { left = 1, right = 1 })
+statusline.macro = utils.padding(components.macro(), { left = 1, right = 1 })
+statusline.macro_showcmd = utils.components({
+	statusline.showcmd,
+	statusline.macro,
+}, "right")
+
+--section right3
+statusline.rule = utils.padding(components.rule(), { left = 1, right = 1 })
+statusline.percentage = utils.padding(components.percentage(), { left = 1, right = 1 })
+statusline.rule_pct = utils.components({ statusline.rule, statusline.percentage }, "right")
+statusline.rule_pct = utils.combine(components.mode(), { provider = false }, statusline.rule_pct)
 
 --=============================== setup
 M.colors = colors
 M.statusline = {
-	-- section1
-	{ provider = "hello", hl = { bg = "fg3", fg = "black" } },
-	{ provider = "hello", hl = { bg = "fg4" } },
-	-- section2
+	utils.sections({
+		statusline.mode,
+		statusline.branch_diff,
+		statusline.dir_file,
+	}, "left"),
+	components.placeholder(),
+	statusline.active_lsp,
+	components.placeholder(),
+	utils.sections({
+		statusline.diagnostic,
+		statusline.macro_showcmd,
+		statusline.rule_pct,
+	}, "right"),
 }
+
 return M
 
 --- heirline插件的组件
