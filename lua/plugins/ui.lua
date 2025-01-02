@@ -16,14 +16,7 @@ return {
 	{
 		"rebelot/heirline.nvim",
 		opts = function()
-			local heirline = require("util.heirline")
-
-			return {
-				statusline = heirline.statusline,
-				opts = {
-					colors = heirline.colors,
-				},
-			}
+			require("util.heirline").setup()
 		end,
 	},
 	{
@@ -73,8 +66,12 @@ return {
 		},
 	},
 	{
-		"nvim-tree/nvim-web-devicons",
-		cmd = "NvimWebDeviconsHiTest",
+		"echasnovski/mini.icons",
 		lazy = true,
+		config = function()
+			local mini_icons = require("mini.icons")
+			mini_icons.setup({})
+			mini_icons.mock_nvim_web_devicons()
+		end,
 	},
 }

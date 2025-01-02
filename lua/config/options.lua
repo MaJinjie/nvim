@@ -28,7 +28,7 @@ vim.o.confirm = true
 vim.o.conceallevel = 2
 vim.o.sessionoptions = "buffers,curdir,tabpages,winsize,help,globals,skiprtp,folds"
 vim.o.mouse = "a"
--- vim.o.shortmess = "ltToOCFIcC" -- add IcC
+vim.o.shortmess = "ltToOCFIcC"
 vim.o.number = true
 vim.o.relativenumber = true
 vim.o.jumpoptions = "stack,view,clean"
@@ -37,10 +37,7 @@ vim.o.jumpoptions = "stack,view,clean"
 vim.o.cursorline = true
 vim.o.colorcolumn = "80"
 vim.o.signcolumn = "yes"
--- vim.o.showmode = false
--- vim.o.ruler = false
 vim.o.laststatus = 3
--- vim.o.statuscolumn = [[%!v:lua.require'snacks.statuscolumn'.get()]]
 
 -- wrap
 vim.o.linebreak = true
@@ -104,3 +101,4 @@ vim.o.foldtext = ""
 -- listchars
 vim.o.list = true
 vim.o.listchars = [[tab:  ,extends:…,precedes:…,nbsp:␣,eol:↲]]
+vim.o.fillchars = [[foldopen:,foldclose:,fold: ,foldsep: ,diff:╱]]

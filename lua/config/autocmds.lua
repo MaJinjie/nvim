@@ -16,13 +16,13 @@ if vim.g.neovide then
 	})
 end
 
-vim.api.nvim_create_autocmd({ "VimResized" }, {
+autocmd({ "VimResized" }, {
 	group = augroup("resize_splits"),
 	command = ":wincmd =",
 })
 
 -- set options for some filetypes
-vim.api.nvim_create_autocmd("FileType", {
+autocmd("FileType", {
 	group = augroup("set_options"),
 	pattern = { "man", "qf", "checkhealth" },
 	callback = function(event)

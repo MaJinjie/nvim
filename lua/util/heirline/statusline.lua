@@ -1,56 +1,18 @@
-local t_colors, t_icons = require("config.theme").colors, require("config.theme").icons
-
-local h_utils, h_conditions = require("heirline.utils"), require("heirline.conditions")
-
----@class _util.heirline
-local M = {}
---=============================== env
-local colors = {
-	black = t_colors:color("bg0"),
-	white = t_colors:color("fg0"),
-	red = t_colors:color("red"),
-	green = t_colors:color("green"),
-	blue = t_colors:color("blue"),
-	yellow = t_colors:color("yellow"),
-	gray = t_colors:color("gray"),
-	aqua = t_colors:color("aqua"),
-	orange = t_colors:color("orange"),
-	purple = t_colors:color("purple"),
-
-	bg = t_colors:color("bg1"),
-	bg0 = t_colors:color("bg0"),
-	bg1 = t_colors:color("bg1"),
-	bg2 = t_colors:color("bg2"),
-	bg3 = t_colors:color("bg3"),
-	bg4 = t_colors:color("bg4"),
-
-	fg = t_colors:color("fg4"),
-	fg0 = t_colors:color("fg0"),
-	fg1 = t_colors:color("fg1"),
-	fg2 = t_colors:color("fg2"),
-	fg3 = t_colors:color("fg3"),
-	fg4 = t_colors:color("fg4"),
+local icons = require("config.theme").icons
+--=============================== config
+local config = {
+	extensions = {},
+	refresh = 200,
 }
 
-local c_diagnostics = {
-	error = "red",
-	warn = "yellow",
-}
-local c_sections = {
+local section_colors = {
 	{ fg = "black", bg = "fg4" },
-	{ fg = "fg1", bg = "bg3" },
-	{ fg = "fg2", bg = "bg2" },
+	{ fg = "fg1", bg = "bg2" },
+	{ fg = "fg1", bg = "bg1" },
 	[0] = { bg = "bg1" },
 }
-local c_components = {
-	{ fg = "black" },
-	{ fg = "white" },
-	{ fg = "white" },
-	{ fg = "white" },
-	[0] = {},
-}
 
-local c_modes = {
+local mode_colors = {
 	normal = { bg = "fg", fg = "black", bold = true },
 	insert = { bg = "blue", fg = "black", bold = true },
 	visual = { bg = "yellow", fg = "black", bold = true },
@@ -71,27 +33,24 @@ local separators = {
 local utils = {}
 
 --- 连接多个sections
----
---- -- 1. 有condition a b c 依次递进，a若不满足，bc一定不显示，此时a的condition可以作为全局
---- -- 2. 必须要有一个组件是一定显示的
---- -- 两个条件满足其中之一
----
 ---@param sections table[]
 ---@param dir "left"|"right"
 function utils.sections(sections, dir)
-	local res = {}
+	local function wrap_hl(i)
+		return function(self)
+			local hl = (function()
+				local hl = sections[i].hl
+				if type(hl) == "function" then
+					return hl(self)
+				elseif type(hl) == "string" then
+					return vim.api.nvim_get_hl(0, { name = hl, link = false })
+				else
+					return hl or {}
+				end
+			end)()
 
-	local function merge_hl(cur_hl, default_hl)
-		if type(cur_hl) == "function" then
-			return function(self)
-				return merge_hl(cur_hl(self), default_hl)
-			end
-		elseif type(cur_hl) == "table" then
-			return vim.tbl_extend("keep", { fg = cur_hl.bg }, default_hl)
-		elseif type(cur_hl) == "string" then
-			return merge_hl(vim.api.nvim_get_hl(0, { name = cur_hl, link = false }), default_hl)
-		else
-			return default_hl
+			-- section.hl.bg -> separator.hl.fg
+			return { fg = hl.bg or section_colors[i].bg, bg = section_colors[self.hl_map[i]].bg }
 		end
 	end
 
@@ -99,24 +58,51 @@ function utils.sections(sections, dir)
 		sections = vim.iter(sections):rev():totable()
 	end
 
-	for i = 1, #sections do
-		local hl = sections[i].hl
-		local section = sections[i]
+	local res = {
+		static = {
+			conditions = {},
+			hl_map = {}, -- [i] = j 表示第i个section的下一个section是j
+		},
+		init = function(self)
+			-- 计算所有conditions
+			local last = nil
+			for i, condition in ipairs(self.conditions) do
+				if type(condition) ~= "function" or condition() then
+					if last then
+						self.hl_map[last] = i
+					end
+					last = i
+				end
+			end
+			if last then
+				self.hl_map[last] = 0
+			end
+		end,
+	}
 
-		if sections[i].provider then
-			table.insert(section, { provider = sections[i].provider })
-			sections[i].provider = nil
-		end
-		table.insert(section, 1 + (dir == "right" and 0 or #section), {
+	for i = 1, #sections do
+		local section = {
+			init = sections[i].init,
+			static = sections[i].static,
+			condition = function(self)
+				return self.hl_map[i]
+			end,
+			hl = section_colors[i], -- section默认高亮
+		}
+		res.static.conditions[i] = sections[i].condition or true
+
+		-- 将section的init static condition属性上升，其中condition属性提前计算
+		sections[i].init = nil
+		sections[i].static = nil
+		sections[i].condition = nil
+
+		table.insert(section, sections[i])
+
+		table.insert(section, 1 + (dir == "left" and #section or 0), {
 			provider = separators.section[dir],
-			hl = merge_hl(hl, { fg = c_sections[i].bg, bg = c_sections[(i + 1) % (#sections + 1)].bg }),
-			-- 这里没有添加condition 也就是说如果section不显示，会显示一个额外的section分隔符
-			-- 同时,section不应该有condition
+			hl = wrap_hl(i),
 		})
-		table.insert(res, 1 + (dir == "right" and 0 or #res), {
-			hl = c_sections[i],
-			section,
-		})
+		table.insert(res, 1 + (dir == "left" and #res or 0), section)
 	end
 
 	return res
@@ -124,9 +110,17 @@ end
 
 ---连接多个components
 ---
+--- 1. 有condition a b c 依次递进，a若不满足，bc一定不显示，此时a的condition可以作为全局
+--- 2. 必须要有一个组件是一定显示的
+--- 两个条件满足其中之一
 ---@param components table[]
----@param dir "left"|"right"
-function utils.components(components, dir)
+---
+--- main: 第一个组件的condition控制整个section的可见性
+---@param opts? {dir?:"left"|"right", main?:boolean}
+function utils.components(components, opts)
+	opts = opts or {}
+	local dir = opts.dir or "left"
+	local main = vim.F.if_nil(opts.main, false)
 	local res = {}
 
 	for i = 1, #components do
@@ -141,6 +135,9 @@ function utils.components(components, dir)
 			})
 		end
 		table.insert(res, components[i])
+	end
+	if main then
+		res.condition = components[1].condition
 	end
 
 	return res
@@ -202,21 +199,21 @@ function components.mode()
 				[""] = "NONE",
 			},
 			mode_colors = {
-				n = c_modes.normal,
-				no = c_modes.normal,
-				ni = c_modes.normal,
-				nt = c_modes.normal,
-				v = c_modes.visual,
-				V = c_modes.visual,
-				["\22"] = c_modes.visual,
-				s = c_modes.select,
-				S = c_modes.select,
-				["\19"] = c_modes.select,
-				i = c_modes.insert,
-				R = c_modes.replace,
-				c = c_modes.command,
-				t = c_modes.terminal,
-				[""] = c_modes.none,
+				n = mode_colors.normal,
+				no = mode_colors.normal,
+				ni = mode_colors.normal,
+				nt = mode_colors.normal,
+				v = mode_colors.visual,
+				V = mode_colors.visual,
+				["\22"] = mode_colors.visual,
+				s = mode_colors.select,
+				S = mode_colors.select,
+				["\19"] = mode_colors.select,
+				i = mode_colors.insert,
+				R = mode_colors.replace,
+				c = mode_colors.command,
+				t = mode_colors.terminal,
+				[""] = mode_colors.none,
 			},
 		},
 		provider = function(self)
@@ -225,13 +222,7 @@ function components.mode()
 		hl = function(self)
 			return self.mode_colors[self.mode]
 		end,
-		update = {
-			"ModeChanged",
-			pattern = "*:*",
-			-- callback = function()
-			-- 	vim.cmd("redrawstatus")
-			-- end,
-		},
+		update = { "ModeChanged", pattern = "*:*" },
 	}
 	return vi_mode
 end
@@ -261,8 +252,7 @@ function components.diff()
 end
 
 ---获取当前文件的root
----@param opts? _util.root.detect.Opts
-function components.dir(opts)
+function components.dir()
 	local dir_icon = {
 		init = function(self)
 			self.icon, self.icon_hl = require("mini.icons").get("directory", self.dir)
@@ -282,7 +272,7 @@ function components.dir(opts)
 	}
 	return {
 		init = function(self)
-			self.dir = require("_util.root").root({ follow = true })
+			self.dir = require("util.root").root({ follow = true })
 		end,
 		dir_icon,
 		dir_name,
@@ -316,14 +306,14 @@ function components.file()
 			condition = function()
 				return vim.bo.modified
 			end,
-			provider = " ✎",
+			provider = "[+]",
 			hl = { fg = "green" },
 		},
 		{
 			condition = function()
 				return not vim.bo.modifiable or vim.bo.readonly
 			end,
-			provider = " ",
+			provider = "[R]",
 			hl = { fg = "orange" },
 		},
 	}
@@ -348,7 +338,7 @@ function components.active_lsp()
 		update = { "LspAttach", "LspDetach" },
 		provider = function()
 			local names = {}
-			for i, server in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
+			for _, server in pairs(vim.lsp.get_clients({ bufnr = 0 })) do
 				table.insert(names, server.name)
 			end
 			return " [" .. table.concat(names, " ") .. "]"
@@ -378,7 +368,7 @@ function components.diagnostic()
 			end,
 			static = {
 				severity = vim.diagnostic.severity[severity:upper()],
-				icon = t_icons.diagnostic[severity:upper()],
+				icon = icons.diagnostic[severity:upper()],
 				color = severity:lower(),
 			},
 			provider = function(self)
@@ -440,73 +430,63 @@ end
 
 ---占位符
 function components.placeholder()
-	return { provider = "%=", hl = c_sections[0] }
+	return { provider = "%=", hl = section_colors[0] }
 end
 
 --=============================== statusline
 local statusline = {}
---section left1
-statusline.mode = utils.padding(components.mode(), { left = 1, right = 1 })
 
---section left2
-statusline.branch = utils.padding(components.branch(), { left = 1, right = 1 })
-statusline.diff = utils.padding(components.diff(), { left = 1, right = 1 })
-statusline.branch_diff = utils.components({
-	statusline.branch,
-	statusline.diff,
-}, "left")
-
---section left3
-statusline.dir = utils.padding(components.dir(), { left = 1, right = 1 })
-statusline.file = utils.padding(components.file(), { left = 1, right = 1 })
-statusline.dir_file = utils.components({
-	statusline.dir,
-	statusline.file,
-}, "left")
-
---section center
-statusline.active_lsp = components.active_lsp()
-
---section right1
-statusline.diagnostic = { utils.padding(components.diagnostic(), { left = 1, right = 1 }) } -- 取消condition
-
---section right2
-statusline.showcmd = utils.padding(components.showcmd(), { left = 1, right = 1 })
-statusline.macro = utils.padding(components.macro(), { left = 1, right = 1 })
-statusline.macro_showcmd = utils.components({
-	statusline.showcmd,
-	statusline.macro,
-}, "right")
-
---section right3
-statusline.rule = utils.padding(components.rule(), { left = 1, right = 1 })
-statusline.percentage = utils.padding(components.percentage(), { left = 1, right = 1 })
-statusline.rule_pct = utils.components({ statusline.rule, statusline.percentage }, "right")
-statusline.rule_pct = utils.combine(components.mode(), { provider = false }, statusline.rule_pct)
-
---=============================== setup
-M.colors = colors
-M.statusline = {
+statusline.default = {
 	utils.sections({
-		statusline.mode,
-		statusline.branch_diff,
-		statusline.dir_file,
+		-- a
+		utils.padding(components.mode(), { left = 1, right = 1 }),
+		-- b
+		utils.components({
+			utils.padding(components.branch(), { left = 1, right = 1 }),
+			utils.padding(components.diff(), { left = 1, right = 1 }),
+		}, { main = true }),
+		-- c
+		utils.components({
+			utils.padding(components.dir(), { left = 1, right = 1 }),
+			utils.padding(components.file(), { left = 1, right = 1 }),
+		}),
 	}, "left"),
 	components.placeholder(),
-	statusline.active_lsp,
+	components.active_lsp(),
 	components.placeholder(),
 	utils.sections({
-		statusline.diagnostic,
-		statusline.macro_showcmd,
-		statusline.rule_pct,
+		-- x
+		-- utils.padding(components.diagnostic(), { left = 1, right = 1 }),
+		-- y
+		-- utils.components({
+		-- 	utils.padding(components.showcmd(), { left = 1, right = 1 }),
+		-- 	utils.padding(components.macro(), { left = 1, right = 1 }),
+		-- }, { dir = "right" }),
+		-- z
+		utils.combine(
+			components.mode(),
+			{ provider = false },
+			utils.components({
+				utils.padding(components.rule(), { left = 1, right = 1 }),
+				utils.padding(components.percentage(), { left = 1, right = 1 }),
+			}, { dir = "right" })
+		),
 	}, "right"),
 }
 
-return M
+--=============================== setup
+local M = {}
 
---- heirline插件的组件
---- 文档说明：
----   - vim.g.actual_curbuf, vim.g.actual_curwin 存储对象所属缓冲区和窗口的索引
----   - 组件的私有字段: pick_child, init, provider, hl, condition, after, on_click, update, fallthrough, flexible and restrict
----
----@class _util.heirline
+M.init = function()
+	M.config = {
+		fallthrough = false,
+	}
+	for _, extension in ipairs(config.extensions) do
+		table.insert(M.config, statusline[extension])
+	end
+	table.insert(M.config, statusline["default"])
+end
+
+M.setup = function() end
+
+return M
