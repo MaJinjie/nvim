@@ -1,5 +1,11 @@
 return {
 	{
+		"stevearc/oil.nvim",
+		---@module 'oil'
+		---@type oil.SetupOpts
+		opts = {},
+	},
+	{
 		"gbprod/yanky.nvim",
 		cmd = { "YankyRingHistory", "YankyClearHistory" },
 		keys = {

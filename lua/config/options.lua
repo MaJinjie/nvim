@@ -32,6 +32,7 @@ vim.o.shortmess = "ltToOCFIcC"
 vim.o.number = true
 vim.o.relativenumber = true
 vim.o.jumpoptions = "stack,view,clean"
+-- vim.o.cmdheight = 0
 
 -- ui
 vim.o.cursorline = true
@@ -74,7 +75,7 @@ vim.o.undolevels = 1000
 
 -- swapfile
 vim.o.swapfile = true
-vim.o.updatetime = 1000
+vim.o.updatetime = 200
 
 -- complete
 vim.o.completeopt = "menu,menuone,noselect"

@@ -1,4 +1,4 @@
--- 1. 使用 左2 中 右2 的布局，左边是sign,mark 右边是git,fold 书写顺序即优先级
+-- 1. 使用 左2 中 右3 的布局，左边是sign,mark 右边是git,fold 书写顺序即优先级
 -- 2. 使用局部渲染，只计算当前窗口以及上一个窗口(C-b)和下一窗口(C-f)
 -- 3. 这种范围渲染最好使用范围计算，而我为了简单使用单行计算
 -- 4. 缓存
@@ -7,13 +7,13 @@ local config = {
 	left = { "sign", "mark" },
 	right = { "fold", "git" },
 	git_pattern = "GitSign",
-	refresh = 75,
-	include_foldopen = true,
-	height = 1,
+	refresh = 50,
+	include_foldopen = false,
+	height = 0.5,
 }
 
----@type table<string, string>
-local text_cache = {}
+---@type table<string, util.statuscolumn.Sign>
+local sign_cache = {}
 ---@type table<number, table<number, util.statuscolumn.Sign[]>>
 local line_cache = {}
 ---@type table<number, table<number, util.statuscolumn.Sign[]>>
@@ -22,53 +22,38 @@ local buf_cache = {}
 --=============================== utils
 local utils = {}
 
----Find first sign
----@param signs util.statuscolumn.Sign[]
+---Get sign
+---@param self util.statuscolumn.Self
 ---@param types util.statuscolumn.Sign.type[]
----@param all? boolean
----@return table<util.statuscolumn.Sign.type, util.statuscolumn.Sign>
-function utils.find(signs, types, all)
-	local sign_by_type = {} ---@type table<util.statuscolumn.Sign.type, util.statuscolumn.Sign>
-	-- 按优先级搜索
-	for _, sign in ipairs(signs) do
-		for _, type in ipairs(types) do
-			if sign.type == type then
-				sign_by_type[type] = sign_by_type[type] or sign
-				break
+---@return util.statuscolumn.Sign
+function utils.get_sign(self, types)
+	local key = "" .. self.buf .. vim.v.lnum .. table.concat(types, ",")
+
+	if sign_cache[key] then
+		return sign_cache[key]
+	end
+
+	local signs = utils.calc_line_sign(self)
+
+	local sign = (function()
+		for _, sign in ipairs(signs) do
+			for _, type in ipairs(types) do
+				if sign.type == type then
+					return sign
+				end
 			end
 		end
-		if not all and next(sign_by_type) then
-			break
-		end
-	end
-	return sign_by_type
-end
+	end)()
 
----Get text
----@param text? string
----@param align? "l"|"r"
----@param size? number
----@return string
-function utils.get_text(text, align, size)
-	text = text or ""
-	align = align or "l"
-	size = size or 2
-
-	local key = text .. align .. size
-	if text_cache[key] then
-		return text_cache[key]
-	end
-
-	if align == "l" then
-		text = vim.fn.strcharpart(text:match("^%s*(.*)"), 0, size)
-		text = text .. string.rep(" ", size - vim.fn.strchars(text))
+	if sign then
+		sign.text = vim.fn.strcharpart(sign.text, 0, 2)
+		sign.text = sign.text .. string.rep(" ", 2 - vim.fn.strchars(sign.text))
 	else
-		text = vim.fn.strcharpart(text:match("(.-)%s*$"), 0, size)
-		text = string.rep(" ", size - vim.fn.strchars(text)) .. text
+		sign = { text = "  " }
 	end
 
-	text_cache[key] = text
-	return text
+	sign_cache[key] = sign
+	return sign
 end
 
 ---Get line signs
@@ -124,7 +109,7 @@ function utils.calc_line_sign(self)
 	end)
 
 	line_cache[buf][num] = signs
-	return utils.calc_line_sign(self)
+	return signs
 end
 
 ---Get buf signs
@@ -154,7 +139,7 @@ function utils.cale_buf_sign(self)
 	end
 
 	buf_cache[buf] = lsigns
-	return utils.cale_buf_sign(self)
+	return lsigns[num] or {}
 end
 
 --=============================== components
@@ -189,22 +174,13 @@ function components.left()
 			return true
 		end,
 		init = function(self)
-			local signs = utils.calc_line_sign(self)
-			local _, sign = next(utils.find(signs, config.left))
-
-			if sign then
-				self.text = utils.get_text(sign.text)
-				self.texthl = sign.texthl
-			else
-				self.text = "  "
-				self.texthl = nil
-			end
+			self.sign = utils.get_sign(self, config.left)
 		end,
 		provider = function(self)
-			return self.text
+			return self.sign.text
 		end,
 		hl = function(self)
-			return self.texthl
+			return self.sign.texthl
 		end,
 	}
 end
@@ -218,22 +194,13 @@ function components.right()
 			return true
 		end,
 		init = function(self)
-			local signs = utils.calc_line_sign(self)
-			local _, sign = next(utils.find(signs, config.right))
-
-			if sign then
-				self.text = utils.get_text(sign.text, sign.type ~= "git" and "l" or "r")
-				self.texthl = sign.texthl
-			else
-				self.text = "  "
-				self.texthl = nil
-			end
+			self.sign = utils.get_sign(self, config.right)
 		end,
 		provider = function(self)
-			return self.text
+			return " " .. self.sign.text
 		end,
 		hl = function(self)
-			return self.texthl
+			return self.sign.texthl
 		end,
 	}
 end
@@ -255,7 +222,6 @@ M.init = function()
 		end,
 		init = function(self)
 			self.buf = vim.api.nvim_get_current_buf()
-			self.win = vim.api.nvim_get_current_win()
 		end,
 		components.left(),
 		components.placeholder(),
@@ -267,6 +233,7 @@ end
 M.setup = function()
 	local timer = assert(vim.uv.new_timer())
 	timer:start(config.refresh, config.refresh, function()
+		sign_cache = {}
 		line_cache = {}
 		buf_cache = {}
 	end)
@@ -275,4 +242,4 @@ return M
 
 ---@alias util.statuscolumn.Sign.type "mark"|"sign"|"fold"|"git"
 ---@alias util.statuscolumn.Sign {text:string, texthl:string, priority:number, type:util.statuscolumn.Sign.type}
----@alias util.statuscolumn.Self {buf:number, win:number}
+---@alias util.statuscolumn.Self {buf:number}
