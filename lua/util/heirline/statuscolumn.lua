@@ -230,21 +230,26 @@ end
 
 function components.right()
 	return {
-		condition = function(self)
-			if vim.bo[self.bufnr].buftype ~= "" then
-				return
-			end
-			return true
-		end,
-		init = function(self)
-			self.sign = utils.get_sign(self, config.right)
-		end,
-		provider = function(self)
-			return " " .. self.sign.text
-		end,
-		hl = function(self)
-			return self.sign.texthl
-		end,
+		{
+			provider = " ",
+		},
+		{
+			condition = function(self)
+				if vim.bo[self.bufnr].buftype ~= "" then
+					return
+				end
+				return true
+			end,
+			init = function(self)
+				self.sign = utils.get_sign(self, config.right)
+			end,
+			provider = function(self)
+				return self.sign.text
+			end,
+			hl = function(self)
+				return self.sign.texthl
+			end,
+		},
 	}
 end
 --=============================== setup

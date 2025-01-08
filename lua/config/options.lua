@@ -32,7 +32,7 @@ vim.o.shortmess = "ltToOCFIcC"
 vim.o.number = true
 vim.o.relativenumber = true
 vim.o.jumpoptions = "stack,view,clean"
--- vim.o.cmdheight = 0
+vim.o.cmdheight = 0
 
 -- ui
 vim.o.cursorline = true
