@@ -1,7 +1,6 @@
 return {
 	{
 		"ellisonleao/gruvbox.nvim",
-		priority = 1000,
 		opts = function()
 			---@diagnostic disable-next-line: missing-fields
 			require("gruvbox").setup({
@@ -13,7 +12,6 @@ return {
 	},
 	{
 		"rebelot/heirline.nvim",
-		priority = 1000,
 		opts = function()
 			require("util.heirline").setup()
 		end,
@@ -157,6 +155,70 @@ return {
 				desc = "Window Hydra Mode (which-key)",
 			},
 		},
+	},
+	{
+		"folke/noice.nvim",
+		event = "VeryLazy",
+		opts = {
+			lsp = {
+				override = {
+					["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+					["vim.lsp.util.stylize_markdown"] = true,
+					["cmp.entry.get_documentation"] = true,
+				},
+			},
+			presets = {
+				bottom_search = false,
+				command_palette = true,
+				long_message_to_split = true,
+			},
+		},
+	},
+	{
+		"rcarriga/nvim-notify",
+		event = "VeryLazy",
+		opts = {
+			timeout = 1500,
+			stages = "static",
+			minimum_width = 20,
+			max_width = 60,
+			max_height = 10,
+			on_open = function(winnr)
+				local bufnr = vim.api.nvim_win_get_buf(winnr)
+				vim.bo[bufnr].filetype = "markdown"
+				vim.wo[winnr].conceallevel = 3
+				vim.wo[winnr].concealcursor = ""
+			end,
+		},
+		config = function(_, opts)
+			local notify = require("notify")
+			notify.setup(opts)
+			vim.notify = notify
+		end,
+	},
+	{
+		"echasnovski/mini.indentscope",
+		event = "VeryLazy",
+		opts_extend = { "ignore_filetypes" },
+		opts = {
+			ignore_filetypes = { "help", "lazy", "mason", "neo-tree", "notify", "toggleterm" },
+		},
+		config = function(_, opts)
+			require("mini.indentscope").setup(opts)
+
+			if opts.ignore_filetypes then
+				vim.api.nvim_create_autocmd("FileType", {
+					pattern = opts.ignore_filetypes,
+					callback = function(ev)
+						local buf = ev.buf
+						if vim.b[buf].miniindentscope_disable == nil then
+							vim.b[buf].miniindentscope_disable = true
+						end
+					end,
+				})
+			end
+			vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { link = "Delimiter" })
+		end,
 	},
 	{
 		"echasnovski/mini.icons",

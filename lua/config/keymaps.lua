@@ -51,6 +51,7 @@ map("n", "<leader>bd", function() require("util.keymap").buf_delete() end, { des
 map("n", "<leader>bD", function() require("util.keymap").buf_delete(function(buf) return buf ~= vim.api.nvim_get_current_buf() end) end, { desc = "Delete Other Buffer" })
 map("n", "<leader>ba", function() require("util.keymap").buf_delete(function(buf) return not vim.list_contains(vim.fn.tabpagebuflist(), buf) end) end, { desc = "Delete all Buffer" })
 map("n", "<leader>bA", function() require("util.keymap").buf_delete(function() return true end) end, { desc = "Delete All Buffer" })
+map("n", "<leader><cr>", "<cmd>BufferPick<cr>", {desc = "Pick buffer"})
 
 -- tabs
 map("n", "<leader><Tab>d", "<cmd>tabclose<cr>", { desc = "Close Tab" })

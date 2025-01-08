@@ -113,78 +113,29 @@ return {
 			filter = {},
 		},
 	},
-	--- usage:
-	---   mappings:
-	---     <esc> to cancel and close the popup
-	---     <bs> go up one level
-	---     <c-d> scroll down
-	---     <c-u> scroll up
 	{
-		"folje/which-key.nvim",
+		"mg979/vim-visual-multi",
 		event = "VeryLazy",
-		opts_extend = { "spec" },
-		opts = {
-			preset = "helix",
-			defaults = {},
-			spec = {
-				{
-					mode = { "n", "v" },
-					{ "<leader><tab>", group = "tabs" },
-					{ "<leader>c", group = "code" },
-					{ "<leader>d", group = "debug" },
-					{ "<leader>f", group = "find" },
-					{ "<leader>g", group = "git" },
-					{ "<leader>s", group = "search" },
-					{ "<leader>u", group = "ui", icon = { icon = "󰙵 ", color = "cyan" } },
-					{ "[", group = "prev" },
-					{ "]", group = "next" },
-					{ "g", group = "goto" },
-					{ "ys", group = "surround add" },
-					{ "yS", group = "surround line add" },
-					{ "ds", group = "surround del" },
-					{ "cs", group = "surround cha" },
-					{ "cS", group = "surround line cha" },
-					{ "z", group = "fold/toggle" },
-					{
-						"<leader>b",
-						group = "buffer",
-						expand = function()
-							return require("which-key.extras").expand.buf()
-						end,
-					},
-					{
-						"<leader>w",
-						group = "Windows",
-						proxy = "<c-w>",
-						expand = function()
-							return require("which-key.extras").expand.win()
-						end,
-					},
-					-- better descriptions
-					{ "gx", desc = "Open with system app" },
-					{ "s", desc = "jump in the current window" },
-					{ "S", desc = "jump in the other window" },
-					{ "gs", desc = "remote action" },
-					{ "ga", desc = "select treesitter node" },
-					{ "gA", desc = "select treesitter node (V)" },
-				},
-			},
-		},
-		keys = {
-			{
-				"<C-w>,",
-				function()
-					require("which-key").show({ global = false })
-				end,
-				desc = "Buffer Keymaps (which-key)",
-			},
-			{
-				"<C-w><enter>",
-				function()
-					require("which-key").show({ keys = "<c-w>", loop = true })
-				end,
-				desc = "Window Hydra Mode (which-key)",
-			},
-		},
+		init = function()
+			vim.g.VM_theme = "sand"
+			vim.g.VM_silent_exit = 1
+			vim.g.VM_show_warnings = 0
+			vim.g.VM_mouse_mappings = 1
+			vim.g.VM_leader = "\\"
+
+			vim.g.VM_maps = {
+				["Select h"] = "<S-A-h>",
+				["Select l"] = "<S-A-l>",
+				["Select j"] = "<S-A-j>",
+				["Select k"] = "<S-A-k>",
+				["Add Cursor Down"] = "<A-j>",
+				["Add Cursor Up"] = "<A-k>",
+				["Single Select l"] = "<A-l>",
+				["Single Select h"] = "<A-h>",
+
+				["Undo"] = "u",
+				["Redo"] = "<C-r>",
+			}
+		end,
 	},
 }
