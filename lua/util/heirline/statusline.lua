@@ -93,10 +93,10 @@ function utils.sections(sections, opts)
 			res,
 			utils.padding(utils.padding(sections[i], padding), {
 				[dir] = separators.section[position],
-				hl = function(_self)
+				hl = function(self)
 					return {
-						fg = _self:nonlocal("merged_hl").bg,
-						bg = colors.section[_self:nonlocal("_last_component_idx")].bg,
+						fg = self:nonlocal("merged_hl").bg,
+						bg = colors.section[self:nonlocal("_last_component_idx")].bg,
 					}
 				end,
 			})
@@ -501,18 +501,55 @@ setmetatable(components.lazy, {
 	end,
 })
 
---=============================== components.fzf_lua
-components.fzf_lua = {}
+--=============================== components.fzf
+components.fzf = {}
+setmetatable(components.fzf, {
+	__call = function(_)
+		local text = { hl = colors.mode.select, provider = "FZF" }
+		local picker = {
+			provider = function()
+				local info = vim.inspect(require("fzf-lua").get_info()["fnc"])
+				return info:gsub('"', "")
+			end,
+		}
+		return { utils.sections({ text, picker }, { padding = true }), components.fill() }
+	end,
+})
+
+--=============================== components.oil
+components.oil = {}
+setmetatable(components.oil, {
+	__call = function(_)
+		local cwd = {
+			provider = function()
+				local ok, oil = pcall(require, "oil")
+				return ok and vim.fs.normalize(vim.fn.fnamemodify(oil.get_current_dir(), ":~")) or ""
+			end,
+		}
+		return { utils.sections({ cwd }, { padding = true }), components.fill() }
+	end,
+})
 
 --=============================== setup
 local M = {}
 
 M.init = function()
 	M.config = {
+		hl = colors.background,
 		fallthrough = false,
 		components("lazy", {
 			condition = function()
 				return vim.bo.filetype == "lazy"
+			end,
+		}),
+		components("fzf", {
+			condition = function()
+				return vim.bo.filetype == "fzf"
+			end,
+		}),
+		components("oil", {
+			condition = function()
+				return vim.bo.filetype == "oil"
 			end,
 		}),
 		components("default"),
