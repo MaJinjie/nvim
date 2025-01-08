@@ -303,7 +303,7 @@ M.setup = function()
 		end,
 	})
 
-	vim.api.nvim_create_user_command("BufferLinePick", function(args)
+	vim.api.nvim_create_user_command("BufferPick", function(args)
 		local tabline = require("heirline").tabline
 		local buflist = tabline._buflist[1]
 		buflist._picker_labels = {}
