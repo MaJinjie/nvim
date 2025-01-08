@@ -9,9 +9,15 @@ local config = {
 }
 local colors = {
 	background = { bg = "dark_hard" },
-	active = { fg = "light_soft", bg = "dark_soft", bold = true },
-	inactive = { fg = "gray" },
-	visible = { fg = "gray", bg = "dark" },
+	bufferline = {
+		active = { fg = "light_soft", bg = "dark_soft", bold = true },
+		inactive = { fg = "gray" },
+		visible = { fg = "light3", bg = "dark_soft" },
+	},
+	tabpage = {
+		active = { fg = "light_soft", bg = "dark_soft" },
+		inactive = { fg = "gray" },
+	},
 	flags = {
 		modified = { fg = "bright_yellow" },
 		readonly = { fg = "bright_orange" },
@@ -109,7 +115,7 @@ function components.bufferline()
 			local file = self.spath or self.path
 
 			self.basename = file == "" and "[No Name]" or vim.fs.basename(file)
-			self.dirname = file ~= self.basename and vim.fs.dirname(file) or ""
+			self.dirname = file ~= self.basename and vim.fs.dirname(file):gsub("^%.%/?", "", 1) or ""
 		end,
 		{
 			condition = function(self)
@@ -171,11 +177,11 @@ function components.bufferline()
 		end,
 		hl = function(self)
 			if self.is_active then
-				return colors.active
+				return colors.bufferline.active
 			elseif self.is_visible then
-				return colors.visible
+				return colors.bufferline.visible
 			else
-				return colors.inactive
+				return colors.bufferline.inactive
 			end
 		end,
 		on_click = {
@@ -218,7 +224,7 @@ function components.tabpage()
 			return "%" .. self.tabnr .. "T " .. self.tabnr .. " %T"
 		end,
 		hl = function(self)
-			return self.is_active and colors.active or colors.inactive
+			return self.is_active and colors.tabpage.active or colors.tabpage.inactive
 		end,
 	}
 end

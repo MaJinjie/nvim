@@ -37,7 +37,7 @@ local colors = {
 
 local separators = {
 	section = { left = "", right = "" }, -- 设置分隔符
-	component = { left = "", right = "" }, -- 设置组件间分隔符
+	component = { left = "  ", right = "  " }, -- 设置组件间分隔符
 	padding = { left = " ", right = " " },
 }
 
@@ -46,113 +46,61 @@ local utils = require("util.heirline.utils")
 
 --- 连接多个sections
 ---@param sections table[]
----@param dir "left"|"right"
-function utils.sections(sections, dir)
-	local function wrap_hl(i)
-		return function(self)
-			local hl = (function()
-				local hl = sections[i].hl
-				if type(hl) == "function" then
-					return hl(self)
-				elseif type(hl) == "string" then
-					return vim.api.nvim_get_hl(0, { name = hl, link = false })
-				else
-					return hl or {}
-				end
-			end)()
-
-			-- section.hl.bg -> separator.hl.fg
-			return { fg = hl.bg or colors.section[i].bg, bg = colors.section[self.hl_map[i]].bg }
-		end
+---@param opts? {position?:"left"|"right", padding?:any}
+function utils.sections(sections, opts)
+	if #sections == 0 then
+		return sections
 	end
 
-	if dir == "right" then
-		sections = vim.iter(sections):rev():totable()
-	end
+	opts = opts or {}
+
+	local position = opts.position or "left"
 
 	local res = {
-		static = {
-			conditions = {},
-			hl_map = {}, -- [i] = j 表示第i个section的下一个section是j
-		},
 		init = function(self)
-			-- 计算所有conditions
-			local last = nil
-			for i, condition in ipairs(self.conditions) do
-				if type(condition) ~= "function" or condition() then
-					if last then
-						self.hl_map[last] = i
+			local si, ei, step, last, i
+
+			-- 从后往前遍历
+			if position == "left" then
+				si, ei, step = #self, 1, -1
+			else
+				si, ei, step = 1, #self, 1
+			end
+
+			i, last = #self, 0
+			for ii = si, ei, step do
+				local child = self[ii]
+
+				child.hl = child.hl or colors.section[i]
+				if utils.find(child, {}) then
+					if child:local_("_last_component_idx") ~= last then
+						if child:local_("_force_update") then
+							child._win_cache = nil
+						end
+						child._last_component_idx = last
 					end
 					last = i
 				end
+				i = i - 1
 			end
-			if last then
-				self.hl_map[last] = 0
-			end
-		end,
-		after = function(self)
-			self.hl_map = {}
 		end,
 	}
 
+	local padding = opts.padding
+	local dir = position == "left" and "right" or "left"
 	for i = 1, #sections do
-		local section = {
-			init = sections[i].init,
-			static = sections[i].static,
-			condition = function(self)
-				return self.hl_map[i] ~= nil
-			end,
-			hl = colors.section[i], -- section默认高亮
-		}
-		res.static.conditions[i] = sections[i].condition or true
-
-		-- 将section的init static condition属性上升，其中condition属性提前计算
-		sections[i].init = nil
-		sections[i].static = nil
-		sections[i].condition = nil
-
-		table.insert(section, sections[i])
-
-		table.insert(section, 1 + (dir == "left" and #section or 0), {
-			provider = separators.section[dir],
-			hl = wrap_hl(i),
-		})
-		table.insert(res, 1 + (dir == "left" and #res or 0), section)
-	end
-
-	return res
-end
-
----连接多个components
----
---- 1. 有condition a b c 依次递进，a若不满足，bc一定不显示，此时a的condition可以作为全局
---- 2. 必须要有一个组件是一定显示的
---- 两个条件满足其中之一
----@param components table[]
----
---- main: 第一个组件的condition控制整个section的可见性
----@param opts? {dir?:"left"|"right", main?:boolean}
-function utils.components(components, opts)
-	opts = opts or {}
-	local dir = opts.dir or "left"
-	local main = vim.F.if_nil(opts.main, false)
-	local res = {}
-
-	for i = 1, #components do
-		if i > 1 then
-			table.insert(res, {
-				provider = separators.component[dir],
-				condition = function()
-					local condition1 = components[i - 1].condition
-					local condition2 = components[i].condition
-					return (not condition1 or condition1()) and (not condition2 or condition2())
+		table.insert(
+			res,
+			utils.padding(utils.padding(sections[i], padding), {
+				[dir] = separators.section[position],
+				hl = function(_self)
+					return {
+						fg = _self:nonlocal("merged_hl").bg,
+						bg = colors.section[_self:nonlocal("_last_component_idx")].bg,
+					}
 				end,
 			})
-		end
-		table.insert(res, components[i])
-	end
-	if main then
-		res.condition = components[1].condition
+		)
 	end
 
 	return res
@@ -160,17 +108,32 @@ end
 
 --=============================== components
 local components = {}
+setmetatable(components, {
+	__call = function(_, name, opts)
+		local first = false
+		return vim.tbl_extend("keep", opts or {}, {
+			init = function(self)
+				if not first then
+					self[1] = self:new(components[name]())
+					first = true
+				end
+			end,
+		})
+	end,
+})
 
 ---占位符
-function components.placeholder()
+function components.fill()
 	return { provider = "%=" }
 end
+
+--=============================== components.cache
+
 --=============================== components.default
 components.default = {}
 
-function components.default.mode()
+function components.default.mode(flag)
 	local vi_mode = {
-		restrict = { hl = false },
 		init = function(self)
 			self.mode = vim.fn.mode(1)
 			local mode = ""
@@ -182,6 +145,7 @@ function components.default.mode()
 			self.mode = mode
 		end,
 		static = {
+			_force_update = true,
 			mode_names = {
 				n = { "NORMAL", "N" },
 				no = { "O-PENDING", "O" },
@@ -234,6 +198,14 @@ function components.default.mode()
 			},
 		},
 	}
+
+	if flag == false then
+		local _vi_mode = {}
+		for _, field in pairs({ "static", "init", "hl", "update" }) do
+			_vi_mode[field] = vi_mode[field]
+		end
+		vi_mode = _vi_mode
+	end
 	return vi_mode
 end
 
@@ -479,37 +451,27 @@ setmetatable(components.default, {
 			hl = colors.background,
 			-- left
 			utils.sections({
-				-- a
-				utils.padding(self.mode(), true),
-				-- b
-				utils.components({
-					utils.padding(self.branch(), true),
-					utils.padding(self.diff(), true),
-				}, { main = true }),
-			}, "left"),
-			components.placeholder(),
+				-- 1
+				self.mode(),
+				-- 2
+				utils.concat({
+					self.branch(),
+					self.diff(),
+				}, { separator = separators.component.left, condition = true }),
+			}, { padding = true }),
+			components.fill(),
 			{
 				fallthrough = false,
 				self.recording_macro(),
 				self.active_lsp(),
 			},
-			components.placeholder(),
+			components.fill(),
 			utils.sections({
-				-- x
-				utils.padding(self.diagnostic(), true),
-				-- y
-				utils.padding(self.file_type(), true),
-				-- z
-				vim.tbl_extend(
-					"force",
-					self.mode(),
-					{ provider = false },
-					utils.components({
-						utils.padding(self.rule(), true),
-						utils.padding(self.percentage(), true),
-					}, { dir = "right" })
-				),
-			}, "right"),
+				-- 	-- -2
+				self.file_type(),
+				-- 	-- -1
+				vim.tbl_extend("force", self.mode(false), self.percentage()),
+			}, { padding = true, position = "right" }),
 		}
 	end,
 })
@@ -520,28 +482,27 @@ components.lazy = {}
 setmetatable(components.lazy, {
 	__call = function(_)
 		local stats = require("lazy").stats()
-		local section1 = {
+		local lazy_text = {
 			provider = "Lazy 󰒲 ",
 			hl = colors.mode.normal,
 		}
-		local section2 = {
+		local loaded = {
 			provider = ("loaded: %d/%d"):format(stats.loaded, stats.count),
 		}
-		local section3 = {
+		local startuptime = {
 			provider = ("startuptime: %.2fms"):format(stats.startuptime),
 		}
 
 		return {
 			hl = colors.background,
-			utils.sections({
-				{
-					provider = ("startuptime: %.2fms"):format(stats.startuptime),
-				},
-			}, "left"),
-			components.placeholder(),
+			utils.sections({ lazy_text, loaded, startuptime }, { padding = true }),
+			components.fill(),
 		}
 	end,
 })
+
+--=============================== components.fzf_lua
+components.fzf_lua = {}
 
 --=============================== setup
 local M = {}
@@ -549,19 +510,12 @@ local M = {}
 M.init = function()
 	M.config = {
 		fallthrough = false,
-		{
+		components("lazy", {
 			condition = function()
 				return vim.bo.filetype == "lazy"
 			end,
-			init = function(self)
-				self[1] = self:new(components.lazy())
-			end,
-		},
-		{
-			init = function(self)
-				self[1] = self:new(components.default())
-			end,
-		},
+		}),
+		components("default"),
 	}
 end
 

@@ -1,18 +1,15 @@
 ---@diagnostic disable: missing-fields
 local M = {}
 
-local function tbl_insert(t, dir, ...)
-	for i = 1, select("#", ...) do
-		local e = select(i, ...)
-		if dir:sub(1, 1) == "l" then
-			table.insert(t, 1, e)
-		else
-			table.insert(t, e)
-		end
+---@param component StatusLine
+---@param opts? {left?:number|string, right?:number|string, hl?:any}|any
+function M.padding(component, opts)
+	if not opts then
+		return component
 	end
-end
 
-function M.flatten(component)
+	opts = type(opts) ~= "table" and { left = 1, right = 1 } or opts
+
 	if component.provider then
 		local new = { provider = component.provider }
 		component.provider = nil
@@ -24,68 +21,47 @@ function M.flatten(component)
 		end
 		table.insert(component, new)
 	end
+
+	local get_str = function(n_or_s)
+		return type(n_or_s) == "number" and (" "):rep(n_or_s) or n_or_s
+	end
+
+	if opts.left then
+		table.insert(component, 1, { provider = get_str(opts.left), condition = false, hl = opts.hl })
+	end
+
+	if opts.right then
+		table.insert(component, { provider = get_str(opts.right), condition = false, hl = opts.hl })
+	end
 	return component
 end
 
 ---@param component StatusLine
----@param opts {left?:number|string, right?:number|string}|any
-function M.padding(component, opts)
+---@param opts? {left?:any, right?:any, hl?:any}
+function M.surround(component, opts)
 	if not opts then
 		return component
 	end
+	local res = { component }
 
-	opts = type(opts) ~= "table" and { left = 1, right = 1 } or opts
-
-	if component.provider then
-		component = M.flatten(component)
+	if opts.left then
+		table.insert(res, 1, { provider = opts.left, hl = opts.hl, condition = false })
 	end
-
-	for dir, n_or_s in pairs(opts) do
-		tbl_insert(component, dir, { provider = type(n_or_s) == "number" and (" "):rep(n_or_s) or n_or_s })
+	if opts.right then
+		table.insert(res, { provider = opts.right, hl = opts.hl, condition = false })
 	end
-	return component
-end
-
----@param component StatusLine
----@param opts {padding?:any,delimiter?:{left?:string, right?:string, out?:true, hl:any},[string]:any}
-function M.surround(component, opts)
-	if not opts.padding and not opts.delimiter then
-		return component
-	end
-
-	if component.provider then
-		component = M.flatten(component)
-	end
-
-	if opts.padding then
-		M.padding(component, opts.padding)
-		opts.padding = nil
-	end
-
-	if opts.delimiter then
-		local delimiter_hl = opts.delimiter.hl
-		opts.delimiter.hl = nil
-		if opts.delimiter.out then
-			component = { component }
-			opts.delimiter.out = nil
-		end
-		for dir, str in pairs(opts.delimiter) do
-			tbl_insert(component, dir, { provider = str, hl = delimiter_hl })
-		end
-		opts.delimiter = nil
-	end
-
-	return vim.tbl_extend("force", component, opts)
+	return res
 end
 
 ---@param components StatusLine[]
----@param opts {separator:(string|fun(self?:StatusLine):string),delimiter?:{left?:string,right?:string},[string]:any}
+---@param opts {separator:any,handle?:function,condition?:boolean}
 function M.concat(components, opts)
 	if #components == 0 then
 		return components
 	end
 	local res = {}
 
+	-- TODO: + is_exists
 	local separator_condition = function(self)
 		local id = self.id[#self.id]
 
@@ -93,13 +69,7 @@ function M.concat(components, opts)
 		local prev_component = parent_component:get({ id - 1 })
 		local next_component = parent_component:get({ id + 1 })
 
-		if prev_component.condition and not prev_component:condition() then
-			return false
-		end
-		if next_component.condition and not next_component:condition() then
-			return false
-		end
-		return true
+		return M.find(prev_component, { only_root = true }) and M.find(next_component, { only_root = true })
 	end
 
 	for i = 1, #components do
@@ -109,16 +79,51 @@ function M.concat(components, opts)
 				condition = separator_condition,
 			})
 		end
-		table.insert(res, components[i])
-	end
-	opts.separator = nil
-
-	if opts.delimiter then
-		M.padding(res, opts.delimiter)
-		opts.delimiter = nil
+		table.insert(res, opts.handle and opts.handle(components[i]) or components[i])
 	end
 
-	return vim.tbl_extend("force", res, opts)
+	if opts.condition then
+		res.condition = function(self)
+			return M.find(self, { is_root = false, is_recursive = false })
+		end
+	end
+
+	return res
+end
+
+---@param self StatusLine
+function M.is_condition(self)
+	local condition = self.condition
+	if condition == false or (type(condition) == "function" and not condition(self)) then
+		return false
+	end
+	return true
+end
+
+---@param self StatusLine
+function M.is_display(self)
+	return M.is_condition(self) and self.provider and true or nil
+end
+
+---@param component StatusLine
+---@param opts {is_root?:boolean,is_recursive?:boolean,only_root?:boolean,func?:(fun(self?:StatusLine):boolean)|string}
+function M.find(component, opts)
+	local func = type(opts.func) == "string" and M[opts.func] or opts.func or M.is_condition
+
+	if opts.is_root ~= false then
+		local ret = func(component)
+		if opts.only_root or ret ~= nil then
+			return ret == true
+		end
+	end
+
+	for _, child in ipairs(component) do
+		if M.find(child, { only_root = opts.is_recursive == false }) then
+			return true
+		end
+	end
+
+	return false
 end
 
 function M.make_tablist(...)
