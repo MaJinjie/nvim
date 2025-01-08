@@ -4,7 +4,7 @@ local M = {}
 M.palette = require("gruvbox").palette
 
 M.icons = {
-	-- ✖   ❮ ❯    󰅖  ▎󰒲
+	-- ✖   ❮ ❯    󰅖  ▎󰒲 
 	misc = {
 		vi_mode = " ",
 		lock = " ",

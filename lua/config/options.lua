@@ -39,6 +39,7 @@ vim.o.cursorline = true
 vim.o.colorcolumn = "80"
 vim.o.signcolumn = "yes"
 vim.o.laststatus = 3
+vim.o.statuscolumn = [[%{%v:lua.require'heirline'.eval_statuscolumn()%}]]
 
 -- wrap
 vim.o.linebreak = true

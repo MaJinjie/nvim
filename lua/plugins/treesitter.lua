@@ -84,4 +84,16 @@ return {
 		},
 		main = "nvim-treesitter.configs",
 	},
+	{
+		"nvim-treesitter/nvim-treesitter-context",
+		event = "VeryLazy",
+    -- stylua: ignore
+		keys = {
+			{ "gt", function() require("treesitter-context").go_to_context(vim.v.count1) end, mode = { "n", "v" }, desc = "Goto Context" },
+			{ "gT", function() require("treesitter-context").go_to_context(math.huge) end, mode = { "n", "v" }, desc = "Goto Context Top" },
+		},
+		opts = function()
+			return { mode = "cursor", max_lines = 3 }
+		end,
+	},
 }

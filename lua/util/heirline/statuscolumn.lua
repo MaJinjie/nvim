@@ -12,7 +12,7 @@ local config = {
 	},
 	refresh = 50,
 	include_foldopen = false,
-	height = 0.5,
+	height = 0.1,
 }
 
 ---@type table<string, util.statuscolumn.Sign>
@@ -45,7 +45,7 @@ function utils.calc_line_signs(self)
 
 	---@param str string?
 	---@return util.statuscolumn.Sign.type
-	local get_sign_type = function(str)
+	local function get_sign_type(str)
 		if str == nil or str == "" then
 			return "sign"
 		end
@@ -59,27 +59,30 @@ function utils.calc_line_signs(self)
 		return "sign"
 	end
 
-	-- Init number range
-	local slnum = (function()
-		local slnum = self.slnum
-		for lnum = clnum - 1, slnum, -1 do
+	local function scan(slnum, elnum, step)
+		for lnum = slnum, elnum, step do
 			if lsigns[lnum] then
-				return lnum + 1
-			end
-			lsigns[lnum] = {}
-		end
-		return slnum
-	end)()
-	local elnum = (function()
-		local elnum = self.elnum
-		for lnum = clnum, elnum, 1 do
-			if lsigns[lnum] then
-				return lnum - 1
+				return lnum - step
 			end
 			lsigns[lnum] = {}
 		end
 		return elnum
-	end)()
+	end
+
+	-- Init number range
+	local _slnum, _elnum = self.slnum, self.elnum
+	local slnum = scan(clnum - 1, _slnum, -1)
+	local elnum = scan(clnum, _elnum, 1)
+
+	local _remain_len = (_elnum - _slnum) - (elnum - slnum)
+	if _remain_len > 0 then
+		if _slnum == slnum then
+			slnum = scan(_slnum - 1, math.max(1, _slnum - _remain_len), -1)
+		end
+		if _elnum == elnum then
+			elnum = scan(_elnum + 1, math.min(vim.fn.line("$"), _elnum + _remain_len), 1)
+		end
+	end
 
   -- stylua: ignore start
 

@@ -6,24 +6,43 @@ return {
 			---@diagnostic disable-next-line: missing-fields
 			require("gruvbox").setup({
 				palette_overrides = {},
-				overrides = {
-					-- GruvboxBg2 = { fg = "#665c54" },
-				},
+				overrides = {},
 			})
 			vim.cmd(":colorscheme gruvbox")
 		end,
 	},
 	{
 		"rebelot/heirline.nvim",
+		priority = 1000,
 		opts = function()
 			require("util.heirline").setup()
 		end,
 	},
+	--- usage:
+	---   mappings:
+	---     [c          prev hunk
+	---     ]c          next hunk
+	---     <leader>hs  stage hunk
+	---     <leader>hS  stage buffer
+	---     <leader>hu  undo stage hunk
+	---     <leader>hU  toggle deleted
+	---     <leader>hr  reset hunk
+	---     <leader>hR  reset buffer
+	---     <leader>hp  preview hunk inline
+	---     <leader>hP  preview hunk
+	---     <leader>hb  blame line full
+	---     <leader>hB  blame buffer
+	---     <leader>hd  diff this
+	---     <leader>hD  diff ~
+	---     <leader>hq  quickfix preview hunk
+	---
+	---     ih          select hunk
 	{
 		"lewis6991/gitsigns.nvim",
+		event = "VeryLazy",
 		opts = {
 			current_line_blame = true,
-			current_line_blame_opts = { delay = vim.o.timeoutlen },
+			current_line_blame_opts = { delay = 500 },
 			signs = {
 				add = { text = "▎" },
 				change = { text = "▎" },
@@ -39,30 +58,104 @@ return {
 				topdelete = { text = "" },
 				changedelete = { text = "▎" },
 			},
-			on_attach = function(buffer)
-				local gs = package.loaded["gitsigns"] ---@module "gitsigns"
-				local function map(mode, l, r, desc)
-					vim.keymap.set(mode, l, r, { buffer = buffer, desc = desc, silent = true })
+			on_attach = function(bufnr)
+				local function map(mode, lhs, rhs, opts)
+					opts = vim.tbl_extend("force", { buffer = bufnr, noremap = true, silent = true }, opts or {})
+					vim.keymap.set(mode, lhs, rhs, opts)
 				end
 
-        -- stylua: ignore start
-				map("n", "]h", function() if vim.wo.diff then vim.cmd.normal({ "]c", bang = true }) else gs.nav_hunk("next") end end, "Next Hunk")
-				map("n", "[h", function() if vim.wo.diff then vim.cmd.normal({ "[c", bang = true }) else gs.nav_hunk("prev") end end, "Prev Hunk")
-				map("n", "]H", function() gs.nav_hunk("last") end, "Last Hunk")
-				map("n", "[H", function() gs.nav_hunk("first") end, "First Hunk")
-				map({ "n", "v" }, "<leader>gs", ":Gitsigns stage_hunk<CR>", "Stage Hunk")
-				map({ "n", "v" }, "<leader>gr", ":Gitsigns reset_hunk<CR>", "Reset Hunk")
-				map("n", "<leader>gS", gs.stage_buffer, "Stage Buffer")
-				map("n", "<leader>gR", gs.reset_buffer, "Reset Buffer")
-				map("n", "<leader>gu", gs.undo_stage_hunk, "Undo Stage Hunk")
-				map("n", "<leader>gp", gs.preview_hunk_inline, "Preview Hunk Inline")
-				map("n", "<leader>gP", gs.preview_hunk, "Preview Hunk")
-				map("n", "<leader>gb", function() gs.blame_line({ full = true }) end, "Blame Line")
-				map("n", "<leader>gB", function() gs.blame() end, "Blame Buffer")
-        map("n", "<leader>gq", gs.setqflist, "Quickfix Preview Hunk")
-				map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
-				-- stylua: ignore end
+				map("n", "]c", "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", { expr = true })
+				map("n", "[c", "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", { expr = true })
+				map({ "n", "v" }, "<leader>hs", ":Gitsigns stage_hunk<CR>")
+				map({ "n", "v" }, "<leader>hr", ":Gitsigns reset_hunk<CR>")
+				map("n", "<leader>hS", "<cmd>Gitsigns stage_buffer<cr>")
+				map("n", "<leader>hR", "<cmd>Gitsigns reset_buffer<cr>")
+				map("n", "<leader>hu", "<cmd>Gitsigns undo_stage_hunk<cr>")
+				map("n", "<leader>hU", "<cmd>Gitsigns toggle_deleted<cr>")
+				map("n", "<leader>hp", "<cmd>Gitsigns preview_hunk_inline<cr>")
+				map("n", "<leader>hP", "<cmd>Gitsigns preview_hunk<cr>")
+				map("n", "<leader>hb", "<cmd>lua require'gitsigns'.blame_line{full=true}<cr>")
+				map("n", "<leader>hB", "<cmd>Gitsigns blame<cr>")
+				map("n", "<leader>hd", "<cmd>Gitsigns diffthis<CR>")
+				map("n", "<leader>hD", '<cmd>lua require"gitsigns".diffthis("~")<CR>')
+				map("n", "<leader>hq", "<cmd>Gitsigns setqflist<cr>")
+				map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<cr>")
 			end,
+		},
+	},
+	--- usage:
+	---   mappings:
+	---     <esc> to cancel and close the popup
+	---     <bs> go up one level
+	---     <c-d> scroll down
+	---     <c-u> scroll up
+	{
+		"folje/which-key.nvim",
+		event = "VeryLazy",
+		opts_extend = { "spec" },
+		opts = {
+			preset = "helix",
+			defaults = {},
+			spec = {
+				{
+					mode = { "n", "v" },
+					{ "<leader><tab>", group = "tabs" },
+					{ "<leader>c", group = "code" },
+					{ "<leader>d", group = "debug" },
+					{ "<leader>f", group = "find" },
+					{ "<leader>g", group = "git" },
+					{ "<leader>s", group = "search" },
+					{ "<leader>u", group = "ui", icon = { icon = "󰙵 ", color = "cyan" } },
+					{ "<leader>h", group = "gitsigns" },
+					{ "[", group = "prev" },
+					{ "]", group = "next" },
+					{ "g", group = "goto" },
+					{ "ys", group = "surround add" },
+					{ "yS", group = "surround line add" },
+					{ "ds", group = "surround del" },
+					{ "cs", group = "surround cha" },
+					{ "cS", group = "surround line cha" },
+					{ "z", group = "fold/toggle" },
+					{
+						"<leader>b",
+						group = "buffer",
+						expand = function()
+							return require("which-key.extras").expand.buf()
+						end,
+					},
+					{
+						"<leader>w",
+						group = "Windows",
+						proxy = "<c-w>",
+						expand = function()
+							return require("which-key.extras").expand.win()
+						end,
+					},
+					-- better descriptions
+					{ "gx", desc = "Open with system app" },
+					{ "s", desc = "jump in the current window" },
+					{ "S", desc = "jump in the other window" },
+					{ "gs", desc = "remote action" },
+					{ "ga", desc = "select treesitter node" },
+					{ "gA", desc = "select treesitter node (V)" },
+				},
+			},
+		},
+		keys = {
+			{
+				"<C-w>,",
+				function()
+					require("which-key").show({ global = false })
+				end,
+				desc = "Buffer Keymaps (which-key)",
+			},
+			{
+				"<C-w><enter>",
+				function()
+					require("which-key").show({ keys = "<c-w>", loop = true })
+				end,
+				desc = "Window Hydra Mode (which-key)",
+			},
 		},
 	},
 	{
@@ -70,8 +163,10 @@ return {
 		lazy = true,
 		config = function()
 			local mini_icons = require("mini.icons")
-			mini_icons.setup({})
+			mini_icons.setup()
 			mini_icons.mock_nvim_web_devicons()
 		end,
 	},
+	-- ui components
+	{ "MunifTanjim/nui.nvim", lazy = true },
 }
