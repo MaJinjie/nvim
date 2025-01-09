@@ -39,6 +39,14 @@ map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Escape and Clear hlsea
 map("n", "q", function () require("util.keymap").quit() end, { desc = "Quit/Close" })
 map("n", "Q", "q", { desc = "Start macro" })
 
+-- diagnostic
+map("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev Diagnostic" })
+map("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
+map("n", "[e", function() vim.diagnostic.goto_prev({ severity = "ERROR" }) end, { desc = "Prev Error Diagnostic" })
+map("n", "]e", function() vim.diagnostic.goto_next({ severity = "ERROR" }) end, { desc = "Next Error Diagnostic" })
+map("n", "[w", function() vim.diagnostic.goto_prev({ severity = "WARN" }) end, { desc = "Prev Warn Diagnostic" })
+map("n", "]w", function() vim.diagnostic.goto_next({ severity = "WARN" }) end, { desc = "Next Warn Diagnostic" })
+
 -- windows
 map("n", "_", "<C-w>s", { desc = "Split Window Below", remap = true })
 map("n", "|", "<C-w>v", { desc = "Split Window Right", remap = true })

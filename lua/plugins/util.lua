@@ -27,4 +27,5 @@ return {
 	{ "Bilal2453/luvit-meta", lazy = true },
 	-- utils functions
 	{ "nvim-lua/plenary.nvim", lazy = true },
+	{ import = "plugins.lang" },
 }

@@ -1,8 +1,6 @@
 local M = {}
 
 --=============================== color
-M.palette = require("gruvbox").palette
-
 M.icons = {
 	-- separator: █ █ ▌▐ ❮❯
 	-- ✖   ❮ ❯    󰅖  ▎

@@ -199,25 +199,17 @@ return {
 	{
 		"echasnovski/mini.indentscope",
 		event = "VeryLazy",
-		opts_extend = { "ignore_filetypes" },
-		opts = {
-			ignore_filetypes = { "help", "lazy", "mason", "neo-tree", "notify", "toggleterm" },
-		},
-		config = function(_, opts)
-			require("mini.indentscope").setup(opts)
-
-			if opts.ignore_filetypes then
-				vim.api.nvim_create_autocmd("FileType", {
-					pattern = opts.ignore_filetypes,
-					callback = function(ev)
-						local buf = ev.buf
-						if vim.b[buf].miniindentscope_disable == nil then
-							vim.b[buf].miniindentscope_disable = true
-						end
-					end,
-				})
-			end
+		init = function()
 			vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { link = "Delimiter" })
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = { "help", "lazy", "mason", "neo-tree", "notify", "toggleterm" },
+				callback = function(ev)
+					local buf = ev.buf
+					if vim.b[buf].miniindentscope_disable == nil then
+						vim.b[buf].miniindentscope_disable = true
+					end
+				end,
+			})
 		end,
 	},
 	{

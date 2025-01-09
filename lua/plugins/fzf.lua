@@ -1,4 +1,5 @@
 local util = require("util")
+local theme = require("config.theme")
 return {
 	"ibhagwan/fzf-lua",
 	cmd = "FzfLua",
@@ -119,7 +120,7 @@ return {
 			lsp = {
 				symbols = {
 					path_shorten = 1,
-					symbol_icons = require("config.theme").icons.lsp_symbol,
+					symbol_icons = theme.icons.lsp_symbol,
 				},
 				code_actions = {
 					winopts = {
