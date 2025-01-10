@@ -127,6 +127,10 @@ function components.fill()
 	return { provider = "%=" }
 end
 
+function components.empty()
+	return { provider = "" }
+end
+
 --=============================== components.cache
 
 --=============================== components.default
@@ -185,7 +189,7 @@ function components.default.mode(flag)
 		end,
 		update = { "ModeChanged", pattern = "*:*" },
 		{
-			flexible = 10,
+			flexible = 5,
 			{
 				provider = function(self)
 					return self.mode_names[self.mode][1]
@@ -373,7 +377,7 @@ function components.default.active_lsp()
 			for _, server in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
 				table.insert(names, server.name)
 			end
-			return " [" .. table.concat(names, " ") .. "]"
+			return " [" .. table.concat(names, ",") .. "]"
 		end,
 		hl = colors.lsp.active,
 	}
@@ -391,9 +395,10 @@ function components.default.diagnostic(cat)
 		update = { "DiagnosticChanged", "BufEnter" },
 	}
 
+	local diag_components = {}
 	-- 遍历 severities，动态生成子组件
 	for _, severity in ipairs(severities) do
-		table.insert(diagnostic, {
+		table.insert(diag_components, {
 			condition = function(self)
 				local diagnostics = vim.diagnostic.get(0, { severity = vim.diagnostic.severity[severity:upper()] })
 				if #diagnostics > 0 then
@@ -408,7 +413,7 @@ function components.default.diagnostic(cat)
 			hl = colors.diagnostic[severity:lower()],
 		})
 	end
-	return diagnostic
+	return vim.tbl_extend("keep", diagnostic, utils.concat(diag_components, { separator = " " }))
 end
 
 function components.default.recording_macro()
@@ -437,12 +442,15 @@ end
 
 ---获取标尺
 function components.default.rule()
-	return { provider = "%2l:%-2c" }
-end
-
----获取百分比
-function components.default.percentage()
-	return { provider = "%3P" }
+	local rule = { provider = "%2l:%-2c" }
+	local percentage = { provider = "%3P" }
+	return {
+		{
+			flexible = 3,
+			utils.concat({ rule, percentage }, { separator = separators.component.right }),
+			rule,
+		},
+	}
 end
 
 setmetatable(components.default, {
@@ -458,6 +466,7 @@ setmetatable(components.default, {
 					self.branch(),
 					self.diff(),
 				}, { separator = separators.component.left, condition = true }),
+				self.diagnostic(),
 			}, { padding = true }),
 			components.fill(),
 			{
@@ -470,7 +479,7 @@ setmetatable(components.default, {
 				-- 	-- -2
 				self.file_type(),
 				-- 	-- -1
-				vim.tbl_extend("force", self.mode(false), self.percentage()),
+				vim.tbl_extend("force", self.mode(false), self.rule()),
 			}, { padding = true, position = "right" }),
 		}
 	end,
@@ -506,13 +515,7 @@ components.fzf = {}
 setmetatable(components.fzf, {
 	__call = function(_)
 		local text = { hl = colors.mode.select, provider = "FZF" }
-		local picker = {
-			provider = function()
-				local info = vim.inspect(require("fzf-lua").get_info()["fnc"])
-				return info:gsub('"', "")
-			end,
-		}
-		return { utils.sections({ text, picker }, { padding = true }), components.fill() }
+		return { utils.sections({ text }, { padding = true }), components.fill() }
 	end,
 })
 

@@ -54,7 +54,7 @@ function M.surround(component, opts)
 end
 
 ---@param components StatusLine[]
----@param opts {separator:any,handle?:function,condition?:boolean}
+---@param opts {separator:any,padding?:boolean,handle?:function,condition?:boolean}
 function M.concat(components, opts)
 	if #components == 0 then
 		return components
@@ -79,7 +79,7 @@ function M.concat(components, opts)
 				condition = separator_condition,
 			})
 		end
-		table.insert(res, opts.handle and opts.handle(components[i]) or components[i])
+		table.insert(res, M.padding(opts.handle and opts.handle(components[i]) or components[i], opts.padding))
 	end
 
 	if opts.condition then

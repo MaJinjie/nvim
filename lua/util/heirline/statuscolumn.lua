@@ -13,11 +13,12 @@ local config = {
 	refresh = 50,
 	include_foldopen = false,
 	height = 0.1,
+	background = { bg = "dark4" },
 }
 
 ---@type table<string, util.statuscolumn.Sign>
 local sign_cache = {}
----@type table<number, table<number, util.statuscolumn.Sign[]>>
+---@type table<string, table<number, util.statuscolumn.Sign[]>>
 local line_cache = {}
 ---@type table<number, table<number, util.statuscolumn.Sign[]>>
 local buf_cache = {}
@@ -25,69 +26,95 @@ local buf_cache = {}
 --=============================== utils
 local utils = {}
 
----Get line signs
---- - sign
---- - fold
---- - git
----
 ---@return util.statuscolumn.Sign[]
 ---@param self util.statuscolumn.Self
-function utils.calc_line_signs(self)
-	local bufnr = self.bufnr
-	local clnum = vim.v.lnum
+---@param clnum number
+function utils.calc_line_signs(self, clnum)
+	local buf, win = self.bufnr, self.winnr
+	local key = ("%s:%s"):format(buf, win)
 
-	line_cache[bufnr] = line_cache[bufnr] or {}
-	if line_cache[bufnr][clnum] then
-		return line_cache[bufnr][clnum]
+	line_cache[key] = line_cache[key] or {}
+	if line_cache[key][clnum] then
+		return line_cache[key][clnum]
 	end
 
-	local lsigns = line_cache[bufnr]
+	local signs = {}
+	vim.list_extend(signs, utils.calc_buf_signs(buf, clnum))
+	vim.list_extend(signs, utils.calc_win_signs(win, clnum))
 
-	---@param str string?
-	---@return util.statuscolumn.Sign.type
-	local function get_sign_type(str)
-		if str == nil or str == "" then
-			return "sign"
+	line_cache[key][clnum] = signs
+	return signs
+end
+
+---@param win integer
+---@param clnum number
+---@return util.statuscolumn.Sign[]
+function utils.calc_win_signs(win, clnum)
+	local signs = {}
+	vim.api.nvim_win_call(win, function()
+		-- Get fold signs
+		if vim.fn.foldclosed(clnum) >= 0 then
+			table.insert(signs, { text = vim.opt.fillchars:get().foldclose or "", texthl = "Folded", type = "fold" })
+		elseif config.include_foldopen and tostring(vim.treesitter.foldexpr(clnum)):sub(1, 1) == ">" then
+			table.insert(signs, { text = vim.opt.fillchars:get().foldopen or "", type = "fold" })
 		end
-		for type, patterns in pairs(config.pattern) do
-			for _, pattern in ipairs(patterns) do
-				if str:find(pattern) then
-					return type
-				end
-			end
-		end
+	end)
+	return signs
+end
+
+---@param str string?
+---@return util.statuscolumn.Sign.type
+local function get_sign_type(str)
+	if str == nil or str == "" then
 		return "sign"
 	end
+	for type, patterns in pairs(config.pattern) do
+		for _, pattern in ipairs(patterns) do
+			if str:find(pattern) then
+				return type
+			end
+		end
+	end
+	return "sign"
+end
+
+---@param buf integer
+---@param clnum number
+---@return util.statuscolumn.Sign[]
+function utils.calc_buf_signs(buf, clnum)
+	buf_cache[buf] = buf_cache[buf] or {}
+
+	if buf_cache[buf][clnum] and buf_cache[buf][clnum][0] then
+		return buf_cache[buf][clnum]
+	end
+
+	local lsigns = buf_cache[buf]
 
 	local function scan(slnum, elnum, step)
 		for lnum = slnum, elnum, step do
-			if lsigns[lnum] then
+			if lsigns[lnum] and lsigns[lnum][0] ~= true then
 				return lnum - step
 			end
-			lsigns[lnum] = {}
+			lsigns[lnum] = lsigns[lnum] or {}
+			lsigns[lnum][0] = true
 		end
 		return elnum
 	end
 
 	-- Init number range
-	local _slnum, _elnum = self.slnum, self.elnum
-	local slnum = scan(clnum - 1, _slnum, -1)
-	local elnum = scan(clnum, _elnum, 1)
-
-	local _remain_len = (_elnum - _slnum) - (elnum - slnum)
-	if _remain_len > 0 then
-		if _slnum == slnum then
-			slnum = scan(_slnum - 1, math.max(1, _slnum - _remain_len), -1)
-		end
-		if _elnum == elnum then
-			elnum = scan(_elnum + 1, math.min(vim.fn.line("$"), _elnum + _remain_len), 1)
-		end
-	end
-
-  -- stylua: ignore start
+	local wt, wb = vim.fn.line("w0"), vim.fn.line("w$")
+	local offset = math.floor(vim.api.nvim_win_get_height(0) * config.height)
+	local slnum = scan(clnum - 1, math.max(1, wt - offset), -1)
+	local elnum = scan(clnum, math.min(vim.fn.line("$"), wb + offset), 1)
 
 	-- Get extmark signs
-	local extmarks = vim.api.nvim_buf_get_extmarks( bufnr, -1, { slnum - 1, 0 }, { elnum - 1, -1 }, { details = true, type = "sign" })
+	local extmarks = vim.api.nvim_buf_get_extmarks(
+		buf,
+		-1,
+		{ slnum - 1, 0 },
+		{ elnum - 1, -1 },
+		{ details = true, type = "sign" }
+	)
 	for _, extmark in ipairs(extmarks) do
 		local type = get_sign_type(extmark[4].sign_hl_group)
 		local text = extmark[4].sign_text
@@ -98,72 +125,42 @@ function utils.calc_line_signs(self)
 		table.insert(lsigns[lnum], { type = type, text = text, texthl = texthl, priority = priority })
 	end
 
-	-- Get fold signs
-	for lnum = slnum, elnum do
-		if vim.fn.foldclosed(lnum) >= 0 then
-			table.insert(lsigns[lnum], { text = vim.opt.fillchars:get().foldclose or "", texthl = "Folded", type = "fold" })
-		elseif config.include_foldopen and tostring(vim.treesitter.foldexpr(clnum)):sub(1, 1) == ">" then
-			table.insert(lsigns[lnum], { text = vim.opt.fillchars:get().foldopen or "", type = "fold" })
+	if lsigns[0] ~= true then
+		-- Get mark signs
+		local marks = vim.list_extend(vim.fn.getmarklist(buf), vim.fn.getmarklist())
+		for _, mark in ipairs(marks) do
+			if mark.pos[1] == buf and mark.mark:match("[a-zA-Z]") then
+				local lnum = mark.pos[2]
+				lsigns[lnum] = lsigns[lnum] or {}
+				table.insert(lsigns[lnum], { text = mark.mark:sub(2), texthl = "DiagnosticHint", type = "mark" })
+			end
 		end
+		---@diagnostic disable-next-line: assign-type-mismatch
+		lsigns[0] = true
 	end
 
-  -- Get buf signs
-  local bufsigns = utils.calc_buf_signs(self)
-  for lnum = slnum, elnum do
-    vim.list_extend(lsigns[lnum], bufsigns[lnum] or {})
-  end
-
 	-- Sort by priority
-  for lnum = slnum, elnum do
-    table.sort(lsigns[lnum], function(a, b) return (a.priority or 0) > (b.priority or 0) end)
-  end
-
-	-- stylua: ignore end
+	for lnum = slnum, elnum do
+		table.sort(lsigns[lnum], function(a, b)
+			return (a.priority or 0) > (b.priority or 0)
+		end)
+	end
 
 	return lsigns[clnum]
 end
 
----Get buf signs
---- - marks
----
 ---@param self util.statuscolumn.Self
----@return util.statuscolumn.Sign[]
-function utils.calc_buf_signs(self)
-	local bufnr = self.bufnr
-
-	-- 如果buf计算过，就直接返回
-	if buf_cache[bufnr] then
-		return buf_cache[bufnr]
-	end
-
-	local lsigns = {}
-
-	-- Get mark signs
-	local marks = vim.list_extend(vim.fn.getmarklist(bufnr), vim.fn.getmarklist())
-	for _, mark in ipairs(marks) do
-		if mark.pos[1] == bufnr and mark.mark:match("[a-zA-Z]") then
-			local lnum = mark.pos[2]
-			lsigns[lnum] = lsigns[lnum] or {}
-			table.insert(lsigns[lnum], { text = mark.mark:sub(2), texthl = "DiagnosticHint", type = "mark" })
-		end
-	end
-
-	buf_cache[bufnr] = lsigns
-	return lsigns
-end
-
----Get sign
----@param self util.statuscolumn.Self
+---@param clnum number
 ---@param types util.statuscolumn.Sign.type[]
 ---@return util.statuscolumn.Sign
-function utils.get_sign(self, types)
-	local key = "" .. self.bufnr .. vim.v.lnum .. table.concat(types, ",")
+function utils.get_line_sign(self, clnum, types)
+	local key = ("%s:%s:%s:%s"):format(self.bufnr, self.winnr, clnum, table.concat(types, ","))
 
 	if sign_cache[key] then
 		return sign_cache[key]
 	end
 
-	local signs = utils.calc_line_signs(self)
+	local signs = utils.calc_line_signs(self, clnum)
 
 	local sign = (function()
 		for _, sign in ipairs(signs) do
@@ -206,18 +203,13 @@ function components.center()
 				return lnum
 			end
 		end,
-		hl = function(self)
-			if self.clnum == vim.v.lnum then
-				return "CursorLineNr"
-			end
-		end,
 	}
 end
 
 function components.left()
 	return {
 		init = function(self)
-			self.sign = utils.get_sign(self, config.left)
+			self.sign = utils.get_line_sign(self, vim.v.lnum, config.left)
 		end,
 		provider = function(self)
 			return self.sign.text
@@ -241,7 +233,7 @@ function components.right()
 				return true
 			end,
 			init = function(self)
-				self.sign = utils.get_sign(self, config.right)
+				self.sign = utils.get_line_sign(self, vim.v.lnum, config.right)
 			end,
 			provider = function(self)
 				return self.sign.text
@@ -257,31 +249,15 @@ local M = {}
 
 M.init = function()
 	M.config = {
-		condition = function(self)
+		condition = function()
 			if vim.v.virtnum ~= 0 then
 				return
 			end
-
-			local win_expand = math.floor(vim.api.nvim_win_get_height(0) * config.height)
-			local win_start = vim.fn.line("w0") - win_expand
-			local win_end = vim.fn.line("w$") + win_expand
-
-			if vim.v.lnum >= win_start - win_expand and vim.v.lnum <= win_end + win_expand then
-				self.slnum = math.max(1, win_start)
-				self.clnum = vim.fn.line(".")
-				self.elnum = math.min(vim.fn.line("$"), win_end)
-				self.bufnr = vim.api.nvim_get_current_buf()
-				self.winnr = vim.api.nvim_get_current_win()
-				return true
-			end
+			return vim.v.lnum >= vim.fn.line("w0") and vim.v.lnum <= vim.fn.line("w$")
 		end,
-		hl = function(self)
-			if self.clnum == vim.v.lnum then
-				local hl_info = vim.api.nvim_get_hl(0, { name = "CursorLine", link = false })
-				---@diagnostic disable-next-line: inject-field
-				hl_info.force = true
-				return hl_info
-			end
+		init = function(self)
+			self.bufnr = vim.api.nvim_get_current_buf()
+			self.winnr = vim.api.nvim_get_current_win()
 		end,
 		components.left(),
 		components.fill(),
@@ -302,4 +278,4 @@ return M
 
 ---@alias util.statuscolumn.Sign.type "mark"|"sign"|"fold"|"git"
 ---@alias util.statuscolumn.Sign {text:string, texthl:string, priority:number, type:util.statuscolumn.Sign.type}
----@alias util.statuscolumn.Self {bufnr:number,winnr:number,slnum:number,clnum:number,elnum:number}
+---@alias util.statuscolumn.Self {bufnr:number,winnr:number}

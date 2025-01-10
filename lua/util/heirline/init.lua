@@ -1,6 +1,6 @@
 local M = {}
 
-local palette = require("config.theme").palette
+local palette = require("gruvbox").palette
 local colors = {
 	black = palette.dark0,
 	white = palette.light0,

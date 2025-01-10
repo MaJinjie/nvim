@@ -6,7 +6,6 @@ local M = setmetatable({}, {
 })
 
 M.root_specs = { "lsp", "git", { "lua" }, "cwd" }
-
 M.detectors = {}
 M.cache = {} ---@type table<string, string>
 

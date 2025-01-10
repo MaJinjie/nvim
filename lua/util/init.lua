@@ -15,6 +15,21 @@ function M.debounce(ms, fn)
 	end
 end
 
+function M.dedup(t)
+	if not t then
+		return
+	end
+	local seen = {}
+	local ret = {}
+	for _, e in ipairs(t) do
+		if not seen[e] then
+			table.insert(ret, e)
+			seen[e] = true
+		end
+	end
+	return ret
+end
+
 --=================================================== git
 
 ---@param path string

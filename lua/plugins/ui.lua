@@ -1,6 +1,7 @@
 return {
 	{
 		"ellisonleao/gruvbox.nvim",
+		priority = 1000,
 		opts = function()
 			---@diagnostic disable-next-line: missing-fields
 			require("gruvbox").setup({
@@ -12,6 +13,7 @@ return {
 	},
 	{
 		"rebelot/heirline.nvim",
+		priority = 1000,
 		opts = function()
 			require("util.heirline").setup()
 		end,
@@ -180,9 +182,10 @@ return {
 		opts = {
 			timeout = 1500,
 			stages = "static",
-			minimum_width = 20,
-			max_width = 60,
+			minimum_width = 15,
+			max_width = 50,
 			max_height = 10,
+			render = "default",
 			on_open = function(winnr)
 				local bufnr = vim.api.nvim_win_get_buf(winnr)
 				vim.bo[bufnr].filetype = "markdown"
@@ -211,6 +214,33 @@ return {
 				end,
 			})
 		end,
+	},
+	{
+		"brenoprata10/nvim-highlight-colors",
+		cmd = "HighlightColors",
+		keys = {
+			{
+				"<leader>uc",
+				function()
+					require("util.keymap").toggle("Highlight", function(state)
+						local p = require("nvim-highlight-colors")
+						if state then
+							p.turnOff()
+							return false
+						else
+							p.turnOn()
+							return true
+						end
+					end)
+				end,
+				desc = "Toggle highlights",
+			},
+		},
+		opts = {
+			---@type 'background'|'foreground'|'virtual'
+			render = "background",
+			enabled_named_colors = false,
+		},
 	},
 	{
 		"echasnovski/mini.icons",

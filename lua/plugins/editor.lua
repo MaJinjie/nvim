@@ -1,9 +1,35 @@
 return {
 	{
 		"stevearc/oil.nvim",
+		cmd = "Oil",
 		---@module 'oil'
 		---@type oil.SetupOpts
 		opts = {},
+		config = function(_, opts)
+			local oil = require("oil")
+			oil.setup(opts)
+
+			local augroup = vim.api.nvim_create_augroup("oil", { clear = true })
+			vim.api.nvim_create_autocmd("User", {
+				pattern = "OilActionsPost",
+				group = augroup,
+				desc = "Close buffers when files are deleted in Oil",
+				callback = function(args)
+					if args.data.err then
+						return
+					end
+					for _, action in ipairs(args.data.actions) do
+						if action.type == "delete" then
+							local _, path = require("oil.util").parse_url(action.url)
+							local bufnr = vim.fn.bufnr(path)
+							if bufnr ~= -1 then
+								require("util.")
+							end
+						end
+					end
+				end,
+			})
+		end,
 	},
 	{
 		"gbprod/yanky.nvim",
@@ -105,13 +131,32 @@ return {
 		dependencies = "junegunn/fzf",
 		opts = {
 			preview = { win_height = 12 },
-			func_map = {
-				open = "o",
-				openc = "<cr>",
-				split = "<C-s>",
-			},
+			func_map = { open = "o", openc = "<cr>", split = "<C-s>" },
 			filter = {},
 		},
+	},
+	--- usage:
+	---   支持 v:count
+	---   default_key:
+	---     ( [ { <
+	---     ) ] } >   :include space
+	---     b         :alias for ) ] }
+	---     " ' `
+	---     q         :alias for " ' `
+	---     ?         :prompt
+	---     t         :tag
+	---     f -> c    :function call
+	---     a         :argument
+	---     <space>   :include digits,punctuation,whitespace
+	---     n         :next variants
+	---     l         :last variants
+	---
+	---     g[ g]     :Move cursor to corresponding edge of `a` textobject
+	---
+	{
+		"echasnovski/mini.ai",
+		event = "VeryLazy",
+		opts = {},
 	},
 	{
 		"mg979/vim-visual-multi",

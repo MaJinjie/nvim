@@ -86,6 +86,37 @@ function M.quit()
 	end
 end
 
+---@package
+M._toggle = {} ---@type table<any, boolean>
+
+---@param name string
+---@param opts? string|(fun(state?:boolean):boolean)|{set:(fun(state?:boolean):boolean),get:(fun(state?:boolean):boolean)}
+---@return boolean
+function M.toggle(name, opts)
+	local function notify(context, flag)
+		if flag ~= nil then
+			context = flag and "Enable " .. context or "Disable " .. context
+		end
+		vim.notify(context, vim.log.levels.INFO, { title = "Toggle" })
+	end
+	opts = opts or name
+
+	if type(opts) == "string" then
+		---@cast opts string
+		vim.cmd(opts)
+		notify(name)
+	elseif type(opts) == "function" then
+		---@cast opts fun(state?:boolean):boolean
+		M._toggle[name] = opts(M._toggle[name])
+		notify(name, M._toggle[name])
+	else
+		---@cast opts {set:(fun(state?:boolean):boolean),get:(fun(state?:boolean):boolean)}
+		M._toggle[name] = opts.set(not opts.get(M._toggle[name]))
+		notify(name, M._toggle[name])
+	end
+	return M._toggle[name]
+end
+
 return M
 
 ---@class util.bufdelete.Opts

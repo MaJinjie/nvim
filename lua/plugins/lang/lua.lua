@@ -1,7 +1,7 @@
 return {
 	{
 		"williamboman/mason.nvim",
-		opts = { ensure_installed = { "lua-language-server", "stylua", "selene" } },
+		opts = { ensure_installed = { "lua_ls", "stylua", "selene" } },
 	},
 	{
 		"neovim/nvim-lspconfig",
@@ -13,6 +13,7 @@ return {
 						codeLens = { enable = true },
 						doc = { privateName = { "^_" } },
 						completion = { callSnippet = "Replace", keywordSnippet = "Both" },
+						format = { enable = false },
 						hint = {
 							enable = true,
 							paramType = true,
@@ -25,5 +26,4 @@ return {
 			},
 		},
 	},
-	{ "stevearc/conform.nvim", opts = { formatters_by_ft = { lua = { "stylua" } } } },
 }

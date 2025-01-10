@@ -36,7 +36,7 @@ map({ "i", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
 map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Escape and Clear hlsearch" })
 
 -- better quit
-map("n", "q", function () require("util.keymap").quit() end, { desc = "Quit/Close" })
+map("n", "q", "<cmd>quit<cr>", { desc = "Quit/Close" })
 map("n", "Q", "q", { desc = "Start macro" })
 
 -- diagnostic

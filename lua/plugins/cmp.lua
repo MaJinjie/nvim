@@ -4,6 +4,7 @@ return {
 		version = "*",
 		event = { "InsertEnter", "CmdlineEnter" },
 		build = "cargo build --release",
+		init = function() end,
 		---@module 'blink.cmp'
 		---@type blink.cmp.Config
 		opts = {
@@ -43,6 +44,15 @@ return {
 					draw = {
 						treesitter = { "lsp" },
 						columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "source_name" } },
+						components = {
+							source_name = {
+								width = { max = 30 },
+								text = function(ctx)
+									return "[" .. ctx.source_name .. "]"
+								end,
+								highlight = "PreCondit",
+							},
+						},
 					},
 				},
 				documentation = { window = { winblend = vim.o.winblend } },
