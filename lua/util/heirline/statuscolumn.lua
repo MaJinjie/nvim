@@ -208,6 +208,9 @@ end
 
 function components.left()
 	return {
+		condition = function()
+			return vim.wo.signcolumn ~= "no"
+		end,
 		init = function(self)
 			self.sign = utils.get_line_sign(self, vim.v.lnum, config.left)
 		end,

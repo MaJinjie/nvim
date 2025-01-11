@@ -4,7 +4,7 @@ local M = {}
 --- - either the current buffer if `buf` is not provided
 --- - or the buffer `buf` if it is a number
 --- - or every buffer for which `buf` returns true if it is a function
----@param opts? number|fun(buf?:number):boolean|util.bufdelete.Opts
+---@param opts? number|(fun(buf?:number):boolean)|util.bufdelete.Opts
 function M.buf_delete(opts)
 	opts = opts or {}
 	opts = type(opts) == "number" and { buf = opts } or opts
@@ -21,7 +21,7 @@ function M.buf_delete(opts)
 		return
 	end
 
-	local buf = opts.buf or 0
+	local buf = opts.bufnr or 0
 	buf = buf == 0 and vim.api.nvim_get_current_buf() or buf
 
 	vim.api.nvim_buf_call(buf, function()
@@ -90,7 +90,7 @@ end
 M._toggle = {} ---@type table<any, boolean>
 
 ---@param name string
----@param opts? string|(fun(state?:boolean):boolean)|{set:(fun(state?:boolean):boolean),get:(fun(state?:boolean):boolean)}
+---@param opts? string|(fun(state?:boolean):boolean)|{set:(fun(state?:boolean)),get:(fun():boolean)}
 ---@return boolean
 function M.toggle(name, opts)
 	local function notify(context, flag)
@@ -110,9 +110,9 @@ function M.toggle(name, opts)
 		M._toggle[name] = opts(M._toggle[name])
 		notify(name, M._toggle[name])
 	else
-		---@cast opts {set:(fun(state?:boolean):boolean),get:(fun(state?:boolean):boolean)}
-		M._toggle[name] = opts.set(not opts.get(M._toggle[name]))
-		notify(name, M._toggle[name])
+		---@cast opts {set:(fun(state?:boolean)),get:(fun():boolean)}
+		opts.set(not opts.get())
+		notify(name, opts.get())
 	end
 	return M._toggle[name]
 end
@@ -120,7 +120,7 @@ end
 return M
 
 ---@class util.bufdelete.Opts
----@field buf? number Buffer to delete. Defaults to the current buffer
+---@field bufnr? number Buffer to delete. Defaults to the current buffer
 ---@field force? boolean Delete the buffer even if it is modified
 ---@field filter? fun(buf: number): boolean Filter buffers to delete
 ---@field wipe? boolean Wipe the buffer instead of deleting it (see `:h :bwipeout`)
