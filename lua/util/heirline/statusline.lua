@@ -91,7 +91,7 @@ function utils.sections(sections, opts)
   for i = 1, #sections do
     table.insert(
       res,
-      utils.padding(utils.padding(sections[i], padding), {
+      utils.padding(utils.padding(sections[i], padding == true), {
         [dir] = separators.section[position],
         hl = function(self)
           return {
@@ -526,7 +526,7 @@ setmetatable(components.oil, {
     local cwd = {
       provider = function()
         local ok, oil = pcall(require, "oil")
-        return ok and vim.fs.normalize(vim.fn.fnamemodify(oil.get_current_dir(), ":~")) or ""
+        return ok and vim.fn.fnamemodify(oil.get_current_dir(), ":~") or ""
       end,
     }
     return { utils.sections({ cwd }, { padding = true }), components.fill() }

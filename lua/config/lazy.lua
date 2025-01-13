@@ -3,5 +3,5 @@ require("config.keymaps")
 require("config.autocmds")
 
 require("lazy").setup({
-	{ import = "plugins" },
-}, {})
+  { import = "plugins" },
+}, { change_detection = { notify = false } })

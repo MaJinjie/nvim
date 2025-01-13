@@ -6,6 +6,8 @@ local config = {
     },
     right = {},
   },
+  left_trunc = { provider = " ", hl = { fg = "gray" } },
+  right_trunc = { provider = " ", hl = { fg = "gray" } },
   exclude_filetype = {},
   -- include_buftype = { "" },
 }
@@ -64,11 +66,7 @@ function components.offset(dir)
       local bufnr = vim.api.nvim_win_get_buf(winid)
 
       self.winid = winid
-      self.bufnr = bufnr
 
-      -- require("util").debounce(1000, function()
-      --   print(vim.inspect(vim.fn.winlayout()), winid, bufnr, vim.bo[bufnr].filetype, filetype)
-      -- end)()
       for filetype, info in pairs(config.offset[dir]) do
         if vim.bo[bufnr].filetype == filetype then
           self.info = info
@@ -94,9 +92,11 @@ end
 function components.bufferline()
   local file_picker = {
     condition = function(self)
-      return self._show_picker
+      return self._show_picker and not self.is_active
     end,
-    update = false,
+    update = function()
+      return false
+    end,
     init = function(self)
       local bufname = vim.api.nvim_buf_get_name(self.bufnr)
       bufname = vim.fn.fnamemodify(bufname, ":t")
@@ -169,7 +169,7 @@ function components.bufferline()
       condition = function(self)
         return not vim.bo[self.bufnr].modifiable or vim.bo[self.bufnr].readonly
       end,
-      provider = " ",
+      provider = "  ",
       hl = colors.flags.readonly,
     },
     {
@@ -230,9 +230,9 @@ end
 
 function components.bufferlines()
   return utils.make_buflist(
-    utils.padding(components.bufferline(), true),
-    { provider = " ", hl = { fg = "gray" } },
-    { provider = " ", hl = { fg = "gray" } },
+    utils.padding(components.bufferline(), { left = "▎", right = " ", hl = { fg = "dark_soft" } }),
+    config.left_trunc,
+    config.right_trunc,
     function()
       return buflist_cache
     end,
@@ -256,7 +256,7 @@ function components.tabpages()
     condition = function()
       return #vim.api.nvim_list_tabpages() >= 2
     end,
-    utils.make_tablist(utils.padding(components.tabpage(), true)),
+    utils.make_tablist(utils.padding(components.tabpage())),
   }
 end
 
@@ -312,9 +312,6 @@ M.setup = function()
       vim.schedule(function()
         local bufs = get_bufs()
 
-        -- vim.print("-----------")
-        -- vim.print(bufs)
-
         buflist_cache = bufs
         bufs = {}
         buflist_path_cache = {}
@@ -327,9 +324,7 @@ M.setup = function()
           end
         end
 
-        -- vim.print(bufs)
         simply_path(bufs, 1)
-        -- vim.print(buflist_display_cache)
 
         if #bufs > 1 then
           vim.o.showtabline = 2 -- always

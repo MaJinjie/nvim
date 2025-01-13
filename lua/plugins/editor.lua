@@ -1,4 +1,4 @@
-local default_file_explorer = "neo-tree"
+local default_file_explorer = "oil"
 
 vim.api.nvim_create_autocmd("VimEnter", {
   group = vim.api.nvim_create_augroup("start_directory", { clear = true }),
@@ -22,6 +22,7 @@ return {
     cmd = "Oil",
     -- stylua: ignore
     keys = {
+     	{ "<leader>-", function() require("oil").open(require('util.root')({specs ={"pwd", "cwd"}})) end, desc = "Oil" },
      	{ "<leader>fo", function() require("oil").open(require('util.root')()) end, desc = "Oil (Follow Cwd)" },
      	{ "<leader>fO", function() require("oil").open(require('util.root')({follow = true})) end, desc = "Oil (Follow Buffer)" },
     },
@@ -30,11 +31,15 @@ return {
       return {
         default_file_explorer = default_file_explorer == "oil",
         use_default_keymaps = false,
+        delete_to_trash = true,
+        ---@module 'oil.actions'
         keymaps = {
-          ["<localleader>v"] = { "actions.select", opts = { vertical = true } },
-          ["<localleader>s"] = { "actions.select", opts = { horizontal = true } },
-          ["<localleader>t"] = { "actions.select", opts = { tab = true } },
+          ["<C-v>"] = { "actions.select", opts = { vertical = true } },
+          ["<C-s>"] = { "actions.select", opts = { horizontal = true } },
+          ["<C-t>"] = { "actions.select", opts = { tab = true } },
           ["<localleader>w"] = "actions.preview",
+          ["<C-f>"] = { "actions.preview_scroll_down" },
+          ["<C-b>"] = { "actions.preview_scroll_up" },
           ["<localleader>r"] = "actions.refresh",
           ["<localleader>o"] = { "actions.change_sort", mode = "n" },
           ["<localleader>c"] = { "actions.open_cwd", mode = "n" },
@@ -44,6 +49,9 @@ return {
           ["-"] = { "actions.parent", mode = "n" },
           ["`"] = { "actions.cd", mode = "n" },
           ["~"] = { "actions.cd", opts = { scope = "tab" }, mode = "n" },
+
+          ["<C-q>"] = { "actions.send_to_qflist", opts = { target = "qflist", action = "r" } },
+          ["<localleader>q"] = { "actions.send_to_qflist", opts = { target = "qflist", action = "a" } },
 
           ["g?"] = { "actions.show_help", mode = "n" },
           ["gx"] = "actions.open_external",
@@ -83,7 +91,7 @@ return {
               local _, path = require("oil.util").parse_url(action.url)
               local bufnr = vim.fn.bufnr(path)
               if bufnr ~= -1 then
-                require("util.keymap").buf_delete({ bufnr = bufnr, wipe = true })
+                require("util.keymap").buf_delete({ buf = bufnr, wipe = true })
               end
             end
           end
@@ -216,6 +224,15 @@ return {
     },
     opts = { highlight = { timer = 200 } },
   },
+  {
+    "MagicDuck/grug-far.nvim",
+    cmd = "GrugFar",
+    -- stylua: ignore
+    keys = {
+      { "<leader>sr", function() require("grug-far").open({ transient = true, prefills = { paths = vim.fn.expand("%") } }) end, mode = { "n", "v" }, desc = "Search and Replace (Current File)" },
+      { "<leader>sR", function() require("grug-far").open({ transient = true, prefills = { paths = require('util.root')() } }) end, mode = { "n", "v" }, desc = "Search and Replace Root" },
+    },
+  },
   --- usage:
   ---   mappings:
   ---     s<space><space> jumps to actual end-of-line characters, including empty lines.
@@ -323,12 +340,12 @@ return {
   ---
   {
     "echasnovski/mini.ai",
-    event = "VeryLazy",
+    event = "UIEnter",
     opts = {},
   },
   {
     "mg979/vim-visual-multi",
-    event = "VeryLazy",
+    event = "UIEnter",
     init = function()
       vim.g.VM_theme = "sand"
       vim.g.VM_silent_exit = 1
@@ -352,3 +369,50 @@ return {
     end,
   },
 }
+
+--[[
+{
+    "mikavilpas/yazi.nvim",
+    cmd = "Yazi",
+    keys = {
+      { "<leader>-", "<cmd>Yazi toggle<cr>", desc = "Toggle yazi" },
+      {
+        "<leader>fy",
+        function()
+          local yazi = require("yazi")
+          local previous_path = yazi.previous_state and yazi.previous_state.last_hovered
+          yazi.yazi(nil, previous_path or require("util.root")())
+        end,
+        desc = "Toggle yazi (Follow Cwd)",
+      },
+      {
+        "<leader>fy",
+        function()
+          require("yazi").yazi(nil, require("util.root")({ follow = true }))
+        end,
+        desc = "Open yazi (Follow Buffer)",
+      },
+    },
+    ---@module 'yazi'
+    ---@type YaziConfig
+    opts = {
+      open_for_directories = default_file_explorer == "yazi",
+      yazi_floating_window_winblend = vim.o.winblend,
+      keymaps = {
+        show_help = "g?",
+        open_file_in_vertical_split = "<c-v>",
+        open_file_in_horizontal_split = "<c-s>",
+        open_file_in_tab = "<c-t>",
+        grep_in_directory = "<c-g>",
+        replace_in_directory = "<c-r>",
+        cycle_open_buffers = "<tab>",
+        copy_relative_path_to_selected_files = "<c-y>",
+        send_to_quickfix_list = "<c-q>",
+        change_working_directory = "<c-x>c",
+      },
+      yazi_floating_window_border = "single",
+      integrations = { grep_in_directory = "fzf-lua", grep_in_selected_files = "fzf-lua" },
+    },
+  },
+
+--]]

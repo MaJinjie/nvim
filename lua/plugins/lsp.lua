@@ -4,6 +4,8 @@ local util = require("util")
 
 local _aliases = {
   ["lua_ls"] = "lua-language-server",
+  ["bashls"] = "bash-language-server",
+  ["yamlls"] = "yaml-language-server",
 }
 local function get_package_name(name)
   return _aliases[name] or name
@@ -20,14 +22,14 @@ return {
       require("mason").setup(opts)
 
       local mr = require("mason-registry")
-      mr:on("package:install:success", function()
-        vim.defer_fn(function()
-          vim.api.nvim_exec_autocmds("FileType", {
-            buffer = vim.api.nvim_get_current_buf(),
-            modeline = false,
-          })
-        end, 100)
-      end)
+      -- mr:on("package:install:success", function()
+      --   vim.defer_fn(function()
+      --     vim.api.nvim_exec_autocmds("FileType", {
+      --       buffer = vim.api.nvim_get_current_buf(),
+      --       modeline = false,
+      --     })
+      --   end, 100)
+      -- end)
 
       vim.defer_fn(function()
         mr.refresh(function()
@@ -40,15 +42,13 @@ return {
               p:install()
             end
           end
-          require("lazy").load({ plugins = { "nvim-lspconfig", "none-ls.nvim", "nvim-lint", "conform.nvim" } })
-          vim.cmd("doautocmd FileType")
         end)
-      end, 100)
+      end, 50)
     end,
   },
   {
     "neovim/nvim-lspconfig",
-    lazy = true,
+    event = "UIEnter",
     opts_extend = { "diagnostic", "default" },
     ---@type table<string|"default",lspconfig.Config>
     opts = {
@@ -151,14 +151,13 @@ return {
           end
         end
       end
+      vim.cmd("doautocmd FileType")
     end,
   },
   {
     "stevearc/conform.nvim",
-    lazy = true,
-    -- event = "BufWritePre",
-    -- cmd = { "ConformInfo", "Format" },
-    -- keys = { { "<leader>cf", ":Format<CR>", mode = { "n", "v" }, desc = "Format Code", silent = true } },
+    event = "BufWritePre",
+    cmd = "ConformInfo",
     init = function()
       vim.keymap.set("n", "<leader>uf", function()
         require("util.keymap").toggle("Auto Format (Global)", {
@@ -181,20 +180,6 @@ return {
           end,
         })
       end)
-    end,
-    ---@module "conform"
-    ---@type conform.setupOpts
-    opts = {
-      default_format_opts = {
-        lsp_format = "fallback",
-        timeout_ms = 500,
-      },
-      format_on_save = function(buf)
-        return vim.F.ok_or_nil(vim.F.if_nil(vim.b[buf].autoformat, vim.g.autoformat ~= false), {})
-      end,
-    },
-    config = function(_, opts)
-      require("conform").setup(opts)
       vim.api.nvim_create_user_command("Format", function(args)
         local range = nil
         if args.count ~= -1 then
@@ -215,10 +200,20 @@ return {
       end, { range = true, desc = "Format Code" })
       vim.keymap.set({ "n", "v" }, "<leader>cf", ":Format<cr>", { desc = "Format Code", silent = true })
     end,
+    ---@module "conform"
+    ---@type conform.setupOpts
+    opts = {
+      default_format_opts = {
+        lsp_format = "fallback",
+        timeout_ms = 500,
+      },
+      format_on_save = function(buf)
+        return vim.F.ok_or_nil(vim.F.if_nil(vim.b[buf].autoformat, vim.g.autoformat ~= false), {})
+      end,
+    },
   },
   {
     "mfussenegger/nvim-lint",
-    lazy = true,
     opts = {
       -- Event to trigger linters
       events = { "BufWritePost", "BufReadPost", "InsertLeave" },
@@ -255,7 +250,7 @@ return {
           if not linter then
             vim.notify("Linter not found: " .. name, vim.log.levels.WARN, { title = "nvim-lint" })
           end
-          ---@cast linter +{condition?:(fun(ctx?:any):boolean)}
+          ---@cast linter +{condition?:(fun():boolean)}
           return linter and not (type(linter) == "table" and linter.condition and not linter.condition())
         end, names)
 
@@ -271,7 +266,7 @@ return {
   },
   {
     "nvimtools/none-ls.nvim",
-    lazy = true,
+    event = "UIEnter",
     opts = function()
       local null_ls = require("null-ls")
       return {

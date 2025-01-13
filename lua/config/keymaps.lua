@@ -30,7 +30,7 @@ map("i", ",", ",<C-g>u") map("i", ".", ".<C-g>u") map("i", ";", ";<C-g>u")
 map( "n", "<leader>ur", "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>", { desc = "Redraw / Clear hlsearch / Diff Update" })
 
 -- save file
-map({ "i", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
+-- map({ "i", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
 
 -- Clear search with <esc>
 map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Escape and Clear hlsearch" })
@@ -56,10 +56,12 @@ map("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
 map("n", "]b", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 map("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 map("n", "<leader>bd", function() require("util.keymap").buf_delete() end, { desc = "Delete Buffer" })
-map("n", "<leader>bD", function() require("util.keymap").buf_delete(function(buf) return buf ~= vim.api.nvim_get_current_buf() end) end, { desc = "Delete Other Buffer" })
-map("n", "<leader>ba", function() require("util.keymap").buf_delete(function(buf) return not vim.list_contains(vim.fn.tabpagebuflist(), buf) end) end, { desc = "Delete all Buffer" })
+map("n", "<leader>ba", function() 
+  local tab_buflist = vim.fn.tabpagebuflist()
+  require("util.keymap").buf_delete(function(buf) return not vim.list_contains(tab_buflist, buf) end)
+end, { desc = "Delete all Buffer" })
 map("n", "<leader>bA", function() require("util.keymap").buf_delete(function() return true end) end, { desc = "Delete All Buffer" })
-map("n", "<leader><cr>", "<cmd>BufferPick<cr>", {desc = "Pick buffer"})
+map("n", "<leader>;", "<cmd>BufferPick<cr>", {desc = "Pick buffer"})
 
 -- tabs
 map("n", "<leader><Tab>d", "<cmd>tabclose<cr>", { desc = "Close Tab" })
