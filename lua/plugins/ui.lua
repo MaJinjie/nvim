@@ -247,7 +247,7 @@ return {
   },
   {
     "RRethy/vim-illuminate",
-    event = "UIEnter",
+    lazy = true,
     opts = { providers = { "lsp", "treesitter" }, delay = 200, large_file_cutoff = 1000, min_count_to_highlight = 2 },
     config = function(_, opts)
       require("illuminate").configure(opts)

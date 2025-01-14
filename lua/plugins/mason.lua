@@ -22,14 +22,14 @@ return {
       require("mason").setup(opts)
 
       local mr = require("mason-registry")
-      -- mr:on("package:install:success", function()
-      --   vim.defer_fn(function()
-      --     vim.api.nvim_exec_autocmds("FileType", {
-      --       buffer = vim.api.nvim_get_current_buf(),
-      --       modeline = false,
-      --     })
-      --   end, 100)
-      -- end)
+      mr:on("package:install:success", function()
+        vim.defer_fn(function()
+          vim.api.nvim_exec_autocmds("FileType", {
+            buffer = vim.api.nvim_get_current_buf(),
+            modeline = false,
+          })
+        end, 100)
+      end)
 
       vim.defer_fn(function()
         mr.refresh(function()
@@ -48,7 +48,7 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
-    event = "UIEnter",
+    lazy = true,
     opts_extend = { "diagnostic", "default" },
     ---@type table<string|"default",lspconfig.Config>
     opts = {
@@ -71,6 +71,19 @@ return {
         },
       },
       default = {
+        -- stylua: ignore
+        keys = {
+          { "n", "gd", function() vim.lsp.buf.definition() end, has = "textDocument/definition", {desc = "Goto Definition"} },
+          { "n", "gr", function() vim.lsp.buf.references() end, has = "textDocument/references", {desc = "Goto References"} },
+          { "n", "gI", function() vim.lsp.buf.implementation() end, has = "textDocument/implementation", {desc = "Goto Implementation"} },
+          { "n", "gy", function() vim.lsp.buf.type_definition() end, has = "textDocument/typeDefinition", {desc = "Goto TypeDefinition"} },
+          { "n", "gD", function() vim.lsp.buf.declaration() end, has = "textDocument/declaration", {desc = "Goto Declaration"} },
+          { "n", "K", function() vim.lsp.buf.hover() end, has = "textDocument/hover", {desc = "Hover"} },
+          { "n", "gK", function() vim.lsp.buf.signature_help() end, has = "textDocument/signatureHelp", {desc = "Goto SigntureHelp"} },
+          { "n", "<leader>cr", function() vim.lsp.buf.rename() end, has = "textDocument/rename", {desc = "Rename Symbol"} },
+          { { "n", "v" }, "<leader>ca", function() vim.lsp.buf.code_action() end, has = "textDocument/codeAction", {desc = "Code Action"} },
+          { function(_, bufnr) vim.lsp.inlay_hint.enable(true, { bufnr = bufnr }) end, has = "textDocument/inlayHint" },
+        },
         capabilities = {
           workspace = {
             fileOperations = {
@@ -79,38 +92,6 @@ return {
             },
           },
         },
-        on_attach = function(client, bufnr)
-          local function map(mode, lhs, rhs, opts)
-            opts = vim.tbl_extend("force", { buffer = bufnr, silent = true }, opts or {})
-            vim.keymap.set(mode, lhs, rhs, opts)
-          end
-          local function support(methods)
-            if type(methods) == "string" then
-              return client.supports_method(methods, { bufnr = bufnr })
-            end
-            for _, method in ipairs(methods) do
-              if not support(method) then
-                return false
-              end
-            end
-            return true
-          end
-          -- stylua: ignore start
-          if support("textDocument/definition") then map("n", "gd", vim.lsp.buf.definition) end
-          if support("textDocument/References") then map("n", "gr", vim.lsp.buf.references) end
-          if support("textDocument/implementation") then map("n", "gI", vim.lsp.buf.implementation) end
-          if support("textDocument/typeDefinition") then map("n", "gy", vim.lsp.buf.type_definition) end
-          if support("textDocument/declaration") then map("n", "gD", vim.lsp.buf.declaration) end
-          if support("textDocument/hover") then map("n", "K", vim.lsp.buf.hover) end
-          if support("textDocument/signatureHelp") then map("n", "gK", vim.lsp.buf.signature_help) end
-
-          if support("textDocument/rename") then map("n", "<leader>cr", vim.lsp.buf.rename) end
-          if support("textDocument/codeAction") then map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action) end
-					if support("textDocument/inlayHint") then vim.lsp.inlay_hint.enable(true, { bufnr = bufnr }) end
-          -- stylua: ignore end
-
-          map("n", "gk", "<cmd>normal! <c-]><cr>")
-        end,
       },
     },
     config = function(_, opts)
@@ -123,7 +104,44 @@ return {
 
       vim.diagnostic.config(diagnostic_opts)
 
+      local default_keys = default_opts.keys
+      local default_on_attach = default_opts.on_attach
       local function server_setup(server, server_opts)
+        local server_keys, server_on_attach
+        if type(server_opts) == "table" then
+          server_keys = server_opts.keys
+          server_on_attach = server_opts.on_attach
+          server_opts.keys = nil
+          server_opts.on_attach = nil
+        end
+
+        default_opts.on_attach = function(client, bufnr)
+          if default_keys or server_keys then
+            local keys, dkeys, akeys = {}, default_keys or {}, server_keys or {}
+
+            for k, _ in pairs(akeys) do
+              if type(k) == "number" then
+                table.insert(keys, akeys[k])
+              else
+                dkeys[k] = akeys[k]
+              end
+            end
+            for k, _ in pairs(dkeys) do
+              if type(k) == "number" or dkeys[k] then
+                table.insert(keys, dkeys[k])
+              end
+            end
+
+            require("util.lsp").lsp_keys(client, bufnr, keys)
+          end
+          if default_on_attach then
+            default_on_attach(client, bufnr)
+          end
+          if server_on_attach then
+            server_on_attach(client, bufnr)
+          end
+        end
+
         if type(server_opts) == "boolean" then
           if server_opts then
             lspconfig[server].setup(default_opts)
@@ -138,7 +156,10 @@ return {
       end
       local mr = require("mason-registry")
 
+      default_opts.keys = nil
+      default_opts.on_attach = nil
       default_opts.capabilities = require("blink-cmp").get_lsp_capabilities(default_opts.capabilities, true)
+
       for server, server_opts in pairs(opts) do
         local ok, p = pcall(mr.get_package, get_package_name(server))
         if ok then
@@ -214,6 +235,7 @@ return {
   },
   {
     "mfussenegger/nvim-lint",
+    event = "BufReadPost",
     opts = {
       -- Event to trigger linters
       events = { "BufWritePost", "BufReadPost", "InsertLeave" },
@@ -266,7 +288,7 @@ return {
   },
   {
     "nvimtools/none-ls.nvim",
-    event = "UIEnter",
+    lazy = true,
     opts = function()
       local null_ls = require("null-ls")
       return {
@@ -290,4 +312,83 @@ return {
       }
     end,
   },
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = { "rcarriga/nvim-dap-ui", "theHamsta/nvim-dap-virtual-text" },
+    cmd = { "DapNew" },
+    opts = {
+      ---@type table<string, dap.Adapter|dap.AdapterFactory>
+      adapters = {
+        gdb = {
+          type = "executable",
+          command = "gdb",
+          args = { "--interpreter=dap", "--eval-command", "set print pretty on" },
+        },
+        codelldb = {
+          type = "executable",
+          command = "codelldb",
+        },
+      },
+      ---@type table<string, dap.Configuration[]>
+      configurations = {},
+    },
+    config = function(_, opts)
+      local dap = require("dap")
+
+      dap.adapters = vim.tbl_deep_extend("force", dap.adapters or {}, opts.adapters)
+      dap.configurations = vim.tbl_deep_extend("force", dap.configurations or {}, opts.configurations)
+
+      require("dap.ext.vscode").json_decode = function(str)
+        return vim.json.decode(require("plenary.json").json_strip_comments(str))
+      end
+    end,
+    -- stylua: ignore
+    keys = {
+      { "<leader>dB", function() require("dap").set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, desc = "Breakpoint Condition" },
+      { "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "Toggle Breakpoint" },
+      { "<leader>dc", function() require("dap").continue() end, desc = "Run/Continue" },
+      -- { "<leader>da", function() require("dap").continue({ before = get_args }) end, desc = "Run with Args" },
+      { "<leader>dC", function() require("dap").run_to_cursor() end, desc = "Run to Cursor" },
+      { "<leader>dg", function() require("dap").goto_() end, desc = "Go to Line (No Execute)" },
+      { "<leader>di", function() require("dap").step_into() end, desc = "Step Into" },
+      { "<leader>dj", function() require("dap").down() end, desc = "Down" },
+      { "<leader>dk", function() require("dap").up() end, desc = "Up" },
+      { "<leader>dl", function() require("dap").run_last() end, desc = "Run Last" },
+      { "<leader>do", function() require("dap").step_out() end, desc = "Step Out" },
+      { "<leader>dO", function() require("dap").step_over() end, desc = "Step Over" },
+      { "<leader>dP", function() require("dap").pause() end, desc = "Pause" },
+      { "<leader>dr", function() require("dap").repl.toggle() end, desc = "Toggle REPL" },
+      { "<leader>ds", function() require("dap").session() end, desc = "Session" },
+      { "<leader>dt", function() require("dap").terminate() end, desc = "Terminate" },
+      { "<leader>dw", function() require("dap.ui.widgets").hover() end, desc = "Widgets" },
+    },
+  },
+  {
+    "rcarriga/nvim-dap-ui",
+    dependencies = { "nvim-neotest/nvim-nio" },
+    -- stylua: ignore
+    keys = {
+      { "<leader>du", function() require("dapui").toggle({ }) end, desc = "Dap UI" },
+      { "<leader>de", function() require("dapui").eval() end, desc = "Eval", mode = {"n", "v"} },
+    },
+    opts = {},
+    config = function(_, opts)
+      local dap = require("dap")
+      local dapui = require("dapui")
+      dapui.setup(opts)
+      -- dap.listeners.before.attach.dapui_config = function()
+      -- 	dapui.open()
+      -- end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      -- dap.listeners.before.event_terminated.dapui_config = function()
+      -- 	dapui.close()
+      -- end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
+    end,
+  },
+  { "theHamsta/nvim-dap-virtual-text", lazy = true },
 }

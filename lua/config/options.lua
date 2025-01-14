@@ -2,6 +2,9 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = ","
 
+vim.g.file_explorer = "oil"
+vim.g.defer_load_plugins = { "nvim-lspconfig", "none-ls.nvim", "vim-illuminate" }
+
 if vim.g.neovide then
   vim.g.neovide_scale_factor = 0.75
   vim.g.neovide_padding_top = 5
@@ -33,6 +36,7 @@ vim.o.number = true
 vim.o.relativenumber = true
 vim.o.jumpoptions = "stack,view,clean"
 vim.o.cmdheight = 0
+vim.o.swapfile = false
 
 -- ui
 vim.o.cursorline = true

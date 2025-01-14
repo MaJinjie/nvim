@@ -3,6 +3,23 @@ local function augroup(name)
   return vim.api.nvim_create_augroup("_" .. name, { clear = true })
 end
 
+vim.api.nvim_create_autocmd("VimEnter", {
+  group = augroup("start_actiion"),
+  desc = "Start with actions",
+  once = true,
+  nested = true,
+  callback = function()
+    if package.loaded[vim.g.file_explorer] then
+      return
+    else
+      local stats = vim.uv.fs_stat(vim.fn.argv(0))
+      if stats and stats.type == "directory" then
+        require(vim.g.file_explorer)
+      end
+    end
+  end,
+})
+
 if vim.g.neovide then
   autocmd({ "InsertEnter", "InsertLeave" }, {
     group = augroup("ime-input"),

@@ -1,21 +1,3 @@
-local default_file_explorer = "oil"
-
-vim.api.nvim_create_autocmd("VimEnter", {
-  group = vim.api.nvim_create_augroup("start_directory", { clear = true }),
-  desc = "Start with directory",
-  once = true,
-  callback = function()
-    if package.loaded[default_file_explorer] then
-      return
-    else
-      local stats = vim.uv.fs_stat(vim.fn.argv(0))
-      if stats and stats.type == "directory" then
-        require(default_file_explorer)
-      end
-    end
-  end,
-})
-
 return {
   {
     "stevearc/oil.nvim",
@@ -29,7 +11,7 @@ return {
     opts = function()
       local toggle = {}
       return {
-        default_file_explorer = default_file_explorer == "oil",
+        default_file_explorer = vim.g.file_explorer == "oil",
         use_default_keymaps = false,
         delete_to_trash = true,
         ---@module 'oil.actions'
@@ -117,7 +99,7 @@ return {
       filesystem = {
         bind_to_cwd = false,
         follow_current_file = { enabled = true },
-        hijack_netrw_behavior = default_file_explorer == "neo-tree" and "open_default" or "disabled",
+        hijack_netrw_behavior = vim.g.file_explorer == "neo-tree" and "open_default" or "disabled",
         use_libuv_file_watcher = true,
       },
       window = {
@@ -340,12 +322,12 @@ return {
   ---
   {
     "echasnovski/mini.ai",
-    event = "UIEnter",
+    event = "VeryLazy",
     opts = {},
   },
   {
     "mg979/vim-visual-multi",
-    event = "UIEnter",
+    event = "VeryLazy",
     init = function()
       vim.g.VM_theme = "sand"
       vim.g.VM_silent_exit = 1

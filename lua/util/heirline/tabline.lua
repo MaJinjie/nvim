@@ -92,28 +92,51 @@ end
 function components.bufferline()
   local file_picker = {
     condition = function(self)
-      return self._show_picker and not self.is_active
+      return self._show_picker and self._show_picker ~= 0 and not self.is_active
     end,
-    update = function()
-      return false
+    update = function(self)
+      return self._show_picker ~= 2
     end,
     init = function(self)
-      local bufname = vim.api.nvim_buf_get_name(self.bufnr)
-      bufname = vim.fn.fnamemodify(bufname, ":t")
-      local label = bufname:sub(1, 1)
-      local i = 2
-      while self._picker_labels[label] do
-        if i > #bufname then
+      local str = self.spath or vim.fn.fnamemodify(self.path, ":t")
+      local label
+
+      for i = 1, #str do
+        label = str:sub(i, i):lower()
+        if label:match("^%l$") and not self._picker_labels[label] then
           break
         end
-        label = bufname:sub(i, i)
-        i = i + 1
+        label = nil
       end
-      self._picker_labels[label] = self.bufnr
-      self.label = label
+
+      if not label then
+        for i = 1, #str do
+          label = str:sub(i, i):upper()
+          if label:match("^%u$") and not self._picker_labels[label] then
+            break
+          end
+          label = nil
+        end
+      end
+
+      if not label then
+        for i = 1, 9 do
+          label = i
+          if not self._picker_labels[label] then
+            break
+          end
+          label = nil
+        end
+      end
+
+      if label then
+        self._picker_labels[label] = self.bufnr
+        self.label = label
+      end
     end,
+
     provider = function(self)
-      return self.label .. " "
+      return (self.label or " ") .. " "
     end,
     hl = colors.picker,
   }
@@ -335,18 +358,57 @@ M.setup = function()
     end,
   })
 
-  vim.api.nvim_create_user_command("BufferPick", function(args)
+  vim.api.nvim_create_user_command("BufferPick", function()
+    if vim.o.showtabline ~= 2 then
+      return
+    end
+
     local tabline = require("heirline").tabline
     local buflist = tabline._buflist[1]
     buflist._picker_labels = {}
-    buflist._show_picker = true
+    buflist._show_picker = 1
     vim.cmd.redrawtabline()
+    buflist._show_picker = 2
     local char = vim.fn.getcharstr()
-    local bufnr = buflist._picker_labels[char]
-    if bufnr then
-      vim.api.nvim_win_set_buf(0, bufnr)
+    buflist._show_picker = 0
+    if char:match("^%w$") then
+      local bufnr = buflist._picker_labels[char]
+      if bufnr then
+        vim.api.nvim_win_set_buf(0, bufnr)
+      end
     end
-    buflist._show_picker = false
+    vim.cmd.redrawtabline()
+  end, { desc = "Pick a bufferline" })
+
+  vim.api.nvim_create_user_command("BufferPickDelete", function()
+    local tabline = require("heirline").tabline
+    local buflist = tabline._buflist[1]
+
+    for _ = 1, vim.v.count ~= 0 and vim.v.count or math.huge do
+      if vim.o.showtabline ~= 2 then
+        break
+      end
+
+      buflist._picker_labels = {}
+      buflist._show_picker = 1
+      vim.cmd.redrawtabline()
+      buflist._show_picker = 2
+      local char = vim.fn.getcharstr()
+      if char:match("^%w$") then
+        local bufnr = buflist._picker_labels[char]
+        if bufnr then
+          vim.notify(
+            ("Bufnr: %s\nDisplay: %s"):format(bufnr, vim.api.nvim_buf_get_name(bufnr)),
+            vim.log.levels.WARN,
+            { title = "PickDelete" }
+          )
+          require("util.keymap").buf_delete(bufnr)
+        end
+      else
+        break
+      end
+    end
+    buflist._show_picker = 0
     vim.cmd.redrawtabline()
   end, { desc = "Pick a bufferline" })
 end
