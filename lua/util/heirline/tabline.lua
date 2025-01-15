@@ -1,10 +1,13 @@
 --=============================== config
 local config = {
   offset = {
+    enable = false,
     left = {
       ["neo-tree"] = { title = "Neo-Tree" },
     },
-    right = {},
+    right = {
+      ["Outline"] = { title = "Outline" },
+    },
   },
   left_trunc = { provider = " ", hl = { fg = "gray" } },
   right_trunc = { provider = " ", hl = { fg = "gray" } },
@@ -62,6 +65,10 @@ end
 function components.offset(dir)
   return {
     condition = function(self)
+      if config.offset.enable == false then
+        return false
+      end
+
       local winid = get_leaf(vim.fn.winlayout(), dir)
       local bufnr = vim.api.nvim_win_get_buf(winid)
 

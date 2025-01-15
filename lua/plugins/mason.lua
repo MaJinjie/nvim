@@ -43,16 +43,14 @@ return {
             end
           end
         end)
-      end, 50)
+      end, 100)
     end,
   },
   {
     "neovim/nvim-lspconfig",
-    lazy = true,
-    opts_extend = { "diagnostic", "default" },
-    ---@type table<string|"default",lspconfig.Config>
+    event = "VeryLazy",
     opts = {
-      ---@type vim.diagnostic.Opts>
+      ---@type vim.diagnostic.Opts
       diagnostic = {
         underline = true,
         update_in_insert = false,
@@ -70,25 +68,44 @@ return {
           },
         },
       },
-      default = {
-        -- stylua: ignore
-        keys = {
-          { "n", "gd", function() vim.lsp.buf.definition() end, has = "textDocument/definition", {desc = "Goto Definition"} },
-          { "n", "gr", function() vim.lsp.buf.references() end, has = "textDocument/references", {desc = "Goto References"} },
-          { "n", "gI", function() vim.lsp.buf.implementation() end, has = "textDocument/implementation", {desc = "Goto Implementation"} },
-          { "n", "gy", function() vim.lsp.buf.type_definition() end, has = "textDocument/typeDefinition", {desc = "Goto TypeDefinition"} },
-          { "n", "gD", function() vim.lsp.buf.declaration() end, has = "textDocument/declaration", {desc = "Goto Declaration"} },
-          { "n", "K", function() vim.lsp.buf.hover() end, has = "textDocument/hover", {desc = "Hover"} },
-          { "n", "gK", function() vim.lsp.buf.signature_help() end, has = "textDocument/signatureHelp", {desc = "Goto SigntureHelp"} },
-          { "n", "<leader>cr", function() vim.lsp.buf.rename() end, has = "textDocument/rename", {desc = "Rename Symbol"} },
-          { { "n", "v" }, "<leader>ca", function() vim.lsp.buf.code_action() end, has = "textDocument/codeAction", {desc = "Code Action"} },
-          { function(_, bufnr) vim.lsp.inlay_hint.enable(true, { bufnr = bufnr }) end, has = "textDocument/inlayHint" },
-        },
-        capabilities = {
-          workspace = {
-            fileOperations = {
-              didRename = true,
-              willRename = true,
+      ---@type table<string,lspconfig.Config>
+      servers = {
+        ["*"] = {
+          on_attach = function(client, bufnr)
+            --stylua: ignore
+            local keymaps = {
+              ["textDocument/definition"] = { "n", "gd", function() vim.lsp.buf.definition() end, { desc = "Goto Definition", buffer = bufnr } },
+              ["textDocument/references"] = { "n", "gr", function() vim.lsp.buf.references() end, { desc = "Goto References", buffer = bufnr } },
+              ["textDocument/implementation"] = { "n", "gI", function() vim.lsp.buf.implementation() end, { desc = "Goto Implementation", buffer = bufnr } },
+              ["textDocument/typeDefinition"] = { "n", "gy", function() vim.lsp.buf.type_definition() end, { desc = "Goto TypeDefinition", buffer = bufnr } },
+              ["textDocument/declaration"] = { "n", "gD", function() vim.lsp.buf.declaration() end, { desc = "Goto Declaration", buffer = bufnr } },
+              ["textDocument/hover"] = { "n", "K", function() vim.lsp.buf.hover() end, { desc = "Hover", buffer = bufnr } },
+              ["textDocument/signatureHelp"] = { "n", "gK", function() vim.lsp.buf.signature_help() end, { desc = "Goto SignatureHelp", buffer = bufnr } },
+              ["textDocument/rename"] = { "n", "<leader>cr", function() vim.lsp.buf.rename() end, { desc = "Rename Symbol", buffer = bufnr } },
+              ["textDocument/codeAction"] = { { "n", "v" }, "<leader>ca", function() vim.lsp.buf.code_action() end, { desc = "Code Action", buffer = bufnr } },
+            }
+            --stylua: ignore
+            local callbacks = {
+              ["textDocument/inlayHint"] = function() vim.lsp.inlay_hint.enable(true, { bufnr = bufnr }) end
+            }
+
+            for method, keymap in pairs(keymaps) do
+              if client.supports_method(method, { bufnr = bufnr }) then
+                vim.keymap.set(unpack(keymap))
+              end
+            end
+            for method, callback in pairs(callbacks) do
+              if client.supports_method(method, { bufnr = bufnr }) then
+                callback()
+              end
+            end
+          end,
+          capabilities = {
+            workspace = {
+              fileOperations = {
+                didRename = true,
+                willRename = true,
+              },
             },
           },
         },
@@ -97,82 +114,40 @@ return {
     config = function(_, opts)
       local lspconfig = require("lspconfig")
 
-      local diagnostic_opts, default_opts = opts.diagnostic, opts.default
+      vim.diagnostic.config(opts.diagnostic)
 
-      opts.diagnostic = nil
-      opts.default = nil
-
-      vim.diagnostic.config(diagnostic_opts)
-
-      local default_keys = default_opts.keys
-      local default_on_attach = default_opts.on_attach
-      local function server_setup(server, server_opts)
-        local server_keys, server_on_attach
-        if type(server_opts) == "table" then
-          server_keys = server_opts.keys
-          server_on_attach = server_opts.on_attach
-          server_opts.keys = nil
-          server_opts.on_attach = nil
-        end
-
-        default_opts.on_attach = function(client, bufnr)
-          if default_keys or server_keys then
-            local keys, dkeys, akeys = {}, default_keys or {}, server_keys or {}
-
-            for k, _ in pairs(akeys) do
-              if type(k) == "number" then
-                table.insert(keys, akeys[k])
-              else
-                dkeys[k] = akeys[k]
-              end
-            end
-            for k, _ in pairs(dkeys) do
-              if type(k) == "number" or dkeys[k] then
-                table.insert(keys, dkeys[k])
-              end
-            end
-
-            require("util.lsp").lsp_keys(client, bufnr, keys)
-          end
-          if default_on_attach then
-            default_on_attach(client, bufnr)
-          end
-          if server_on_attach then
-            server_on_attach(client, bufnr)
-          end
-        end
-
+      local function server_setup(server, server_opts, default_opts)
         if type(server_opts) == "boolean" then
           if server_opts then
             lspconfig[server].setup(default_opts)
           end
         elseif type(server_opts) == "table" then
           if server_opts.enabled ~= false then
-            lspconfig[server].setup(vim.tbl_deep_extend("keep", server_opts, default_opts))
+            lspconfig[server].setup(vim.tbl_deep_extend("force", default_opts, server_opts, {
+              on_attach = server_opts.on_attach and default_opts.on_attach and function(...)
+                default_opts.on_attach(...)
+                server_opts.on_attach(...)
+              end or (server_opts.on_attach or default_opts.on_attach),
+            }))
           end
-        else
-          server_opts(server, default_opts)
+        elseif type(server_opts) == "function" then
+          server_setup(server, server_opts(server, default_opts), default_opts)
         end
       end
-      local mr = require("mason-registry")
 
-      default_opts.keys = nil
-      default_opts.on_attach = nil
+      local default_opts = opts.servers["*"]
+      opts.servers["*"] = nil
       default_opts.capabilities = require("blink-cmp").get_lsp_capabilities(default_opts.capabilities, true)
 
-      for server, server_opts in pairs(opts) do
-        local ok, p = pcall(mr.get_package, get_package_name(server))
-        if ok then
-          if p:is_installed() then
-            server_setup(server, server_opts)
-          else
-            p:install():once("success", function()
-              server_setup(server, server_opts)
-            end)
-          end
+      for server, server_opts in pairs(opts.servers) do
+        if not pcall(server_setup, server, server_opts, default_opts) then
+          vim.notify((server .. " setup failed!"), vim.log.levels.WARN, { title = "lspconfig" })
         end
       end
-      vim.cmd("doautocmd FileType")
+      vim.api.nvim_exec_autocmds("FileType", {
+        buffer = vim.api.nvim_get_current_buf(),
+        modeline = false,
+      })
     end,
   },
   {
@@ -288,7 +263,7 @@ return {
   },
   {
     "nvimtools/none-ls.nvim",
-    lazy = true,
+    event = "VeryLazy",
     opts = function()
       local null_ls = require("null-ls")
       return {

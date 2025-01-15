@@ -1,25 +1,36 @@
 return {
-  { "williamboman/mason.nvim", opts = { ensure_installed = { "clangd", "clang-format" } } },
+  { "williamboman/mason.nvim", opts = { ensure_installed = { "clangd", "clang-format", "codelldb" } } },
   {
     "neovim/nvim-lspconfig",
     opts = {
-      ---@type lspconfig.Config|{}|boolean
-      clangd = {
-        -- stylua: ignore
-        keys = {
-          { "n", "<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", has = "textDocument/switchSourceHeader", cond = function(_, bufnr) return vim.api.nvim_buf_get_commands(bufnr, { builtin = false })["ClangdSwitchSourceHeader"] end, { desc = "Switch Source/Header" } },
-          { "n", "<leader>ci", "<cmd>ClangdShowSymbolInfo<cr>", has = "textDocument/symbolInfo", cond = function(_, bufnr) return vim.api.nvim_buf_get_commands(bufnr, { builtin = false })["ClangdShowSymbolInfo"] end, { desc = "Show Symbol Info" } },
-        },
-        cmd = {
-          "clangd",
-          "--background-index",
-          "--clang-tidy",
-          "--header-insertion=never",
-          "--completion-style=detailed",
-          "--function-arg-placeholders",
-          "--fallback-style=llvm",
-          "--pch-storage=memory",
-          "--limit-results=100",
+      servers = {
+        ---@module 'lspconfig'
+        ---@type lspconfig.Config|{_?:util.lsp.Opts}
+        clangd = {
+          on_attach = function(client, bufnr)
+            --stylua: ignore
+            local keymaps = {
+              ["textDocument/symbolInfo"] = { "n", "<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", { desc = "Switch Source/Header", buffer = bufnr } },
+              ["textDocument/switchSourceHeader"] = { "n", "<leader>ci", "<cmd>ClangdShowSymbolInfo<cr>", { desc = "Show Symbol Info", buffer = bufnr } },
+            }
+            for method, keymap in pairs(keymaps) do
+              if client.supports_method(method, { bufnr = bufnr }) then
+                vim.keymap.set(unpack(keymap))
+              end
+            end
+          end,
+          cmd = {
+            "clangd",
+            "--background-index",
+            "--background-index-priority=normal",
+            "--clang-tidy",
+            "--header-insertion=never",
+            "--completion-style=bundled",
+            "--function-arg-placeholders",
+            "--fallback-style=llvm",
+            "--pch-storage=memory",
+            "--limit-results=100",
+          },
         },
       },
     },

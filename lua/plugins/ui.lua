@@ -204,7 +204,19 @@ return {
     event = "VeryLazy",
     init = function()
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "help", "lazy", "mason", "neo-tree", "notify", "toggleterm", "fzf", "noice", "yazi" },
+        pattern = {
+          "help",
+          "lazy",
+          "mason",
+          "neo-tree",
+          "notify",
+          "toggleterm",
+          "fzf",
+          "noice",
+          "yazi",
+          "Outline",
+          "OutlineHelp",
+        },
         callback = function(ev)
           local buf = ev.buf
           if vim.b[buf].miniindentscope_disable == nil then
@@ -247,7 +259,7 @@ return {
   },
   {
     "RRethy/vim-illuminate",
-    lazy = true,
+    event = "VeryLazy",
     opts = { providers = { "lsp", "treesitter" }, delay = 200, large_file_cutoff = 1000, min_count_to_highlight = 2 },
     config = function(_, opts)
       require("illuminate").configure(opts)

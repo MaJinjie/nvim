@@ -48,8 +48,10 @@ map("n", "[w", function() vim.diagnostic.goto_prev({ severity = "WARN" }) end, {
 map("n", "]w", function() vim.diagnostic.goto_next({ severity = "WARN" }) end, { desc = "Next Warn Diagnostic" })
 
 -- windows
-map("n", "_", "<C-w>s", { desc = "Split Window Below", remap = true })
-map("n", "|", "<C-w>v", { desc = "Split Window Right", remap = true })
+map("n", "_", "<cmd>dsplit<cr>", { desc = "Split Window Below" })
+map("n", "|", "<cmd>vsplit<cr>", { desc = "Split Window Right" })
+map("n", "<leader>_", "<cmd>botright dsplit<cr>", { desc = "Split Window Below" })
+map("n", "<leader>|", "<cmd>botright vsplit<cr>", { desc = "Split Window Right" })
 
 -- buffers
 map("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
@@ -71,5 +73,9 @@ map("n", "<leader><Tab>n", "<cmd>tabnew %<cr>", { desc = "New Tab" })
 map("n", "<leader><Tab><Tab>", function () require("util.keymap").tab_switch() end, { desc = "Switch to Other Tabpage" })
 map("n", "]<Tab>", "<cmd>tabnext<cr>", { desc = "Next Tab" })
 map("n", "[<Tab>", "<cmd>tabprevious<cr>", { desc = "Previous Tab" })
+
+-- quickfix
+map("n", "<leader>q", function() require("util.keymap").quickfix_toggle(true) end, { desc = "Toggle Quickfix" })
+map("n", "<leader>Q", function() require("util.keymap").quickfix_toggle(false) end, { desc = "Toggle Quickfix" })
 
 -- stylua: ignore end

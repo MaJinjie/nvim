@@ -1,37 +1,58 @@
 local M = {}
 
----@param client vim.lsp.Client
----@param bufnr integer
---- 1 keymap
---- 2 condition invoke
----@param keys table[]
-function M.lsp_keys(client, bufnr, keys)
-  local function map(mode, lhs, rhs, opts)
-    opts = vim.tbl_extend("force", { buffer = bufnr, silent = true }, opts or {})
-    vim.keymap.set(mode, lhs, rhs, opts)
-  end
-  local function support(methods)
-    if type(methods) == "string" then
-      return client.supports_method(methods, { bufnr = bufnr })
-    end
-    for _, method in ipairs(methods) do
-      if not support(method) then
-        return false
+---@param fn fun(client?:vim.lsp.Client, bufnr?:integer)
+---@param client_name? string
+function M.on_client_attach(fn, client_name)
+  vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(args)
+      local bufnr = args.buf
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client and (client_name == nil or client.name == client_name) then
+        fn(client, bufnr)
       end
-    end
-    return true
-  end
-
-  for _, key in ipairs(keys) do
-    if not (key.has and not support(key.has)) and not (key.cond and not key.cond(client, bufnr)) then
-      if #key >= 3 then
-        map(unpack(key))
-      else
-        (key[1] or key.callback)(client, bufnr)
-      end
-    end
-  end
+    end,
+  })
 end
+
+-- ---@param t util.lsp.Opts
+-- ---@param opts {client:vim.lsp.Client,bufnr:integer}
+-- function M.lsp(t, opts)
+--   for k, v in pairs(t) do
+--     M["lsp_" .. k](v, opts)
+--   end
+-- end
+--
+-- ---@param actions util.lsp.Action[]
+-- ---@param opts {client:vim.lsp.Client,bufnr:integer}
+-- function M.lsp_actions(actions, opts)
+--   local client, bufnr = opts.client, opts.bufnr
+--
+--   local function support(methods)
+--     if type(methods) == "string" then
+--       return client.supports_method(methods, { bufnr = bufnr })
+--     end
+--     for _, method in ipairs(methods) do
+--       if not support(method) then
+--         return false
+--       end
+--     end
+--     return true
+--   end
+--
+--   for _, action in ipairs(actions) do
+--     if not (action.has and not support(action.has)) and not (action.cond and not action.cond(client, bufnr)) then
+--       if action.map then
+--         local map = action.map
+--         ---@cast map -nil
+--         map = vim.tbl_deep_extend("keep", map, { nil, nil, nil, { buffer = bufnr, silent = true } })
+--         vim.keymap.set(unpack(map))
+--       end
+--       if action.call then
+--         action.call(client, bufnr)
+--       end
+--     end
+--   end
+-- end
 
 ---@param bufnr integer
 ---@param ... string

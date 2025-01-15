@@ -3,7 +3,6 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = ","
 
 vim.g.file_explorer = "oil"
-vim.g.defer_load_plugins = { "nvim-lspconfig", "none-ls.nvim", "vim-illuminate" }
 
 if vim.g.neovide then
   vim.g.neovide_scale_factor = 0.75

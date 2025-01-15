@@ -3,7 +3,7 @@ return {
     "williamboman/mason.nvim",
     opts = { ensure_installed = { "bashls", "shellcheck", "shfmt" } },
   },
-  { "neovim/nvim-lspconfig", opts = { bashls = true } },
+  { "neovim/nvim-lspconfig", opts = { servers = { bashls = true } } },
   {
     "stevearc/conform.nvim",
     opts = { formatters_by_ft = { sh = { "shfmt" } } },

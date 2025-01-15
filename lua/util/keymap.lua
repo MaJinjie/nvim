@@ -86,6 +86,31 @@ function M.quit()
   end
 end
 
+function M.quickfix_toggle(focus)
+  local quickfix_win = vim.fn.getqflist({ winid = 0 }).winid
+  local current_win = vim.api.nvim_get_current_win()
+
+  if quickfix_win ~= 0 and vim.api.nvim_win_is_valid(quickfix_win) then
+    if focus then
+      if current_win == quickfix_win then
+        vim.cmd("wincmd p") -- 回到前一个窗口
+      else
+        vim.api.nvim_set_current_win(quickfix_win)
+      end
+    else
+      if current_win == quickfix_win then
+        vim.cmd("wincmd p") -- 回到前一个窗口
+      end
+      vim.api.nvim_win_close(quickfix_win, true)
+    end
+  else
+    vim.cmd("botright copen")
+    if not focus then
+      vim.api.nvim_set_current_win(current_win)
+    end
+  end
+end
+
 ---@package
 M._toggle = {} ---@type table<any, boolean>
 

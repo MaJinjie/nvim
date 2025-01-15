@@ -1,3 +1,6 @@
+local M = {}
+
+local theme = require("config.theme")
 return {
   {
     "stevearc/oil.nvim",
@@ -5,56 +8,83 @@ return {
     -- stylua: ignore
     keys = {
      	{ "<leader>-", function() require("oil").open(require('util.root')({specs ={"pwd", "cwd"}})) end, desc = "Oil" },
-     	{ "<leader>fo", function() require("oil").open(require('util.root')()) end, desc = "Oil (Follow Cwd)" },
-     	{ "<leader>fO", function() require("oil").open(require('util.root')({follow = true})) end, desc = "Oil (Follow Buffer)" },
+     	{ "<leader>e", function() require("oil").open(require('util.root')()) end, desc = "Oil (Follow Cwd)" },
+     	{ "<leader>E", function() require("oil").open(require('util.root')({follow = true})) end, desc = "Oil (Follow Buffer)" },
     },
-    opts = function()
-      local toggle = {}
-      return {
-        default_file_explorer = vim.g.file_explorer == "oil",
-        use_default_keymaps = false,
-        delete_to_trash = true,
-        ---@module 'oil.actions'
-        keymaps = {
-          ["<C-v>"] = { "actions.select", opts = { vertical = true } },
-          ["<C-s>"] = { "actions.select", opts = { horizontal = true } },
-          ["<C-t>"] = { "actions.select", opts = { tab = true } },
-          ["<localleader>w"] = "actions.preview",
-          ["<C-f>"] = { "actions.preview_scroll_down" },
-          ["<C-b>"] = { "actions.preview_scroll_up" },
-          ["<localleader>r"] = "actions.refresh",
-          ["<localleader>o"] = { "actions.change_sort", mode = "n" },
-          ["<localleader>c"] = { "actions.open_cwd", mode = "n" },
-          ["q"] = { "actions.close", mode = "n" },
-
-          ["<CR>"] = "actions.select",
-          ["-"] = { "actions.parent", mode = "n" },
-          ["`"] = { "actions.cd", mode = "n" },
-          ["~"] = { "actions.cd", opts = { scope = "tab" }, mode = "n" },
-
-          ["<C-q>"] = { "actions.send_to_qflist", opts = { target = "qflist", action = "r" } },
-          ["<localleader>q"] = { "actions.send_to_qflist", opts = { target = "qflist", action = "a" } },
-
-          ["g?"] = { "actions.show_help", mode = "n" },
-          ["gx"] = "actions.open_external",
-
-          ["g."] = { "actions.toggle_hidden", mode = "n" },
-          ["gt"] = { "actions.toggle_trash", mode = "n" },
-          ["gd"] = {
-            desc = "Toggle file detail view",
-            callback = function()
-              toggle.detail = not toggle.detail
-              if toggle.detail then
-                require("oil").set_columns({ "icon", "permissions", "size", "mtime" })
-              else
-                require("oil").set_columns({ "icon" })
-              end
-            end,
-          },
-        },
-        ---@module 'oil'
-      } --[[@as oil.SetupOpts]]
+    init = function()
+      M.oil = {}
+      M.oil.find_winid_in_layout = function(layout, target_winid)
+        if layout[1] == "leaf" then
+          local winid = layout[2]
+          if winid == target_winid then
+            return layout[1] -- 找到目标节点，返回其布局
+          end
+        else
+          for _, sub_layout in ipairs(layout[2]) do
+            local result = M.oil.find_winid_in_layout(sub_layout, target_winid)
+            if result then
+              return result == "leaf" and layout[1] or result
+            end
+          end
+        end
+        return nil
+      end
     end,
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {
+      default_file_explorer = vim.g.file_explorer == "oil",
+      use_default_keymaps = false,
+      delete_to_trash = true,
+      ---@module 'oil.actions'
+      keymaps = {
+        ["<C-v>"] = { "actions.select", opts = { vertical = true } },
+        ["<C-s>"] = { "actions.select", opts = { horizontal = true } },
+        ["<C-t>"] = { "actions.select", opts = { tab = true } },
+        ["<localleader>w"] = {
+          callback = function()
+            local layout = M.oil.find_winid_in_layout(vim.fn.winlayout(), vim.api.nvim_get_current_win())
+            if layout == "row" then
+              require("oil.actions").preview.callback({ horizontal = true })
+            else
+              require("oil.actions").preview.callback({ vertical = true })
+            end
+          end,
+        },
+        ["<C-f>"] = { "actions.preview_scroll_down" },
+        ["<C-b>"] = { "actions.preview_scroll_up" },
+        ["<localleader>r"] = "actions.refresh",
+        ["<localleader>o"] = { "actions.change_sort", mode = "n" },
+        ["<localleader>c"] = { "actions.open_cwd", mode = "n" },
+        ["q"] = { "actions.close", mode = "n" },
+
+        ["<CR>"] = "actions.select",
+        ["-"] = { "actions.parent", mode = "n" },
+        ["`"] = { "actions.cd", mode = "n" },
+        ["~"] = { "actions.cd", opts = { scope = "tab" }, mode = "n" },
+
+        ["<C-q>"] = { "actions.send_to_qflist", opts = { target = "qflist", action = "r" } },
+        ["<localleader>q"] = { "actions.send_to_qflist", opts = { target = "qflist", action = "a" } },
+
+        ["g?"] = { "actions.show_help", mode = "n" },
+        ["gx"] = "actions.open_external",
+
+        ["g."] = { "actions.toggle_hidden", mode = "n" },
+        ["gt"] = { "actions.toggle_trash", mode = "n" },
+        ["gd"] = {
+          callback = function()
+            M.oil.toggle_detail = not M.oil.toggle_detail
+            if M.oil.toggle_detail then
+              require("oil").set_columns({ "icon", "permissions", "size", "mtime" })
+            else
+              require("oil").set_columns({ "icon" })
+            end
+          end,
+          desc = "Toggle file detail view",
+        },
+      },
+      ---@module 'oil'
+    },
     config = function(_, opts)
       local oil = require("oil")
       oil.setup(opts)
@@ -188,6 +218,83 @@ return {
         },
       },
     },
+  },
+  {
+    "hedyhli/outline.nvim",
+    keys = {
+      {
+        "<leader>o",
+        function()
+          local outline = M.outline.get_or_new()
+
+          if outline:is_open() then
+            outline:focus_toggle()
+          else
+            outline:open({ focus_outline = true })
+          end
+        end,
+        desc = "Open|Toggle Focus Outline",
+      },
+      {
+        "<leader>O",
+        function()
+          local outline = M.outline.get_or_new()
+          if outline:is_open() then
+            local has_focus = outline:has_focus()
+            outline:close()
+            if has_focus then
+              M.outline.get_or_new(true):open()
+            end
+          else
+            outline:open({ focus_outline = false })
+          end
+        end,
+        desc = "Open|Close Outline",
+      },
+    },
+    cmd = "Outline",
+    init = function()
+      M.outline = {}
+      M.outline.get_or_new = function(is_toggle)
+        local preview_opts = require("outline.config").o.preview_window
+        if is_toggle then
+          preview_opts.auto_preview = not preview_opts.auto_preview
+        end
+
+        local outline, Sidebar = require("outline"), require("outline.sidebar")
+        local id = ("%s:%s"):format(vim.api.nvim_get_current_tabpage(), preview_opts.auto_preview and 1 or 0)
+        if not outline.sidebars[id] then
+          outline.sidebars[id] = Sidebar:new(id)
+        end
+        return outline.sidebars[id]
+      end
+    end,
+    opts = {
+      outline_window = {
+        width = 40,
+        relative_width = false,
+      },
+      preview_window = {
+        auto_preview = false,
+        open_hover_on_preview = true,
+        winblend = vim.o.winblend,
+        live = true,
+      },
+      outline_items = {
+        show_symbol_details = false,
+      },
+      symbols = {
+        filter = theme.kind_filter,
+        icon_fetcher = function(kind)
+          return theme.icons.lsp_symbol[kind]
+        end,
+      },
+    },
+  },
+  {
+    "folke/trouble.nvim",
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
   },
   {
     "gbprod/yanky.nvim",

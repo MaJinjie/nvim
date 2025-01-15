@@ -3,7 +3,7 @@ return {
     "williamboman/mason.nvim",
     opts = { ensure_installed = { "marksman", "prettier", "prettierd" } },
   },
-  { "neovim/nvim-lspconfig", opts = { marksman = true } },
+  { "neovim/nvim-lspconfig", opts = { servers = { marksman = true } } },
   {
     "stevearc/conform.nvim",
     formatters_by_ft = {
