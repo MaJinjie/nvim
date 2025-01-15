@@ -6,6 +6,19 @@ return {
     build = ":TSUpdate",
     cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
     keys = { "<c-space>", desc = "Treesitter Selection" },
+    init = function()
+      vim.keymap.set("n", "<leader>uT", function()
+        require("util.keymap").toggle("Treesitter", function()
+          local state = vim.b.ts_highlight
+          if state then
+            vim.treesitter.stop()
+          else
+            vim.treesitter.start()
+          end
+          return not state
+        end)
+      end, { desc = "Toggle Treesitter Context" })
+    end,
     ---@type TSConfig
     ---@diagnostic disable-next-line: missing-fields
     opts = {
@@ -85,8 +98,20 @@ return {
 			{ "gt", function() require("treesitter-context").go_to_context(vim.v.count1) end, mode = { "n", "v" }, desc = "Goto Context" },
 			{ "gT", function() require("treesitter-context").go_to_context(math.huge) end, mode = { "n", "v" }, desc = "Goto Context Top" },
 		},
-    opts = function()
-      return { mode = "cursor", max_lines = 3 }
+    init = function()
+      vim.keymap.set("n", "<leader>ut", function()
+        require("util.keymap").toggle("Treesitter Context", function()
+          local tsc = require("treesitter-context")
+          local state = tsc.enabled()
+          if state then
+            tsc.disable()
+          else
+            tsc.enable()
+          end
+          return not state
+        end)
+      end, { desc = "Toggle Treesitter Context" })
     end,
+    opts = { mode = "cursor", max_lines = 3 },
   },
 }

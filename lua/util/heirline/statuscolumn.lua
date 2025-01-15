@@ -198,6 +198,9 @@ end
 function components.left()
   return {
     condition = function()
+      if vim.v.relnum == 0 and vim.v.lnum > 99 then
+        return false
+      end
       return vim.wo.signcolumn ~= "no"
     end,
     init = function(self)
@@ -215,18 +218,20 @@ end
 function components.center()
   return {
     provider = function()
-      if vim.o.number or vim.o.relativenumber then
-        local lnum
-        if vim.v.relnum == 0 then
-          lnum = vim.o.number and vim.v.lnum or vim.v.relnum
-        else
-          lnum = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
-        end
-        return lnum
-      end
+      return vim.v.relnum == 0 and vim.v.lnum or vim.v.relnum
+      -- if vim.o.number or vim.o.relativenumber then
+      --   local lnum
+      --   if vim.v.relnum == 0 then
+      --     lnum = vim.o.number and vim.v.lnum or vim.v.relnum
+      --   else
+      --     lnum = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
+      --   end
+      --   return lnum
+      -- end
     end,
     hl = function()
-      return vim.v.lnum == vim.fn.line(".") and "CursorLineNr" or "LineNr"
+      return vim.v.relnum == 0 and "CursorLineNr" or "LineNr"
+      -- return vim.v.lnum == vim.fn.line(".") and "CursorLineNr" or "LineNr"
     end,
   }
 end
@@ -271,7 +276,8 @@ M.init = function()
       self.winnr = vim.api.nvim_get_current_win()
     end,
     hl = function()
-      return vim.v.lnum == vim.fn.line(".") and "CursorLine" or "Normal"
+      return vim.v.relnum == 0 and "CursorLine" or "Normal"
+      -- return vim.v.lnum == vim.fn.line(".") and "CursorLine" or "Normal"
     end,
     components.left(),
     components.fill(),

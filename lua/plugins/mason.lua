@@ -49,6 +49,22 @@ return {
   {
     "neovim/nvim-lspconfig",
     event = "VeryLazy",
+    init = function()
+      vim.keymap.set("n", "<leader>uh", function()
+        require("util.keymap").toggle("Inlay Hint", function()
+          local state = vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
+          vim.lsp.inlay_hint.enable(not state, { bufnr = 0 })
+          return not state
+        end)
+      end, { desc = "Toggle Inlay Hint" })
+      vim.keymap.set("n", "<leader>ud", function()
+        require("util.keymap").toggle("Diagnostic", function()
+          local state = vim.diagnostic.is_enabled({ bufnr = 0 })
+          vim.diagnostic.enable(not state, { bufnr = 0 })
+          return not state
+        end)
+      end, { desc = "Toggle Diagnostic" })
+    end,
     opts = {
       ---@type vim.diagnostic.Opts
       diagnostic = {
@@ -165,7 +181,7 @@ return {
             vim.b.autoformat = nil
           end,
         })
-      end)
+      end, { desc = "Toggle Auto Format (Global)" })
       vim.keymap.set("n", "<leader>uF", function()
         require("util.keymap").toggle("Auto Format (Buffer)", {
           get = function()
@@ -175,7 +191,7 @@ return {
             vim.b.autoformat = state
           end,
         })
-      end)
+      end, { desc = "Toggle Auto Format (Buffer)" })
       vim.api.nvim_create_user_command("Format", function(args)
         local range = nil
         if args.count ~= -1 then
