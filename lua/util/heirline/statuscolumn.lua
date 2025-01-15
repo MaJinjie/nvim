@@ -218,16 +218,15 @@ end
 function components.center()
   return {
     provider = function()
-      return vim.v.relnum == 0 and vim.v.lnum or vim.v.relnum
-      -- if vim.o.number or vim.o.relativenumber then
-      --   local lnum
-      --   if vim.v.relnum == 0 then
-      --     lnum = vim.o.number and vim.v.lnum or vim.v.relnum
-      --   else
-      --     lnum = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
-      --   end
-      --   return lnum
-      -- end
+      if vim.o.number or vim.o.relativenumber then
+        local lnum
+        if vim.v.relnum == 0 then
+          lnum = vim.o.number and vim.v.lnum or vim.v.relnum
+        else
+          lnum = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
+        end
+        return lnum
+      end
     end,
     hl = function()
       return vim.v.relnum == 0 and "CursorLineNr" or "LineNr"

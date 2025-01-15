@@ -22,6 +22,44 @@ return {
       })
     end,
   },
+  { "nmac427/guess-indent.nvim", cmd = "GuessIndent", opts = { auto_cmd = false } },
+  {
+    "anuvyklack/windows.nvim",
+    dependencies = { "anuvyklack/middleclass", "anuvyklack/animation.nvim" },
+    event = "VeryLazy",
+    cmd = {
+      "WindowsMaximize",
+      "WindowsMaximizeVertically",
+      "WindowsMaximizeHorizontally",
+      "WindowsEqualize",
+      "WindowsToggleAutowidth",
+    },
+    keys = {
+      { "<C-w>z", "<cmd>WindowsMaximize<cr>" },
+      { "<C-w>=", "<cmd>WindowsEqualize<cr>" },
+      { "<C-w>_", "<cmd>WindowsMaximizeVertically<cr>" },
+      { "<C-w>|", "<cmd>WindowsMaximizeHorizontally<cr>" },
+    },
+    opts = {
+      -- autowidth = {
+      --   enable = false,
+      --   winwidth = 5,
+      --   filetype = { help = 2 },
+      -- },
+      ignore = {
+        buftype = { "quickfix" },
+        filetype = { "neo-tree", "Outline", "oil" },
+      },
+    },
+    config = function(_, opts)
+      vim.api.nvim_del_augroup_by_name("_resize_splits")
+      vim.keymap.set("n", "<leader>uw", function()
+        require("util.keymap").toggle("Windows Autowidth", "WindowsToggleAutowidth")
+      end, { desc = "Toggle Windows Autowidth" })
+      vim.o.equalalways = false
+      require("windows").setup(opts)
+    end,
+  },
   {
     "keaising/im-select.nvim",
     event = "InsertEnter",

@@ -35,7 +35,6 @@ vim.o.number = true
 vim.o.relativenumber = true
 vim.o.jumpoptions = "stack,view,clean"
 vim.o.cmdheight = 0
-vim.o.swapfile = false
 
 -- ui
 vim.o.cursorline = true
@@ -43,6 +42,11 @@ vim.o.colorcolumn = "80"
 vim.o.signcolumn = "yes"
 vim.o.laststatus = 3
 vim.o.statuscolumn = [[%{%v:lua.require'heirline'.eval_statuscolumn()%}]]
+
+-- window
+vim.o.winwidth = 5
+vim.o.winminwidth = 1
+vim.o.winminheight = 1
 
 -- wrap
 vim.o.linebreak = true

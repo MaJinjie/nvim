@@ -48,9 +48,9 @@ map("n", "[w", function() vim.diagnostic.goto_prev({ severity = "WARN" }) end, {
 map("n", "]w", function() vim.diagnostic.goto_next({ severity = "WARN" }) end, { desc = "Next Warn Diagnostic" })
 
 -- windows
-map("n", "_", "<cmd>dsplit<cr>", { desc = "Split Window Below" })
+map("n", "_", "<cmd>split<cr>", { desc = "Split Window Below" })
 map("n", "|", "<cmd>vsplit<cr>", { desc = "Split Window Right" })
-map("n", "<leader>_", "<cmd>botright dsplit<cr>", { desc = "Split Window Below" })
+map("n", "<leader>_", "<cmd>botright split<cr>", { desc = "Split Window Below" })
 map("n", "<leader>|", "<cmd>botright vsplit<cr>", { desc = "Split Window Right" })
 
 -- buffers
@@ -77,5 +77,7 @@ map("n", "[<Tab>", "<cmd>tabprevious<cr>", { desc = "Previous Tab" })
 -- quickfix
 map("n", "<leader>q", function() require("util.keymap").quickfix_toggle(true) end, { desc = "Toggle Quickfix" })
 map("n", "<leader>Q", function() require("util.keymap").quickfix_toggle(false) end, { desc = "Toggle Quickfix" })
+map("n", "[q", vim.cmd.cprev, { desc = "Previous Quickfix" })
+map("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 
 -- stylua: ignore end
