@@ -18,6 +18,71 @@ return {
       require("util.heirline").setup()
     end,
   },
+  -- notify提前启动
+  {
+    "folke/noice.nvim",
+    opts = {
+      lsp = {
+        override = {
+          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+          ["vim.lsp.util.stylize_markdown"] = true,
+          ["cmp.entry.get_documentation"] = true,
+        },
+      },
+      presets = {
+        bottom_search = false,
+        command_palette = true,
+        long_message_to_split = true,
+      },
+    },
+  },
+  {
+    "rcarriga/nvim-notify",
+    opts = {
+      timeout = 1500,
+      stages = "static",
+      minimum_width = 15,
+      max_width = 50,
+      max_height = 10,
+      render = "default",
+      on_open = function(winnr)
+        local bufnr = vim.api.nvim_win_get_buf(winnr)
+        vim.bo[bufnr].filetype = "markdown"
+        vim.wo[winnr].conceallevel = 3
+        vim.wo[winnr].concealcursor = ""
+      end,
+    },
+  },
+  {
+    "echasnovski/mini.indentscope",
+    event = "VeryLazy",
+    init = function()
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = {
+          "help",
+          "lazy",
+          "mason",
+          "neo-tree",
+          "notify",
+          "toggleterm",
+          "fzf",
+          "noice",
+          "Outline*",
+          "trouble",
+        },
+        callback = function(ev)
+          local buf = ev.buf
+          if vim.b[buf].miniindentscope_disable == nil then
+            vim.b[buf].miniindentscope_disable = true
+          end
+        end,
+      })
+    end,
+    opts = function()
+      vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { link = "Delimiter" })
+      return { symbol = "│" }
+    end,
+  },
   --- usage:
   ---   mappings:
   ---     [c          prev hunk
@@ -60,12 +125,15 @@ return {
       },
       on_attach = function(bufnr)
         local function map(mode, lhs, rhs, opts)
-          opts = vim.tbl_extend("force", { buffer = bufnr, noremap = true, silent = true }, opts or {})
+          opts = opts or {}
+          opts.buffer = bufnr
+          opts.silent = true
           vim.keymap.set(mode, lhs, rhs, opts)
         end
 
-        map("n", "]c", "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", { expr = true })
-        map("n", "[c", "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", { expr = true })
+        -- stylua: ignore start
+        map("n", "]c", function() if vim.wo.diff then vim.cmd.normal({ "]c", bang = true }) else require('gitsigns').nav_hunk("next") end end)
+        map("n", "[c", function() if vim.wo.diff then vim.cmd.normal({ "]c", bang = true }) else require('gitsigns').nav_hunk("prev") end end)
         map({ "n", "v" }, "<leader>hs", ":Gitsigns stage_hunk<CR>")
         map({ "n", "v" }, "<leader>hr", ":Gitsigns reset_hunk<CR>")
         map("n", "<leader>hS", "<cmd>Gitsigns stage_buffer<cr>")
@@ -80,6 +148,7 @@ return {
         map("n", "<leader>hD", '<cmd>lua require"gitsigns".diffthis("~")<CR>')
         map("n", "<leader>hq", "<cmd>Gitsigns setqflist<cr>")
         map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<cr>")
+        -- stylua: ignore end
       end,
     },
   },
@@ -159,83 +228,11 @@ return {
     },
   },
   {
-    "folke/noice.nvim",
-    event = "VeryLazy",
-    opts = {
-      lsp = {
-        override = {
-          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-          ["vim.lsp.util.stylize_markdown"] = true,
-          ["cmp.entry.get_documentation"] = true,
-        },
-      },
-      presets = {
-        bottom_search = false,
-        command_palette = true,
-        long_message_to_split = true,
-      },
-    },
-  },
-  {
-    "rcarriga/nvim-notify",
-    event = "VeryLazy",
-    opts = {
-      timeout = 1500,
-      stages = "static",
-      minimum_width = 15,
-      max_width = 50,
-      max_height = 10,
-      render = "default",
-      on_open = function(winnr)
-        local bufnr = vim.api.nvim_win_get_buf(winnr)
-        vim.bo[bufnr].filetype = "markdown"
-        vim.wo[winnr].conceallevel = 3
-        vim.wo[winnr].concealcursor = ""
-      end,
-    },
-    config = function(_, opts)
-      local notify = require("notify")
-      notify.setup(opts)
-      vim.notify = notify
-    end,
-  },
-  {
-    "echasnovski/mini.indentscope",
-    event = "VeryLazy",
-    init = function()
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = {
-          "help",
-          "lazy",
-          "mason",
-          "neo-tree",
-          "notify",
-          "toggleterm",
-          "fzf",
-          "noice",
-          "yazi",
-          "Outline",
-          "OutlineHelp",
-        },
-        callback = function(ev)
-          local buf = ev.buf
-          if vim.b[buf].miniindentscope_disable == nil then
-            vim.b[buf].miniindentscope_disable = true
-          end
-        end,
-      })
-    end,
-    opts = function()
-      vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { link = "Delimiter" })
-      return {}
-    end,
-  },
-  {
     "brenoprata10/nvim-highlight-colors",
     cmd = "HighlightColors",
     keys = {
       {
-        "<leader>uc",
+        "<leader>uH",
         function()
           require("util.keymap").toggle("Highlight", function(state)
             local p = require("nvim-highlight-colors")
@@ -253,7 +250,7 @@ return {
     },
     opts = {
       ---@type 'background'|'foreground'|'virtual'
-      render = "background",
+      render = "virtual",
       enabled_named_colors = false,
     },
   },
@@ -277,3 +274,29 @@ return {
   -- ui components
   { "MunifTanjim/nui.nvim", lazy = true },
 }
+
+--[[
+{
+  "rcarriga/nvim-notify",
+  event = "VeryLazy",
+  opts = {
+    timeout = 1500,
+    stages = "static",
+    minimum_width = 15,
+    max_width = 50,
+    max_height = 10,
+    render = "default",
+    on_open = function(winnr)
+      local bufnr = vim.api.nvim_win_get_buf(winnr)
+      vim.bo[bufnr].filetype = "markdown"
+      vim.wo[winnr].conceallevel = 3
+      vim.wo[winnr].concealcursor = ""
+    end,
+  },
+  config = function(_, opts)
+    local notify = require("notify")
+    notify.setup(opts)
+    vim.notify = notify
+  end,
+},
+--]]

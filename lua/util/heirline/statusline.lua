@@ -424,7 +424,6 @@ function components.default.recording_macro()
     update = { "RecordingEnter", "RecordingLeave" },
     hl = colors.recording_macro,
     provider = function(self)
-      vim.print(self.id)
       return " [recording @" .. vim.fn.reg_recording() .. "]"
     end,
   }
@@ -543,6 +542,32 @@ setmetatable(components.netrw, {
       end,
     }
     return { utils.sections({ cwd }, { padding = true }), components.fill() }
+  end,
+})
+
+--=============================== components.conform
+components.conform = {}
+setmetatable(components.conform, {
+  __call = function(_)
+    local ok, conform = pcall(require, "conform")
+    if not ok then
+      return {}
+    end
+    local text = { provider = "Conform" }
+    local formatter_list = {
+      init = function(self)
+        local formatters = conform.list_formatters(0)
+        local childs = {}
+        for _, formatter in ipairs(formatters) do
+          if formatter.available then
+            table.insert(childs, { provider = formatter.name })
+          end
+        end
+        self[1] = self:new(utils.concat(childs, { separator = separators.component.left }))
+      end,
+      {},
+    }
+    return { utils.sections({ text, formatter_list }, { padding = true }), components.fill() }
   end,
 })
 

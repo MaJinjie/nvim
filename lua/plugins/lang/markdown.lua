@@ -6,10 +6,12 @@ return {
   { "neovim/nvim-lspconfig", opts = { servers = { marksman = true } } },
   {
     "stevearc/conform.nvim",
-    formatters_by_ft = {
-      markdown = function(bufnr)
-        return { require("util.lsp").conform_first(bufnr, "prettierd", "prettier"), "injected" }
-      end,
+    opts = {
+      formatters_by_ft = {
+        markdown = function(bufnr)
+          return { require("util.lsp").conform_first(bufnr, "prettierd", "prettier"), "injected" }
+        end,
+      },
     },
   },
   {

@@ -230,7 +230,6 @@ function components.center()
     end,
     hl = function()
       return vim.v.relnum == 0 and "CursorLineNr" or "LineNr"
-      -- return vim.v.lnum == vim.fn.line(".") and "CursorLineNr" or "LineNr"
     end,
   }
 end
@@ -275,8 +274,8 @@ M.init = function()
       self.winnr = vim.api.nvim_get_current_win()
     end,
     hl = function()
-      return vim.v.relnum == 0 and "CursorLine" or "Normal"
-      -- return vim.v.lnum == vim.fn.line(".") and "CursorLine" or "Normal"
+      local normal_hl = vim.api.nvim_get_hl(0, { name = "Normal" })
+      return { bg = normal_hl.bg, force = true }
     end,
     components.left(),
     components.fill(),

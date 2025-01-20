@@ -1,7 +1,7 @@
 return {
   {
     "williamboman/mason.nvim",
-    opts = { ensure_installed = { "bashls", "shellcheck", "shfmt" } },
+    opts = { ensure_installed = { "bashls", "shellcheck", "shfmt", "beautysh" } },
   },
   { "neovim/nvim-lspconfig", opts = { servers = { bashls = true } } },
   {
@@ -10,6 +10,6 @@ return {
   },
   {
     "mfussenegger/nvim-lint",
-    linters_by_ft = { sh = "shellcheck" },
+    opts = { linters_by_ft = { sh = { "shellcheck" } } },
   },
 }

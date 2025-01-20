@@ -2,64 +2,66 @@ local M = {}
 
 local palette = require("gruvbox").palette
 local colors = {
-	black = palette.dark0,
-	white = palette.light0,
-	gray = palette.gray,
+  bg = vim.api.nvim_get_hl(0, { name = "Noraml" }).bg,
 
-	bright_red = palette.bright_red,
-	bright_green = palette.bright_green,
-	bright_blue = palette.bright_blue,
-	bright_yellow = palette.bright_yellow,
-	bright_aqua = palette.bright_aqua,
-	bright_orange = palette.bright_orange,
-	bright_purple = palette.bright_purple,
+  black = palette.dark0,
+  white = palette.light0,
+  gray = palette.gray,
 
-	dark0 = palette.dark0,
-	dark1 = palette.dark1,
-	dark2 = palette.dark2,
-	dark3 = palette.dark3,
-	dark4 = palette.dark4,
-	dark0_hard = palette.dark0_hard,
-	dark0_soft = palette.dark0_soft,
+  bright_red = palette.bright_red,
+  bright_green = palette.bright_green,
+  bright_blue = palette.bright_blue,
+  bright_yellow = palette.bright_yellow,
+  bright_aqua = palette.bright_aqua,
+  bright_orange = palette.bright_orange,
+  bright_purple = palette.bright_purple,
 
-	dark = palette.dark0,
-	dark_hard = palette.dark0_hard,
-	dark_soft = palette.dark0_soft,
+  dark0 = palette.dark0,
+  dark1 = palette.dark1,
+  dark2 = palette.dark2,
+  dark3 = palette.dark3,
+  dark4 = palette.dark4,
+  dark0_hard = palette.dark0_hard,
+  dark0_soft = palette.dark0_soft,
 
-	light0 = palette.light0,
-	light1 = palette.light1,
-	light2 = palette.light2,
-	light3 = palette.light3,
-	light4 = palette.light4,
-	light0_hard = palette.light0_hard,
-	light0_soft = palette.light0_soft,
+  dark = palette.dark0,
+  dark_hard = palette.dark0_hard,
+  dark_soft = palette.dark0_soft,
 
-	light = palette.light4,
-	light_hard = palette.light0_hard,
-	light_soft = palette.light0_soft,
+  light0 = palette.light0,
+  light1 = palette.light1,
+  light2 = palette.light2,
+  light3 = palette.light3,
+  light4 = palette.light4,
+  light0_hard = palette.light0_hard,
+  light0_soft = palette.light0_soft,
+
+  light = palette.light4,
+  light_hard = palette.light0_hard,
+  light_soft = palette.light0_soft,
 }
 
 function M.setup()
-	local statusline = require("util.heirline.statusline")
-	local tabline = require("util.heirline.tabline")
-	local statuscolumn = require("util.heirline.statuscolumn")
+  local statusline = require("util.heirline.statusline")
+  local tabline = require("util.heirline.tabline")
+  local statuscolumn = require("util.heirline.statuscolumn")
 
-	statusline.init()
-	statuscolumn.init()
-	tabline.init()
+  statusline.init()
+  statuscolumn.init()
+  tabline.init()
 
-	require("heirline").setup({
-		statusline = statusline.config,
-		statuscolumn = statuscolumn.config,
-		tabline = tabline.config,
-		opts = {
-			colors = colors,
-		},
-	})
+  require("heirline").setup({
+    statusline = statusline.config,
+    statuscolumn = statuscolumn.config,
+    tabline = tabline.config,
+    opts = {
+      colors = colors,
+    },
+  })
 
-	statusline.setup()
-	statuscolumn.setup()
-	tabline.setup()
+  statusline.setup()
+  statuscolumn.setup()
+  tabline.setup()
 end
 
 return M

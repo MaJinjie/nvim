@@ -22,7 +22,7 @@ return {
       })
     end,
   },
-  { "nmac427/guess-indent.nvim", cmd = "GuessIndent", opts = { auto_cmd = false } },
+  { "nmac427/guess-indent.nvim", event = "BufReadPost", cmd = "GuessIndent", opts = { auto_cmd = true } },
   {
     "anuvyklack/windows.nvim",
     dependencies = { "anuvyklack/middleclass", "anuvyklack/animation.nvim" },
@@ -35,17 +35,16 @@ return {
       "WindowsToggleAutowidth",
     },
     keys = {
-      { "<C-w>z", "<cmd>WindowsMaximize<cr>" },
+      { "<leader>wm", "<cmd>WindowsMaximize<cr>", desc = "Window Maximize" },
       { "<C-w>=", "<cmd>WindowsEqualize<cr>" },
       { "<C-w>_", "<cmd>WindowsMaximizeVertically<cr>" },
       { "<C-w>|", "<cmd>WindowsMaximizeHorizontally<cr>" },
     },
     opts = {
-      -- autowidth = {
-      --   enable = false,
-      --   winwidth = 5,
-      --   filetype = { help = 2 },
-      -- },
+      autowidth = {
+        enable = true,
+        filetype = { help = 2 },
+      },
       ignore = {
         buftype = { "quickfix" },
         filetype = { "neo-tree", "Outline", "oil" },
@@ -59,6 +58,14 @@ return {
       vim.o.equalalways = false
       require("windows").setup(opts)
     end,
+  },
+  {
+    "folke/zen-mode.nvim",
+    cmd = "ZenMode",
+    keys = { { "<leader>wz", "<cmd>ZenMode<cr>", desc = "Toggle ZenMode" } },
+    opts = {
+      options = { signcolumn = "no" },
+    },
   },
   {
     "keaising/im-select.nvim",

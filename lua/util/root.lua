@@ -5,7 +5,7 @@ local M = setmetatable({}, {
   end,
 })
 
-M.root_specs = { "lsp", "git", { "lua" }, "cwd" }
+M.root_specs = { "lsp", "git", "cwd", "pwd" }
 M.detectors = {}
 M.cache = {} ---@type table<string, string>
 
@@ -158,38 +158,35 @@ function M.root(opts)
   return M.cache[cache_key]
 end
 
-function M.setup()
-  vim.api.nvim_create_user_command("UserRoot", function(args)
-    local spec_paths =
-      M.detect({ bufnr = vim.fn.bufnr(args.args), specs = M.root_specs, follow = args.bang, all = true })
-    local lines = {} ---@type string[]
-    local first = true
+vim.api.nvim_create_user_command("UserRoot", function(args)
+  local spec_paths = M.detect({ bufnr = vim.fn.bufnr(args.args), specs = M.root_specs, follow = args.bang, all = true })
+  local lines = {} ---@type string[]
+  local first = true
 
-    for _, spec_path in ipairs(spec_paths) do
-      local spec, path = spec_path.spec, spec_path.path
+  for _, spec_path in ipairs(spec_paths) do
+    local spec, path = spec_path.spec, spec_path.path
 
-      lines[#lines + 1] = ("- [%s] `%s` **(%s)**"):format(
-        first and "x" or " ",
-        path,
-        (function()
-          if type(spec) == "table" then
-            return table.concat(spec, ",")
-          elseif type(spec) == "function" then
-            return "function"
-          else
-            return spec
-          end
-        end)()
-      )
-      first = false
-    end
+    lines[#lines + 1] = ("- [%s] `%s` **(%s)**"):format(
+      first and "x" or " ",
+      path,
+      (function()
+        if type(spec) == "table" then
+          return table.concat(spec, ",")
+        elseif type(spec) == "function" then
+          return "function"
+        else
+          return spec
+        end
+      end)()
+    )
+    first = false
+  end
 
-    lines[#lines + 1] = "```lua"
-    lines[#lines + 1] = "root_specs = " .. vim.inspect(M.root_specs)
-    lines[#lines + 1] = "```"
-    vim.notify(table.concat(lines), vim.log.levels.INFO, { title = "Display Roots" })
-  end, { desc = "Display Roots for the current buffer", bang = true, nargs = "?" })
-end
+  lines[#lines + 1] = "```lua"
+  lines[#lines + 1] = "root_specs = " .. vim.inspect(M.root_specs)
+  lines[#lines + 1] = "```"
+  vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "Display Roots" })
+end, { desc = "Display Roots for the current buffer", bang = true, nargs = "?" })
 
 return M
 

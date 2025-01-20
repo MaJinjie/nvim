@@ -109,5 +109,5 @@ vim.o.foldtext = ""
 
 -- listchars
 vim.o.list = true
-vim.o.listchars = [[tab:  ,extends:…,precedes:…,nbsp:␣,eol:↲]]
+vim.o.listchars = [[tab:│ ,extends:…,precedes:…,nbsp:␣,eol:↲]]
 vim.o.fillchars = [[foldopen:,foldclose:,fold:·,foldsep: ,diff:╱]]

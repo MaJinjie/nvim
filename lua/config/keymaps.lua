@@ -80,4 +80,8 @@ map("n", "<leader>Q", function() require("util.keymap").quickfix_toggle(false) e
 map("n", "[q", vim.cmd.cprev, { desc = "Previous Quickfix" })
 map("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 
+-- extra
+map("i", "<C-a>", "<C-o>^", { silent = true, desc = "Move to start of line" })
+map("i", "<C-e>", "<C-o>$", { silent = true, desc = "Move to end of line" })
+
 -- stylua: ignore end

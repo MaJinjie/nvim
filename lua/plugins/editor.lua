@@ -145,7 +145,7 @@ return {
           ["C"] = "none",
           ["D"] = "none",
 
-          ["b"] = "navigate_up",
+          ["-"] = "navigate_up",
           ["l"] = "open",
           ["h"] = "close_node",
 

@@ -48,7 +48,6 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
-    event = "VeryLazy",
     init = function()
       vim.keymap.set("n", "<leader>uh", function()
         require("util.keymap").toggle("Inlay Hint", function()
@@ -153,17 +152,12 @@ return {
 
       local default_opts = opts.servers["*"]
       opts.servers["*"] = nil
-      default_opts.capabilities = require("blink-cmp").get_lsp_capabilities(default_opts.capabilities, true)
 
       for server, server_opts in pairs(opts.servers) do
         if not pcall(server_setup, server, server_opts, default_opts) then
           vim.notify((server .. " setup failed!"), vim.log.levels.WARN, { title = "lspconfig" })
         end
       end
-      vim.api.nvim_exec_autocmds("FileType", {
-        buffer = vim.api.nvim_get_current_buf(),
-        modeline = false,
-      })
     end,
   },
   {
@@ -279,7 +273,6 @@ return {
   },
   {
     "nvimtools/none-ls.nvim",
-    event = "VeryLazy",
     opts = function()
       local null_ls = require("null-ls")
       return {

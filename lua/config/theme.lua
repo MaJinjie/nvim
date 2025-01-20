@@ -2,7 +2,7 @@ local M = {}
 
 --=============================== color
 M.icons = {
-  -- separator: █ █ ▌▐ ❮❯
+  -- separator: █ █ ▌▐ ❮❯ ╎ │
   -- ✖   ❮ ❯    󰅖  ▎
   misc = {
     vi_mode = " ",

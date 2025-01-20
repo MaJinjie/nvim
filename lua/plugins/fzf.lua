@@ -144,7 +144,7 @@ return {
 		{ "<leader>fc", "<cmd>lua require'fzf-lua'.files{cwd=vim.fn.stdpath'config'}<cr>", desc = "Find Config files" },
 		{ "<leader>fC", "<cmd>lua require'fzf-lua'.live_grep{cwd=vim.fn.stdpath'config'}<cr>", desc = "Grep Config files" },
 		{ "<leader>,", "<cmd>FzfLua buffers<cr>", desc = "Find buffers" },
-		{ "<leader>fb", "<cmd>FzfLua blines<cr>", desc = "Search blines" },
+		{ "<leader>f,", "<cmd>FzfLua blines<cr>", desc = "Search blines" },
 		{ "<leader>fr", "<cmd>FzfLua oldfiles<cr>", desc = "Find oldfiles" },
 		{ "<leader>f:", "<cmd>FzfLua command_history<cr>", desc = "Find Command_History" },
 		{ "<leader>f/", "<cmd>FzfLua search_history<cr>", desc = "Find Search_History" },
