@@ -250,7 +250,7 @@ return {
     },
     opts = {
       ---@type 'background'|'foreground'|'virtual'
-      render = "virtual",
+      render = "background",
       enabled_named_colors = false,
     },
   },
