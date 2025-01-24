@@ -25,23 +25,31 @@ return {
       highlight = { enable = true },
       indent = { enable = true },
       -- stylua: ignore
-			ensure_installed = {
-        "markdown", "markdown_inline", "html", -- markdown
-				"lua", "luadoc", "luap", -- lua
-				"bash", -- shell
-        "c", "cpp", "cmake", "make", -- c
+      ensure_installed = {
+        "markdown", "markdown_inline",  -- markdown
+        "html",
+        "lua", "luadoc", "luap", -- lua
+        "bash", -- shell
+        "c", "cpp", "cmake",
+        "make",
         "rust", -- rust
         "diff",
-        "javascript", "jsdoc", "json", "jsonc",
-				"printf",
-				"python",
-				"query",
-				"regex",
-				"tsx", "typescript",
-				"vim", "vimdoc",
-				"xml",
-				"yaml", "toml"
-			},
+        "javascript",
+        "jsdoc",
+        "json",
+        "jsonc",
+        "printf",
+        "python",
+        "query",
+        "regex",
+        "tsx",
+        "typescript",
+        "vim",
+        "vimdoc",
+        "xml",
+        "yaml",
+        "toml",
+      },
       incremental_selection = {
         enable = true,
         keymaps = {
@@ -94,10 +102,10 @@ return {
     "nvim-treesitter/nvim-treesitter-context",
     event = "VeryLazy",
     -- stylua: ignore
-		keys = {
-			{ "gt", function() require("treesitter-context").go_to_context(vim.v.count1) end, mode = { "n", "v" }, desc = "Goto Context" },
-			{ "gT", function() require("treesitter-context").go_to_context(math.huge) end, mode = { "n", "v" }, desc = "Goto Context Top" },
-		},
+    keys = {
+      { "gt", function() require("treesitter-context").go_to_context(vim.v.count1) end, mode = { "n", "v" }, desc = "Goto Context" },
+      { "gT", function() require("treesitter-context").go_to_context(math.huge) end, mode = { "n", "v" }, desc = "Goto Context Top" },
+    },
     init = function()
       vim.keymap.set("n", "<leader>ut", function()
         require("util.keymap").toggle("Treesitter Context", function()

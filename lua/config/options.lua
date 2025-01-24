@@ -82,7 +82,7 @@ vim.o.undofile = true
 vim.o.undolevels = 1000
 
 -- swapfile
-vim.o.swapfile = true
+vim.o.swapfile = false
 vim.o.updatetime = 200
 
 -- complete

@@ -117,7 +117,7 @@ return {
     dependencies = "echasnovski/mini.icons",
     cmd = "Neotree",
     -- stylua: ignore start
-		keys = {
+    keys = {
 			{ "<leader>fe", function() require("neo-tree.command").execute({ toggle = true, dir = require('util.root')() }) end, desc = "Neo-Tree (Follow Cwd)" },
 			{ "<leader>fE", function() require("neo-tree.command").execute({ toggle = true, dir = require('util.root')({ follow = true }) }) end, desc = "Neo-Tree (Follow Buffer)" },
 		},
@@ -303,6 +303,7 @@ return {
     keys = {
       -- stylua: ignore
       { "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank Text" },
+      { "Y", "y$" },
       { "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" }, desc = "Put Text After Cursor" },
       { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" }, desc = "Put Text Before Cursor" },
       { "[p", "<Plug>(YankyCycleForward)", desc = "Cycle Forward Through Yank History" },

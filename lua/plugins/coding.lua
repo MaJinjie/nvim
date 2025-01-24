@@ -24,9 +24,10 @@ return {
     ---@type blink.cmp.Config
     opts = {
       keymap = {
+        preset = "none",
         ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
-        -- ["<C-e>"] = { "cancel", "fallback" },
-        -- ["<C-y>"] = { "select_and_accept", "fallback" },
+        ["<C-e>"] = { "cancel", "fallback" },
+        ["<C-y>"] = { "select_and_accept", "fallback" },
         ["<esc>"] = { "hide", "fallback" },
         ["<cr>"] = { "accept", "fallback" },
 
@@ -42,8 +43,8 @@ return {
         ["<C-f>"] = { "scroll_documentation_down", "fallback" },
         cmdline = {
           ["<C-space>"] = { "show", "hide" },
-          -- ["<C-e>"] = { "cancel", "fallback" },
-          -- ["<C-y>"] = { "select_and_accept", "fallback" },
+          ["<C-e>"] = { "cancel", "fallback" },
+          ["<C-y>"] = { "select_and_accept", "fallback" },
           ["<Tab>"] = { "select_next", "fallback" },
           ["<S-Tab>"] = { "select_prev", "fallback" },
         },
