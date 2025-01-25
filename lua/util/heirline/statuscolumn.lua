@@ -18,7 +18,7 @@ local config = {
 local buf_cache = {}
 
 --=============================== utils
-local utils = {}
+local utils = require("util.heirline.utils")
 
 ---@param win integer
 ---@param clnum number
@@ -28,7 +28,8 @@ function utils.calc_win_signs(win, clnum)
   -- Get fold signs
   if vim.fn.foldclosed(clnum) >= 0 then
     table.insert(signs, { text = vim.opt.fillchars:get().foldclose or "", texthl = "Folded", type = "folded" })
-  elseif tostring(vim.treesitter.foldexpr(clnum)):sub(1, 1) == ">" then
+  -- 只保留第一层次的折叠
+  elseif vim.treesitter.foldexpr(clnum) == ">1" then
     table.insert(signs, { text = vim.opt.fillchars:get().foldopen or "", texthl = "Comment", type = "foldable" })
   end
   table.sort(signs, function(a, b)
@@ -98,7 +99,6 @@ function utils.calc_buf_signs(buf, clnum)
 
     table.insert(lsigns[lnum], { type = type, text = text, texthl = texthl, priority = priority })
   end
-
   if lsigns[0] ~= true then
     -- Get mark signs
     local marks = vim.list_extend(vim.fn.getmarklist(buf), vim.fn.getmarklist())
@@ -151,21 +151,17 @@ end
 --=============================== components
 local components = {}
 
-function components.fill()
-  return { provider = "%=" }
-end
-
 function components.space(size)
   return { provider = (" "):rep(size or 1) }
 end
 
-function components.buf_flags()
+function components.left()
   return {
     condition = function()
       return vim.wo.signcolumn ~= "no"
     end,
     init = function(self)
-      self.sign = utils.trim_sign(utils.get_sign(utils.calc_buf_signs(self.bufnr, vim.v.lnum), { "sign", "git" }))
+      self.sign = utils.trim_sign(utils.get_sign(utils.calc_buf_signs(self.bufnr, vim.v.lnum), { "sign", "mark" }))
     end,
     provider = function(self)
       return self.sign.text
@@ -176,17 +172,19 @@ function components.buf_flags()
   }
 end
 
-function components.line_number()
+function components.center()
   return {
     provider = function()
       if vim.o.number or vim.o.relativenumber then
-        local lnum
+        local lnum, width
         if vim.v.relnum == 0 then
           lnum = vim.o.number and vim.v.lnum or vim.v.relnum
         else
           lnum = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
         end
-        return lnum
+        width = #tostring(math.max(vim.fn.line("."), vim.api.nvim_win_get_height(0)))
+        return ("%" .. width .. "s"):format(lnum) .. " "
+        -- return ("%-" .. (width + 1) .. "s"):format(lnum)
       end
     end,
     hl = function()
@@ -194,41 +192,48 @@ function components.line_number()
     end,
   }
 end
+_G["heirline_fold_on_click"] = function()
+  local pos = vim.fn.getmousepos()
+  vim.api.nvim_win_call(pos.winid, function()
+    if vim.fn.foldclosed(pos.line) >= 0 then
+      vim.cmd(pos.line .. "foldopen")
+    else
+      vim.cmd(pos.line .. "foldclose")
+    end
+  end)
+end
 
-function components.win_flags()
-  local fold_on_click = function()
-    local pos = vim.fn.getmousepos()
-    vim.api.nvim_win_call(pos.winid, function()
-      if vim.fn.foldclosed(pos.winrow) >= 0 then
-        vim.cmd(pos.winrow .. "foldopen")
-      else
-        vim.cmd(pos.winrow .. "foldclose")
-      end
-    end)
-  end
-  _G["heirline_fold_on_click"] = fold_on_click
+function components.right()
   return {
     condition = function()
       return vim.wo.signcolumn ~= "no"
     end,
     init = function(self)
-      self:nonlocal("merged_hl").force = nil
-
-      local sign = utils.trim_sign(utils.calc_win_signs(self.winnr, vim.v.lnum)[1])
-      self.sign = sign
-      if not sign.type then
-        return
-      end
-      if sign.type:match("^fold") then
-        self.on_click = { callback = "v:lua.heirline_fold_on_click" }
-      end
-    end,
-    provider = function(self)
-      return self.sign.text
+      self.sign = utils.get_sign(utils.calc_buf_signs(self.bufnr, vim.v.lnum), { "git" })
     end,
     hl = function(self)
-      return self.sign.texthl
+      if self.sign then
+        return utils.hl_info(self.sign.texthl, true)
+      end
     end,
+    {
+      init = function(self)
+        local sign = utils.trim_sign(utils.calc_win_signs(self.winnr, vim.v.lnum)[1] or self:nonlocal("sign"))
+        self.sign = sign
+        if not sign.type then
+          return
+        end
+        if sign.type:match("^fold") then
+          self.on_click = { callback = "v:lua.heirline_fold_on_click" }
+        end
+      end,
+      provider = function(self)
+        return self.sign.text
+      end,
+      hl = function(self)
+        return self.sign.texthl
+      end,
+    },
   }
 end
 --=============================== setup
@@ -251,14 +256,9 @@ M.init = function()
       local normal_hl = vim.api.nvim_get_hl(0, { name = "Normal" })
       return { bg = normal_hl.bg, force = true }
     end,
-    components.buf_flags(),
-    components.fill(),
-    components.line_number(),
-    {
-      fallthrough = false,
-      components.win_flags(),
-      components.space(),
-    },
+    components.left(),
+    components.center(),
+    components.right(),
   }
 end
 
@@ -270,6 +270,6 @@ M.setup = function()
 end
 return M
 
----@alias util.statuscolumn.Sign.type "mark"|"sign"|"fold"|"git"
+---@alias util.statuscolumn.Sign.type "mark"|"sign"|"git"|"folded"|"foldable"
 ---@alias util.statuscolumn.Sign {text:string, texthl:string, priority:number, type:util.statuscolumn.Sign.type}
 ---@alias util.statuscolumn.Self {bufnr:number,winnr:number}

@@ -125,6 +125,21 @@ function M.find(component, opts)
   return false
 end
 
+function M.hl_info(hl, force)
+  if not hl then
+    return nil
+  end
+
+  local hl_info
+  if type(hl) == "string" then
+    hl_info = vim.api.nvim_get_hl(0, { name = hl, link = false })
+  else
+    hl_info = hl
+  end
+  hl_info.force = force
+  return hl_info
+end
+
 function M.make_tablist(...)
   return require("heirline.utils").make_tablist(...)
 end
