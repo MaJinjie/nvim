@@ -9,16 +9,11 @@ map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, 
 map({ "n", "x" }, "<Up>", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
 
 -- Move to window using the <ctrl> hjkl keys
--- map("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window", remap = true })
--- map("n", "<C-j>", "<C-w>j", { desc = "Go to Lower Window", remap = true })
--- map("n", "<C-k>", "<C-w>k", { desc = "Go to Upper Window", remap = true })
--- map("n", "<C-l>", "<C-w>l", { desc = "Go to Right Window", remap = true })
-
-map("n", "<C-h>", "<cmd>TmuxNavigate h<cr>", { desc = "TmuxNavigate to Left Window" })
-map("n", "<C-j>", "<cmd>TmuxNavigate j<cr>", { desc = "TmuxNavigate to Down Window" })
-map("n", "<C-k>", "<cmd>TmuxNavigate k<cr>", { desc = "TmuxNavigate to Up Window" })
-map("n", "<C-l>", "<cmd>TmuxNavigate l<cr>", { desc = "TmuxNavigate to Right Window" })
-map("n", "<C-\\>", "<cmd>TmuxNavigate p<cr>", { desc = "TmuxNavigate to Last Window" })
+map("n", "<C-h>", "<cmd>TmuxNavigate h follow_zoomed=true<cr>", { desc = "TmuxNavigate to Left Window" })
+map("n", "<C-j>", "<cmd>TmuxNavigate j follow_zoomed=true<cr>", { desc = "TmuxNavigate to Down Window" })
+map("n", "<C-k>", "<cmd>TmuxNavigate k follow_zoomed=true<cr>", { desc = "TmuxNavigate to Up Window" })
+map("n", "<C-l>", "<cmd>TmuxNavigate l follow_zoomed=true<cr>", { desc = "TmuxNavigate to Right Window" })
+map("n", "<C-\\>", "<cmd>TmuxNavigate p follow_zoomed=true<cr>", { desc = "TmuxNavigate to Last Window" })
 
 -- Resize window using <ctrl> arrow keys
 map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
