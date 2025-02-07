@@ -20,7 +20,7 @@ _G["heirline_fold_on_click"] = function()
     if vim.fn.foldclosed(pos.line) >= 0 then
       vim.cmd(pos.line .. "foldopen")
     else
-      vim.cmd(pos.line .. "foldclose")
+      pcall(vim.cmd, pos.line .. "foldclose")
     end
   end)
 end
@@ -164,7 +164,7 @@ local components = {}
 function components.left()
   return {
     condition = function()
-      return vim.wo.signcolumn ~= "no" and vim.v.relnum ~= 0
+      return vim.wo.signcolumn ~= "no"
     end,
     init = function(self)
       self.sign = utils.trim_sign(utils.get_sign(utils.calc_buf_signs(self.bufnr, vim.v.lnum), { "sign", "mark" }))
@@ -190,7 +190,7 @@ function components.center()
       else
         lnum = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
       end
-      return (vim.v.relnum ~= 0 and "%2s" or "%4s"):format(lnum) .. " "
+      return string.format("%" .. #tostring(vim.fn.line("$")) .. "s", lnum) .. " "
     end,
     hl = function()
       return vim.v.relnum == 0 and "CursorLineNr" or "LineNr"

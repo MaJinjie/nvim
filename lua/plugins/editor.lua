@@ -7,10 +7,10 @@ return {
     cmd = "Oil",
     -- stylua: ignore
     keys = {
-     	{ "<leader>-", function() require("oil").open(require('util.root')({specs ={"pwd", "cwd"}})) end, desc = "Oil" },
-     	{ "<leader>e", function() require("oil").open(require('util.root')()) end, desc = "Oil (Follow Cwd)" },
-     	{ "<leader>E", function() require("oil").open(require('util.root')({follow = true})) end, desc = "Oil (Follow Buffer)" },
-      { "<leader>fC", function() require("oil").open(vim.fn.stdpath("config")--[[@as string]]) end, {desc = "Oil Nvim Config"}}
+     	{ "<leader>e", function() require("oil").open(require('util.root')({specs ={"pwd", "cwd"}})) end, desc = "Oil" },
+     	{ "<leader>E", function() require("oil").open(require('util.root')()) end, desc = "Oil (Follow Cwd)" },
+     	-- { "<leader>E", function() require("oil").open(require('util.root')({follow = true})) end, desc = "Oil (Follow Buffer)" },
+     	-- { "<leader>fC", function() require("oil").open(vim.fn.stdpath("config")--[[@as string]]) end, {desc = "Oil Nvim Config"}}
     },
     init = function()
       M.oil = {}
@@ -332,18 +332,30 @@ return {
   ---     s{char}<enter>  be used as a multiline substitute for fFtT motions.
   {
     "ggandor/leap.nvim",
-      -- stylua: ignore
-		keys = {
-			{ "s", "<Plug>(leap)", desc = "Leap" },
-			{ "S", "<Plug>(leap-from-window)", desc = "Leap from Windows" },
-			{ "s", "<Plug>(leap-forward)", mode = { "x" }, desc = "Leap Forward" },
-			{ "S", "<Plug>(leap-backward)", mode = { "x" }, desc = "Leap Backward" },
-      { "gs", function() require('leap.remote').action() end, mode = {"n", "o"}, desc = "Leap Remote"},
-      { "ga", function() require("leap.treesitter").select() end, mode = { "n", "x", "o" }, desc = "Leap Treesitter Node" },
-      { "gA", 'V<cmd>lua require("leap.treesitter").select()<cr>', mode = { "n", "x", "o" }, desc = "Leap Treesitter Node (V)" },
-		},
+    keys = {
+      { "<Space>", "<Plug>(leap)", mode = { "n", "o", "x" }, desc = "Leap" },
+      {
+        "s",
+        function()
+          require("leap.remote").action()
+        end,
+        mode = { "n" },
+        desc = "Leap Remote",
+      },
+      {
+        "S",
+        function()
+          require("leap.treesitter").select()
+        end,
+        mode = { "n" },
+        desc = "Leap Treesitter Node",
+      },
+    },
     opts = {
       equivalence_classes = { " \t\r\n", "([{", ")]}", "'\"`" },
+      preview_filter = function(ch0, ch1, ch2)
+        return not (ch1:match("%s") or ch0:match("%w") and ch1:match("%w") and ch2:match("%w"))
+      end,
     },
     config = function(_, opts)
       local leap = require("leap")

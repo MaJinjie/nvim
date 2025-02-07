@@ -13,7 +13,7 @@ map("n", "<C-h>", "<cmd>TmuxNavigate h follow_zoomed=true<cr>", { desc = "TmuxNa
 map("n", "<C-j>", "<cmd>TmuxNavigate j follow_zoomed=true<cr>", { desc = "TmuxNavigate to Down Window" })
 map("n", "<C-k>", "<cmd>TmuxNavigate k follow_zoomed=true<cr>", { desc = "TmuxNavigate to Up Window" })
 map("n", "<C-l>", "<cmd>TmuxNavigate l follow_zoomed=true<cr>", { desc = "TmuxNavigate to Right Window" })
-map("n", "<C-\\>", "<cmd>TmuxNavigate p follow_zoomed=true<cr>", { desc = "TmuxNavigate to Last Window" })
+map({ "n", "i", "x" }, "<C-\\>", "<cmd>TmuxNavigate p follow_zoomed=true<cr>", { desc = "TmuxNavigate to Last Window" })
 
 -- Resize window using <ctrl> arrow keys
 map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
@@ -49,15 +49,14 @@ map("n", "[w", function() vim.diagnostic.goto_prev({ severity = "WARN" }) end, {
 map("n", "]w", function() vim.diagnostic.goto_next({ severity = "WARN" }) end, { desc = "Next Warn Diagnostic" })
 
 -- windows
+map("n", "<localleader><localleader>", "<C-w>w")
 map("n", "_", "<cmd>split<cr>", { desc = "Split Window Below" })
 map("n", "|", "<cmd>vsplit<cr>", { desc = "Split Window Right" })
-map("n", "<leader>_", "<cmd>botright split<cr>", { desc = "Split Window Below" })
-map("n", "<leader>|", "<cmd>botright vsplit<cr>", { desc = "Split Window Right" })
 
 -- buffers
 map("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
 map("n", "]b", "<cmd>bnext<cr>", { desc = "Next Buffer" })
-map("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
+map("n", "<leader><leader>", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 map("n", "<leader>bd", function() require("util.keymap").buf_delete() end, { desc = "Delete Buffer" })
 map("n", "<leader>bD", "<cmd>BufferPickDelete<cr>", { desc = "PickDelete Buffer" })
 map("n", "<leader>ba", function()
@@ -65,7 +64,7 @@ map("n", "<leader>ba", function()
   require("util.keymap").buf_delete(function(buf) return not vim.list_contains(tab_buflist, buf) end)
 end, { desc = "Delete all Buffer" })
 map("n", "<leader>bA", function() require("util.keymap").buf_delete(function() return true end) end, { desc = "Delete All Buffer" })
-map("n", "<leader>;", "<cmd>BufferPick<cr>", {desc = "Pick buffer"})
+map("n", "<leader>bb", "<cmd>BufferPick<cr>", {desc = "Pick buffer"})
 
 -- tabs
 map("n", "<leader><Tab>d", "<cmd>tabclose<cr>", { desc = "Close Tab" })
@@ -82,7 +81,5 @@ map("n", "[q", vim.cmd.cprev, { desc = "Previous Quickfix" })
 map("n", "]q", vim.cmd.cnext, { desc = "Next Quickfix" })
 
 -- extra
-map("i", "<C-a>", "<C-o>^", { silent = true, desc = "Move to start of line" })
-map("i", "<C-e>", "<C-o>$", { silent = true, desc = "Move to end of line" })
 
 -- stylua: ignore end

@@ -11,7 +11,7 @@ return {
     "kylechui/nvim-surround",
     event = "VeryLazy",
     -- 防止和Leap冲突
-    opts = { move_cursor = "sticky", keymaps = { visual = "gs", visual_line = "gS" } },
+    opts = { move_cursor = "sticky" },
   },
   {
     "saghen/blink.cmp",

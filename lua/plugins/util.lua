@@ -27,6 +27,7 @@ return {
     "anuvyklack/windows.nvim",
     dependencies = { "anuvyklack/middleclass", "anuvyklack/animation.nvim" },
     event = "VeryLazy",
+    enabled = false,
     cmd = {
       "WindowsMaximize",
       "WindowsMaximizeVertically",

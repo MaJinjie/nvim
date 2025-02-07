@@ -1,5 +1,5 @@
 -- vim.g
-vim.g.mapleader = " "
+vim.g.mapleader = ";"
 vim.g.maplocalleader = ","
 
 vim.g.file_explorer = "oil"

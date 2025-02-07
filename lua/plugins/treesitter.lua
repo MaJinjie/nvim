@@ -54,9 +54,9 @@ return {
         enable = true,
         keymaps = {
           init_selection = "<C-Space>",
-          node_incremental = ";",
+          node_incremental = "<C-a>",
           scope_incremental = "<C-Space>",
-          node_decremental = ",",
+          node_decremental = "<C-x>",
         },
       },
       textobjects = {
