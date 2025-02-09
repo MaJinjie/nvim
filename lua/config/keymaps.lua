@@ -49,7 +49,6 @@ map("n", "[w", function() vim.diagnostic.goto_prev({ severity = "WARN" }) end, {
 map("n", "]w", function() vim.diagnostic.goto_next({ severity = "WARN" }) end, { desc = "Next Warn Diagnostic" })
 
 -- windows
-map("n", "<localleader><localleader>", "<C-w>w")
 map("n", "_", "<cmd>split<cr>", { desc = "Split Window Below" })
 map("n", "|", "<cmd>vsplit<cr>", { desc = "Split Window Right" })
 

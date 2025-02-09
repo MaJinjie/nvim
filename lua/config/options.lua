@@ -1,6 +1,7 @@
 -- vim.g
 vim.g.mapleader = ";"
 vim.g.maplocalleader = ","
+vim.g.langleader = ",,"
 
 vim.g.file_explorer = "oil"
 

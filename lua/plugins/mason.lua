@@ -131,6 +131,7 @@ return {
 
       vim.diagnostic.config(opts.diagnostic)
 
+      ---@param server_opts boolean|lspconfig.Config|fun(server_name:string,default_opts:lspconfig.Config):`server_opts`
       local function server_setup(server, server_opts, default_opts)
         if type(server_opts) == "boolean" then
           if server_opts then
@@ -140,8 +141,8 @@ return {
           if server_opts.enabled ~= false then
             lspconfig[server].setup(vim.tbl_deep_extend("force", default_opts, server_opts, {
               on_attach = server_opts.on_attach and default_opts.on_attach and function(...)
-                default_opts.on_attach(...)
                 server_opts.on_attach(...)
+                default_opts.on_attach(...)
               end or (server_opts.on_attach or default_opts.on_attach),
             }))
           end
@@ -155,7 +156,7 @@ return {
 
       for server, server_opts in pairs(opts.servers) do
         if not pcall(server_setup, server, server_opts, default_opts) then
-          vim.notify((server .. " setup failed!"), vim.log.levels.WARN, { title = "lspconfig" })
+          vim.notify(server .. " setup failed!", vim.log.levels.WARN, { title = "lspconfig" })
         end
       end
     end,

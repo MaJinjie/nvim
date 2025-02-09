@@ -7,10 +7,10 @@ return {
     cmd = "Oil",
     -- stylua: ignore
     keys = {
-     	{ "<leader>e", function() require("oil").open(require('util.root')({specs ={"pwd", "cwd"}})) end, desc = "Oil" },
-     	{ "<leader>E", function() require("oil").open(require('util.root')()) end, desc = "Oil (Follow Cwd)" },
-     	-- { "<leader>E", function() require("oil").open(require('util.root')({follow = true})) end, desc = "Oil (Follow Buffer)" },
-     	-- { "<leader>fC", function() require("oil").open(vim.fn.stdpath("config")--[[@as string]]) end, {desc = "Oil Nvim Config"}}
+     	{ "-", function() require("oil").open(require('util.root')({specs ={"pwd", "cwd"}})) end, desc = "Oil" },
+     	{ "<leader>e", function() require("oil").open(require('util.root')()) end, desc = "Oil (Follow Cwd)" },
+     	{ "<leader>E", function() require("oil").open(require('util.root')({follow = true})) end, desc = "Oil (Follow Buffer)" },
+      -- { "<leader>fC", function() require("oil").open(vim.fn.stdpath("config")--[[@as string]]) end, {desc = "Oil Nvim Config"}}
     },
     init = function()
       M.oil = {}

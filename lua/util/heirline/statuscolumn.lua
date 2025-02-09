@@ -235,9 +235,11 @@ M.init = function()
       self.bufnr = vim.api.nvim_get_current_buf()
       self.winnr = vim.api.nvim_get_current_win()
     end,
-    hl = function()
-      local normal_hl = vim.api.nvim_get_hl(0, { name = "Normal" })
-      return { bg = normal_hl.bg, force = true }
+    hl = function(self)
+      if vim.bo[self.bufnr]["buftype"] == "" then
+        local normal_hl = vim.api.nvim_get_hl(0, { name = "Normal" })
+        return { bg = normal_hl.bg, force = true }
+      end
     end,
     components.left(),
     components.center(),
