@@ -2,6 +2,14 @@
 -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 -- Add any additional options here
 
+-- set to `true` to follow the main branch
+vim.g.lazyvim_blink_main = false
+-- LSP Server to use for Python.
+vim.g.lazyvim_python_lsp = "basedpyright"
+vim.g.lazyvim_python_ruff = "ruff"
+-- LSP Server to use for Rust.
+vim.g.lazyvim_rust_diagnostics = "bacon-ls"
+
 if vim.g.neovide then
   vim.g.neovide_scale_factor = 0.75
   vim.g.neovide_padding_top = 5

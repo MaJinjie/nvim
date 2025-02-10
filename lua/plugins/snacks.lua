@@ -1,18 +1,34 @@
+local M = {}
+
 ---@diagnostic disable: missing-fields
 ---@module 'snacks'
 return {
   "folke/snacks.nvim",
   ---@type snacks.Config
   opts = {
-    win = {
-      wo = {
-        cursorcolumn = false,
-      },
-    },
     ---@type snacks.picker.Config
     picker = {
       previewers = {
-        -- git = { native = true }, -- 使用delta
+        git = { native = true }, -- 使用delta
+      },
+      win = {
+        input = {
+          keys = {
+            ["<c-n>"] = { "history_forward", mode = { "i", "n" } },
+            ["<c-p>"] = { "history_back", mode = { "i", "n" } },
+          },
+        },
+        list = {
+          keys = {
+            ["<c-n>"] = { "history_forward", mode = { "i", "n" } },
+            ["<c-p>"] = { "history_back", mode = { "i", "n" } },
+          },
+        },
+        preview = {
+          wo = {
+            cursorcolumn = false,
+          },
+        },
       },
       -- 与默认配置进行合并
       config = function(opts)
@@ -25,9 +41,13 @@ return {
             local custom = {} ---@type snacks.picker.layout.Config
             if source:match("grep") then
               custom = { preset = "bottom", preview = "main" }
+            elseif source:match("lsp") then
+              custom = { preset = "bottom" }
             elseif source == "explorer" then
               -- VimEnter前，preview自动打开
               custom = { preview = { enabled = vim.v.vim_did_enter == 0, main = true } }
+            elseif vim.list_contains({ "buffers", "colorschemes" }, source) then
+              custom = { preset = "vscode" }
             end
             return vim.tbl_deep_extend("force", default, custom)
           end,
@@ -37,42 +57,20 @@ return {
       sources = {},
     },
   },
+  -- stylua: ignore
   keys = {
-    {
-      "<leader>fL",
-      function()
-        Snacks.picker.projects({ title = "Plugins", projects = Snacks.picker.util.rtp(), recent = false })
-        local picker = Snacks.picker.explorer()
-      end,
-      desc = "Plugins spec",
-    },
-    {
-      "<leader>fl",
-      function()
-        Snacks.picker.files({ title = "Lazy", rtp = true, pattern = "'LazyVim/ " })
-      end,
-      desc = "Find for Plugin spec",
-    },
-    {
-      "<leader>fz",
-      function()
-        Snacks.picker.zoxide()
-      end,
-      desc = "Zoxide",
-    },
-    {
-      "<leader>fG",
-      function()
-        Snacks.picker.git_grep()
-      end,
-      desc = "Grep (git)",
-    },
-    {
-      "<leader>fN",
-      function()
-        Snacks.picker.treesitter({ filter = require("lazyvim.config")["kind_filter"] })
-      end,
-      desc = "Treesitter Notes",
-    },
+    -- find add
+    { "<leader>fL", function() Snacks.picker.projects({ title = "Plugins", projects = Snacks.picker.util.rtp(), recent = false }) end, desc = "Find Plugins spec" },
+    { "<leader>fl", function() Snacks.picker.files({ title = "Lazy", rtp = true, pattern = "'LazyVim' '" }) end, desc = "Find LazyVim" },
+    { "<leader>fz", function() Snacks.picker.zoxide() end, desc = "Zoxide" },
+    { "<leader>fG", function() Snacks.picker.git_grep() end, desc = "Grep (git)" },
+    { "<leader>fN", function() Snacks.picker.treesitter({ filter = LazyVim.config.kind_filter }) end, desc = "Treesitter Notes" },
+    -- find replace
+    { "<leader><space>", function () Snacks.picker.files({ layout = { preset = "vscode" } }) end, desc = "Find Files (Root Dir)" },
+    -- grep replace
+    { "<leader>sc", false }, { "<leader>s:", function() Snacks.picker.command_history() end, desc = "Command History" },
+    { "<leader>sm", false }, { "<leader>s'", function() Snacks.picker.marks() end, desc = "Marks" },
+    { "<leader>sM", false }, { "<leader>sm", function() Snacks.picker.man() end, desc = "Man Pages" },
+    { "<leader>sp", false }, { "<leader>sL", function() Snacks.picker.lazy() end, desc = "Search for Plugin Spec" },
   },
 }
