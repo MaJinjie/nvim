@@ -1,3 +1,5 @@
+vim.g.db_ui_show_help = 0
+
 return {
   -- python
   {
@@ -20,5 +22,7 @@ return {
     },
   },
   -- rust
+  {},
+  -- sql
   {},
 }

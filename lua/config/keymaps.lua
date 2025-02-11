@@ -3,6 +3,18 @@
 -- Add any additional keymaps here
 local map = vim.keymap.set
 
+if vim.g.neovide then
+  map("n", "<C-=>", function()
+    vim.g.neovide_scale_factor = vim.g.neovide_scale_factor + 0.1
+  end)
+  map("n", "<C-->", function()
+    vim.g.neovide_scale_factor = vim.g.neovide_scale_factor - 0.1
+  end)
+  map("n", "<C-0>", function()
+    vim.g.neovide_scale_factor = 1
+  end)
+end
+
 -- buffers
 map("n", "<S-h>", "<cmd>execute 'bprevious' . v:count1<cr>", { desc = "Prev Buffer" })
 map("n", "<S-l>", "<cmd>execute 'bnext' . v:count1<cr>", { desc = "Next Buffer" })

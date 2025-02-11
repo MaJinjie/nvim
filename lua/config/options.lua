@@ -3,7 +3,7 @@
 -- Add any additional options here
 
 -- set to `true` to follow the main branch
-vim.g.lazyvim_blink_main = false
+vim.g.lazyvim_blink_main = true
 -- LSP Server to use for Python.
 vim.g.lazyvim_python_lsp = "basedpyright"
 vim.g.lazyvim_python_ruff = "ruff"
@@ -11,22 +11,25 @@ vim.g.lazyvim_python_ruff = "ruff"
 vim.g.lazyvim_rust_diagnostics = "bacon-ls"
 
 if vim.g.neovide then
-  vim.g.neovide_scale_factor = 0.75
-  vim.g.neovide_padding_top = 5
-  vim.g.neovide_padding_bottom = 0
-  vim.g.neovide_padding_right = 0
-  vim.g.neovide_padding_left = 0
-  vim.g.neovide_transparency = 0.8
+  vim.o.guifont = "CaskaydiaCove Nerd Font,JetBrainsMono Nerd Font:h10"
+  -- 设置窗口显示比例
+  vim.g.neovide_scale_factor = 1.0
+  -- 设置窗口模糊(macos)
   vim.g.neovide_window_blurred = true
+  vim.g.neovide_transparency = 1
+  vim.g.neovide_normal_opacity = 0.4
+  -- 键入时隐藏鼠标
   vim.g.neovide_hide_mouse_when_typing = true
-  -- vim.g.neovide_flatten_floating_zindex = "20"
-  -- vim.g.neovide_floating_shadow = false
+  -- neovide 主题色彩 light dark auto
+  vim.g.neovide_theme = "auto"
+  -- 启动时使用上一次会话的窗口大小
   vim.g.neovide_remember_window_size = true
+
+  vim.g.neovide_floating_blur = true -- 为浮动窗口启用模糊效果
 end
 
 local opt = vim.opt
 
-opt.guifont = "CaskaydiaCove Nerd Font,JetBrainsMono Nerd Font,Hack Nerd Font:h15"
 opt.cursorcolumn = true
 opt.jumpoptions = "stack,view,clean"
 opt.listchars:append({ eol = "↲" })

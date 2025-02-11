@@ -52,6 +52,7 @@ return {
         },
       },
       completion = {
+        keyword = { range = "full" },
         list = { selection = { preselect = false, auto_insert = true } },
         menu = {
           draw = {
@@ -66,6 +67,9 @@ return {
             },
           },
         },
+      },
+      sources = {
+        min_keyword_length = 2,
       },
     },
   },

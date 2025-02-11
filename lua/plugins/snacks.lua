@@ -46,7 +46,7 @@ return {
             elseif source == "explorer" then
               -- VimEnter前，preview自动打开
               custom = { preview = { enabled = vim.v.vim_did_enter == 0, main = true } }
-            elseif vim.list_contains({ "buffers", "colorschemes" }, source) then
+            elseif vim.list_contains({ "buffers" }, source) then
               custom = { preset = "vscode" }
             end
             return vim.tbl_deep_extend("force", default, custom)
