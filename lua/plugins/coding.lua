@@ -5,20 +5,15 @@ return {
     opts = { default_mappings = false, mappings = { i = { j = { k = "<Esc>" }, k = { j = "<Esc>" } } } },
   },
   {
+    "keaising/im-select.nvim",
+    event = "InsertEnter",
+    opts = { set_default_events = { "InsertLeave" } },
+  },
+  {
     "kylechui/nvim-surround",
     event = "VeryLazy",
-    opts = {
-      move_cursor = "sticky",
-    },
-    specs = {
-      {
-        "folke/flash.nvim",
-        keys = {
-          { "s", mode = { "o" }, false },
-          { "S", mode = { "o", "x" }, false },
-        },
-      },
-    },
+    opts = { move_cursor = "sticky" },
+    specs = { { "folke/flash.nvim", keys = { { "s", mode = { "o" }, false }, { "S", mode = { "o", "x" }, false } } } },
   },
   {
     "saghen/blink.cmp",
@@ -67,9 +62,6 @@ return {
             },
           },
         },
-      },
-      sources = {
-        min_keyword_length = 2,
       },
     },
   },
