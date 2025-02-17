@@ -66,11 +66,20 @@ return {
     { "<leader>fG", function() Snacks.picker.git_grep() end, desc = "Grep (git)" },
     { "<leader>fN", function() Snacks.picker.treesitter({ filter = LazyVim.config.kind_filter }) end, desc = "Treesitter Notes" },
     -- find replace
-    { "<leader><space>", function () Snacks.picker.files({ layout = { preset = "vscode" } }) end, desc = "Find Files (Root Dir)" },
+    { "<leader>ff", function() Snacks.picker.files({ cwd = LazyVim.root(), hidden = true }) end, desc = "Find Files (Root Dir)" },
+    { "<leader><space>", function () Snacks.picker.files({ cwd = LazyVim.root(), layout = { preset = "vscode" } }) end, desc = "Find Files (Root Dir)" },
     -- grep replace
+    { "<leader>/",function() Snacks.picker.grep({ cwd = LazyVim.root() }) end, desc = "Grep (Root Dir)" },
+    { "<leader>sg", function() Snacks.picker.grep({ cwd = LazyVim.root(), hidden = true }) end, desc = "Grep (Root Dir)" },
     { "<leader>sc", false }, { "<leader>s:", function() Snacks.picker.command_history() end, desc = "Command History" },
     { "<leader>sm", false }, { "<leader>s'", function() Snacks.picker.marks() end, desc = "Marks" },
     { "<leader>sM", false }, { "<leader>sm", function() Snacks.picker.man() end, desc = "Man Pages" },
     { "<leader>sp", false }, { "<leader>sL", function() Snacks.picker.lazy() end, desc = "Search for Plugin Spec" },
+
+    -- explorer replace
+    { "<leader>fe", function() Snacks.explorer({ cwd = LazyVim.root(), hidden = true }) end, desc = "Explorer Snacks (root dir)" },
+    { "<leader>fE", function() Snacks.explorer({hidden = true}) end, desc = "Explorer Snacks (cwd)" },
+    { "<leader>e", function() Snacks.explorer({ cwd = LazyVim.root() }) end, desc = "Explorer Snacks (root dir)" },
+    { "<leader>E", function() Snacks.explorer() end, desc = "Explorer Snacks (cwd)" },
   },
 }
