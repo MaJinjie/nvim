@@ -1,0 +1,15 @@
+# https://kampfkarren.github.io/selene/usage/std.html
+base: lua51
+lua_versions:
+  - luajit
+globals:
+  vim:
+    any: true
+  jit:
+    any: true
+  assert:
+    any: true
+  bit:
+    any: true
+  Snacks:
+    any: true

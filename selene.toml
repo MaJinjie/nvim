@@ -1,0 +1,11 @@
+# https://kampfkarren.github.io/selene/selene.html
+
+std = "vim"
+
+[lints]
+mixed_table = "allow"
+global_usage = "allow"
+
+
+[config]
+empty_if = { comments_count = true }
