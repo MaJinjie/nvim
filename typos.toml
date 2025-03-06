@@ -1,0 +1,7 @@
+# See https://github.com/crate-ci/typos/blob/master/docs/reference.md to configure typos
+[default.extend-words]
+noice = "noice"
+childs = "childs"
+nd = "nd"
+alls = "alls"
+windo = "windo"

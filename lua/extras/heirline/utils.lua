@@ -30,7 +30,7 @@ end
 local function copy_kv(dest, src, clear)
   for k, v in pairs(src) do
     if type(k) ~= "number" then
-      dest[k] = v
+      dest[k] = dest[k] or v
       if clear then
         src[k] = nil
       end
@@ -55,7 +55,6 @@ function M.generate_components(component)
   return M.handlers(ret)
 end
 
----@overload fun(component: _.heirline.component)
 M.handlers = setmetatable({}, {
   __call = function(self, component)
     -- log("=================")
@@ -86,9 +85,14 @@ function M.handlers.args(component, opts)
   if type(component[1]) ~= "function" then
     return component
   end
+  local flexible = component.flexible
+  component.flexible = nil
 
   local ret = component[1](opts)
   copy_kv(ret, component)
+  if flexible then
+    ret = { ret, {}, flexible = flexible }
+  end
   return ret
 end
 
@@ -176,15 +180,39 @@ end
 function M.generate_colors(colors)
   local ret = {}
 
-  for k, v in pairs(colors) do
-    if type(v) == "string" or type(v) == "number" then
-      ret[k] = v
-    elseif type(v) == "table" then
-      ret[k] = vim.api.nvim_get_hl(0, { name = v[1], link = false })[v[2] or "fg"]
-    elseif type(v) == "function" then
-      ret[k] = v()
+  local function generate_color(color)
+    if type(color) == "number" then
+      return color
+    elseif type(color) == "string" then
+      if color:sub(1, 1) == "#" then
+        return color
+      else
+        local dot_idx = color:find(".", 1, true)
+        local hl_group = dot_idx and color:sub(1, dot_idx - 1) or color
+        local attr = dot_idx and color:sub(dot_idx + 1) or "fg"
+
+        return vim.api.nvim_get_hl(0, { name = hl_group, link = false })[attr]
+      end
     else
-      error("error color!")
+      User.util.error("Function gennerate_color error!")
+    end
+  end
+
+  for name, color in pairs(colors) do
+    if type(color) == "function" then
+      color = color()
+    end
+    if type(color) ~= "table" then
+      color = { color }
+    end
+
+    --- @cast color any[]
+    for _, c in ipairs(color) do
+      c = generate_color(c)
+      if c then
+        ret[name] = c
+        break
+      end
     end
   end
 

@@ -1,6 +1,6 @@
 local M = {}
 local conditions = require("extras.heirline.conditions")
-local utils = require("extras.heirline.utils") 
+local utils = require("extras.heirline.utils")
 
 ---@param opts {direction: "left"|"right"}
 function M.sidebar(opts)
@@ -26,7 +26,9 @@ function M.text(opts)
   end
 
   return {
-    update = function() return false end,
+    update = function()
+      return false
+    end,
     provider = opts.content,
   }
 end
@@ -110,12 +112,12 @@ function M.branch()
   return {
     condition = conditions.is_git_repo,
     provider = function()
-      local icon, branch = " ", nil
-      if vim.b.gitsigns_head ~= nil then
-        branch = vim.b.gitsigns_head
-      else
-        branch = vim.fn.system(("git -C %s branch --show-current"):format(vim.fn.expand("%:h"))):gsub("\n$", "")
-      end
+      local icon, branch = " ", vim.b.gitsigns_head
+      -- if vim.b.gitsigns_head ~= nil then
+      --   branch = vim.b.gitsigns_head
+      -- else
+      --   branch = vim.fn.system(("git -C %s branch --show-current"):format(vim.fn.expand("%:h"))):gsub("\n$", "")
+      -- end
       return icon .. branch
     end,
     hl = { fg = "orange" },
@@ -278,6 +280,7 @@ function M.sources(opts)
           vim.list_extend(names, map[p])
         end
       end
+      names = User.util.dedup(names)
       return " [" .. table.concat(names, ",") .. "]"
     end,
     hl = { fg = "green", bold = true },
@@ -337,7 +340,7 @@ function M.progress(opts)
         local i = math.floor((curr_line - 1) / lines * #self.sbar) + 1
         return self.sbar[i]
       end,
-      hl = { fg = "blue", bg = "bright_bg" },
+      hl = { fg = "grey", bg = "gray" },
     },
     percentage = { provider = "%3P" },
   }
@@ -412,7 +415,7 @@ function M.symbols(opts)
     condition = function()
       return conditions.is_available("aerial.nvim")
     end,
-    update = { "CursorMoved" },
+    update = { "CursorMoved", "VimResized" },
     init = function(self)
       local symbols = require("aerial").get_location(true)
       local winnr = vim.api.nvim_win_get_number(0)

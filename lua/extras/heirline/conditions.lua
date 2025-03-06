@@ -1,12 +1,13 @@
 local M = setmetatable({}, { __index = require("heirline.conditions") })
 
 function M.is_git_repo()
-  if vim.b.gitsigns_head ~= nil then
-    return vim.b.gitsigns_head ~= ""
-  end
+  return vim.b.gitsigns_head and vim.b.gitsigns_head ~= ""
+  -- if vim.b.gitsigns_head ~= nil then
+  --   return vim.b.gitsigns_head ~= ""
+  -- end
 
-  vim.fn.system(("git -C %s rev-parse --is-inside-work-tree"):format(vim.fn.expand("%:h")))
-  return vim.v.shell_error == 0
+  -- vim.fn.system(("git -C %s rev-parse --is-inside-work-tree"):format(vim.fn.expand("%:h")))
+  -- return vim.v.shell_error == 0
 end
 
 function M.is_recording_macro()
@@ -55,7 +56,7 @@ function M.has_sources(opts)
     if not M.is_available("nvim-lint") then
       return {}
     end
-    return require("extras.lint").list_linters_for_buffer(0)
+    return require("extras.lint.utils").list_linters_for_buffer(0)
   end
 
   local has, ret = false, {}

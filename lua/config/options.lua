@@ -11,7 +11,7 @@ vim.g.autoformat = true
 vim.g.autocolorize = false
 
 -- Colorscheme, used to set colorscheme
-vim.g.colorscheme = "tokyonight"
+vim.g.colorscheme = "tokyonight" -- "tokyonight"
 
 -- used for user.dir
 -- Root dir detection
@@ -19,7 +19,7 @@ vim.g.colorscheme = "tokyonight"
 -- * the name of a detector function like `lsp` or `cwd`
 -- * a pattern or array of patterns like `.git` or `lua`.
 -- * a function with signature `function(buf) -> string|string[]`
-vim.g.root_spec = { "lsp", { "^.git$", "^lua$" }, "cwd" }
+-- vim.g.root_spec = { "lsp", { "^.git$", "^lua$" }, "cwd" }
 
 -- used for user.dir
 -- Set LSP servers to be ignored when used with `util.root.detectors.lsp`
@@ -48,7 +48,7 @@ opt.fillchars = {
   eob = " ",
 }
 opt.foldlevel = 99
--- opt.formatexpr = "v:lua.require'mjj.format'.formatexpr()"
+opt.formatexpr = "v:lua.User.format.formatexpr()"
 opt.formatoptions = "jcroqlnt" -- tcqj
 opt.grepformat = "%f:%l:%c:%m"
 opt.grepprg = "rg --color=never --vimgrep"
@@ -78,7 +78,7 @@ opt.spelllang = { "en" }
 opt.splitbelow = true -- Put new windows below current
 opt.splitkeep = "screen"
 opt.splitright = true -- Put new windows right of current
--- opt.statuscolumn = [[%!v:lua.require'snacks.statuscolumn'.get()]]
+opt.statuscolumn = [[%!v:lua.User.ui.statuscolumn()]]
 opt.switchbuf = { "useopen", "uselast" } -- Controls the behavior when switching between buffers.
 opt.tabstop = 2 -- Number of spaces tabs count for
 opt.termguicolors = true -- True color support
@@ -91,32 +91,40 @@ opt.wildmode = "longest:full,full" -- Command-line completion mode
 opt.winminwidth = 5 -- Minimum window width
 opt.wrap = false -- Disable line wrap
 opt.smoothscroll = true
--- opt.foldexpr = "v:lua.require'mjj.ui'.foldexpr()"
+opt.foldexpr = "v:lua.User.ui.foldexpr()"
 opt.foldmethod = "expr"
 opt.foldtext = ""
 
 -- neovide
 if vim.g.neovide then
-  vim.o.guifont = "CaskaydiaCove Nerd Font,JetBrainsMono Nerd Font:h10"
+  vim.o.guifont = "CaskaydiaCove Nerd Font,JetBrainsMono Nerd Font:h10:#h-none"
   -- 设置窗口显示比例
   vim.g.neovide_scale_factor = 1.0
   vim.g.neovide_initial_scale_factor = vim.g.neovide_scale_factor
   vim.g.neovide_increment_scale_factor = 0.1
   vim.g.neovide_min_scale_factor = 0.7
   vim.g.neovide_max_scale_factor = 2.0
+  -- 设置Padding
+  vim.g.neovide_padding_top = 10
+  vim.g.neovide_padding_bottom = 0
+  vim.g.neovide_padding_left = 10
+  vim.g.neovide_padding_right = 0
   -- 设置窗口模糊(macos)
   vim.g.neovide_window_blurred = true
   -- 设置透明度
-  vim.g.neovide_transparency = 1
-  vim.g.neovide_normal_opacity = 0.8
+  vim.g.neovide_opacity = 0.75
+  vim.g.neovide_normal_opacity = 0.75
   -- 键入时隐藏鼠标
   vim.g.neovide_hide_mouse_when_typing = true
   -- neovide 主题色彩 light dark auto
   vim.g.neovide_theme = "auto"
   -- 启动时使用上一次会话的窗口大小
   vim.g.neovide_remember_window_size = true
-  -- 命令行和编辑窗口切换的动画
+
+  -- animate
+  vim.g.neovide_cursor_animate_in_insert_mode = true
   vim.g.neovide_cursor_animate_command_line = true
+  vim.g.neovide_cursor_smooth_blink = true
   -- 为浮动窗口启用模糊效果
   -- vim.g.neovide_floating_blur = true
 end

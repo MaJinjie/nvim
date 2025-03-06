@@ -1,22 +1,34 @@
 local autocmd = vim.api.nvim_create_autocmd
-local augroup = function(name, clear) return vim.api.nvim_create_augroup("user_" .. name, { clear = clear ~= false }) end
+local augroup = function(name, clear)
+  return vim.api.nvim_create_augroup("user_" .. name, { clear = clear ~= false })
+end
 
 -- Check if we need to reload the file when it changed
 autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
   group = augroup("checktime"),
   callback = function()
-    if vim.o.buftype ~= "nofile" then vim.cmd("checktime") end
+    if vim.o.buftype ~= "nofile" then
+      vim.cmd("checktime")
+    end
+  end,
+})
+
+-- Automatically cd to a unique directory
+autocmd("VimEnter", {
+  group = augroup("autocd_in_unique_dir"),
+  callback = function()
+    local first = vim.fn.argv(0) --[[@as string]]
+    local stat = first and vim.uv.fs_stat(first)
+    if stat and stat.type == "directory" then
+      vim.uv.chdir(first)
+    end
   end,
 })
 
 -- resize splits if window got resized
 autocmd({ "VimResized" }, {
   group = augroup("resize_splits"),
-  callback = function()
-    local current_tab = vim.fn.tabpagenr()
-    vim.cmd("tabdo wincmd =")
-    vim.cmd("tabnext " .. current_tab)
-  end,
+  command = "wincmd =",
 })
 
 -- go to last loc when opening a buffer
@@ -25,11 +37,15 @@ autocmd("BufReadPost", {
   callback = function(event)
     local exclude = { "gitcommit" }
     local buf = event.buf
-    if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].lazyvim_last_loc then return end
+    if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].lazyvim_last_loc then
+      return
+    end
     vim.b[buf].lazyvim_last_loc = true
     local mark = vim.api.nvim_buf_get_mark(buf, '"')
     local lcount = vim.api.nvim_buf_line_count(buf)
-    if mark[1] > 0 and mark[1] <= lcount then pcall(vim.api.nvim_win_set_cursor, 0, mark) end
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
   end,
 })
 
@@ -37,7 +53,9 @@ autocmd("BufReadPost", {
 autocmd("BufWritePre", {
   group = augroup("auto_create_dir"),
   callback = function(event)
-    if event.match:match("^%w%w+:[\\/][\\/]") then return end
+    if event.match:match("^%w%w+:[\\/][\\/]") then
+      return
+    end
     local file = vim.uv.fs_realpath(event.match) or event.match
     vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
   end,
@@ -58,11 +76,10 @@ autocmd("FileType", {
     "neotest-output-panel",
     "neotest-summary",
     "notify",
-    "qf",
-    "spectre_panel",
     "startuptime",
-    "tsplayground",
+    "qf",
     "query",
+    "git",
   },
   callback = function(event)
     vim.bo[event.buf].buflisted = false
@@ -79,11 +96,24 @@ autocmd("FileType", {
   end,
 })
 
+autocmd("FileType", {
+  group = augroup("fast_page_turning"),
+  pattern = { "help", "man" },
+  callback = function(args)
+    vim.schedule(function()
+      vim.keymap.set("n", "u", "<C-u>", { buffer = args.buf, silent = true, nowait = true, desc = "Half-Page Up" })
+      vim.keymap.set("n", "d", "<C-d>", { buffer = args.buf, silent = true, nowait = true, desc = "Half-Page Down" })
+    end)
+  end,
+})
+
 -- set options for some filetypes
 autocmd("FileType", {
   group = augroup("set_options"),
   pattern = { "man", "qf", "checkhealth" },
-  callback = function(event) vim.bo[event.buf].buflisted = false end,
+  callback = function(event)
+    vim.bo[event.buf].buflisted = false
+  end,
 })
 
 -- wrap and check for spell in text filetypes
@@ -100,7 +130,9 @@ autocmd("FileType", {
 autocmd({ "FileType" }, {
   group = augroup("json_conceal"),
   pattern = { "json", "jsonc", "json5" },
-  callback = function() vim.opt_local.conceallevel = 0 end,
+  callback = function()
+    vim.opt_local.conceallevel = 0
+  end,
 })
 
 -- In neovide, to only enables IME in input mode and command mode
