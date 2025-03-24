@@ -219,14 +219,14 @@ path_component.format = {
 }
 
 local path_type = {
-  file = function(bufnr)
-    return vim.api.nvim_buf_get_name(bufnr or 0)
+  file = function()
+    return vim.api.nvim_buf_get_name(0)
   end,
-  cwd = function(scope)
-    return User.root.cwd(scope or "w")
+  cwd = function()
+    return User.root({ preset = "cwd" })
   end,
-  root = function(opts)
-    return User.root.get(opts or { follow = "buffer" })
+  root = function()
+    return User.root({ preset = "root", opts = { buffer = true } })
   end,
 }
 
@@ -244,7 +244,7 @@ function M.path(opts)
       end,
     },
     init = function(self)
-      self:set("path", path_type[self:get("type")](self:get("opts")))
+      self:set("path", path_type[self:get("type")]())
     end,
   }
 

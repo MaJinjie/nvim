@@ -26,7 +26,7 @@ return {
   keys = {
     { "<leader>-", function() require("yazi").yazi() end, desc = "Open yazi at the current file" },
     { "<leader>y", function() require("yazi").toggle() end, desc = "Toggle Yazi" },
-    { "<leader>Y", function() require("yazi").yazi(nil, User.root.get_by_count()) end, desc = "Open Yazi" },
+    { "<leader>Y", function() require("yazi").yazi(nil, User.root({ preset = "root", opts = { buffer = true } })) end, desc = "Open Yazi" },
     { "<leader>e", "<leader>y", remap = true, desc = "Toggle Yazi"},
     { "<leader>E", "<leader>Y", remap = true, desc = "Open Yazi"}
   },

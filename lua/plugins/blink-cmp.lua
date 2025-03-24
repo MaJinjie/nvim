@@ -10,7 +10,7 @@ return {
       preset = "none",
       ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
       ["<C-l>"] = { "cancel", "fallback_to_mappings" },
-      ["<Cr>"] = { "accept", "fallback" },
+      ["<CR>"] = { "accept", "fallback" },
 
       ["<Tab>"] = { "snippet_forward", "select_and_accept", "fallback" },
       ["<S-Tab>"] = { "snippet_backward", "fallback" },

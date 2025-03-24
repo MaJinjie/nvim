@@ -76,15 +76,15 @@ return {
     -- stylua: ignore
     keys = {
       { "<leader>,", function() Snacks.picker.buffers({ layout = { preset = "vscode" }}) end, desc = "Buffers" },
-      { "<leader>/", function() Snacks.picker.grep({ cwd = User.root.get({follow = "cwd"}) }) end, desc = "Grep (Follow cwd)" },
+      { "<leader>/", function() Snacks.picker.grep({ cwd = User.root({ preset = "root", opts = { cwd = true } }) }) end, desc = "Grep (Follow cwd)" },
       { "<leader>:", function() Snacks.picker.command_history() end, desc = "Command History" },
-      { "<leader><space>", function() Snacks.picker.files({ cwd = User.root.get({follow = "cwd"}), layout = { preset = "vscode" } }) end, desc = "Find Files (Follow cwd)" },
+      { "<leader><space>", function() Snacks.picker.files({ cwd = User.root({ preset = "root", opts = { cwd= true } }), layout = { preset = "vscode" } }) end, desc = "Find Files (Follow cwd)" },
       -- find
       { "<leader>fb", function() Snacks.picker.buffers() end, desc = "Buffers" },
       { "<leader>fB", function() Snacks.picker.buffers({ hidden = true, nofile = true }) end, desc = "Buffers (all)" },
       { "<leader>fc", function() Snacks.picker.files({ cwd = vim.fn.stdpath "config" --[[@as string?]] }) end, desc = "Find Config File" },
-      { "<leader>ff", function() Snacks.picker.files({ cwd = User.root.get_by_count() }) end, desc = "Find Files (By count)" },
-      { "<leader>fF", function() Snacks.picker.files({ cwd = User.root.cwd("g") }) end, desc = "Find Files (Global cwd)" },
+      { "<leader>ff", function() Snacks.picker.files({ cwd = User.root({ preset = "root", opts = { buffer = true } }) }) end, desc = "Find Files (By count)" },
+      { "<leader>fF", function() Snacks.picker.files({ cwd = User.root({ preset = "cwd" }) }) end, desc = "Find Files (Global cwd)" },
       { "<leader>fr", function() Snacks.picker.recent() end, desc = "Recent" },
       { "<leader>fR", function() Snacks.picker.recent({ filter = { cwd = true }}) end, desc = "Recent (cwd)" },
       { "<leader>fz", function() Snacks.picker.zoxide() end, desc = "Zoxide" },
@@ -94,12 +94,12 @@ return {
       -- grep
       { "<leader>sb", function() Snacks.picker.lines() end, desc = "Buffer Lines" },
       { "<leader>sB", function() Snacks.picker.grep_buffers({ layout = { preset = "vertical" }}) end, desc = "Grep Open Buffers" },
-      { "<leader>sg", function() Snacks.picker.grep({ cwd = User.root.get_by_count(), layout = { preset = "vertical" } }) end, desc = "Grep (By count)" },
-      { "<leader>sG", function() Snacks.picker.grep({ cwd = User.root.cwd("g"), layout = { preset = "vertical" } }) end, desc = "Grep (Global cwd)" },
+      { "<leader>sg", function() Snacks.picker.grep({ cwd = User.root({ preset = "root", opts = { buffer = true } }), layout = { preset = "vertical" } }) end, desc = "Grep (By count)" },
+      { "<leader>sG", function() Snacks.picker.grep({ cwd = User.root({ preset = "cwd" }), layout = { preset = "vertical" } }) end, desc = "Grep (Global cwd)" },
       { "<leader>sc", function() Snacks.picker.grep({ cwd = vim.fn.stdpath "config" --[[@as string?]], layout = { preset = "vertical" } }) end, desc = "Grep Config File" },
       { "<leader>sp", function() Snacks.picker.lazy() end, desc = "Search for Plugin Spec" },
-      { "<leader>sw", function() Snacks.picker.grep_word({ cwd = User.root.get_by_count(), layout = { preset = "vertical" } }) end, desc = "Visual selection or word (By count)", mode = { "n", "x" } },
-      { "<leader>sW", function() Snacks.picker.grep_word({ cwd = User.root.cwd("g"), layout = { preset = "vertical" } }) end, desc = "Visual selection or word (Global cwd)", mode = { "n", "x" } },
+      { "<leader>sw", function() Snacks.picker.grep_word({ cwd = User.root({ preset = "root", opts = { buffer = true } }), layout = { preset = "vertical" } }) end, desc = "Visual selection or word (By count)", mode = { "n", "x" } },
+      { "<leader>sW", function() Snacks.picker.grep_word({ cwd = User.root({ preset = "cwd" }), layout = { preset = "vertical" } }) end, desc = "Visual selection or word (Global cwd)", mode = { "n", "x" } },
       -- search
       { "<leader>s'", function() Snacks.picker.marks() end, desc = "Marks" },
       { '<leader>s"', function() Snacks.picker.registers() end, desc = "Registers" },
@@ -124,11 +124,11 @@ return {
       { "<leader>ss", function() Snacks.picker.lsp_symbols({ filter = User.config.kind_filter }) end, desc = "LSP Symbols" },
       { "<leader>sS", function() Snacks.picker.lsp_workspace_symbols({ filter = User.config.kind_filter }) end, desc = "LSP Workspace Symbols" },
       -- explorer
-      { "<leader>fe", function() Snacks.picker.explorer({ cwd = User.root.get_by_count() }) end, desc = "Explorer Snacks (By Count)" },
-      { "<leader>fE", function() Snacks.picker.explorer({ cwd = User.root.cwd("g") }) end, desc = "Explorer Snacks (Global cwd)" },
+      { "<leader>fe", function() Snacks.picker.explorer({ cwd = User.root({ preset = "root", opts = { buffer = true } }) }) end, desc = "Explorer Snacks (By Count)" },
+      { "<leader>fE", function() Snacks.picker.explorer({ cwd = User.root({ preset = "cwd" }) }) end, desc = "Explorer Snacks (Global cwd)" },
       -- git
-      { "<leader>fg", function() Snacks.picker.git_files({ cwd = User.root.git() }) end, desc = "Git Files" },
-      { "<leader>fG", function() Snacks.picker.git_grep({ cwd = User.root.git(), lazyout = { preset = "vertical" }}) end, desc = "Git Grep" },
+      { "<leader>fg", function() Snacks.picker.git_files({ cwd = User.root({ preset = "git", opts = { buffer = true } }) }) end, desc = "Git Files" },
+      { "<leader>fG", function() Snacks.picker.git_grep({ cwd = User.root({ preset = "git", opts = { buffer = true } }), lazyout = { preset = "vertical" }}) end, desc = "Git Grep" },
       { "<leader>gs", function() Snacks.picker.git_status() end, desc = "Git Status" },
       { "<leader>gS", function() Snacks.picker.git_stash() end, desc = "Git Stash" },
       { "<leader>gl", function() Snacks.picker.git_log_line({layout = { preset = "vertical" }}) end, desc = "Git Log Line" },
