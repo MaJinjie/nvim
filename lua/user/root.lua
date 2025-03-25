@@ -25,14 +25,13 @@ end
 
 ---@param target number|string
 function M.detectors.lsp(target)
-  local bufnr = type(target) == "number" and target or 0
-  local path = type(target) == "string" and target or M.bufpath(bufnr)
+  local buf, path = M.parse_target(target)
   if not path then
     return {}
   end
 
   local roots = {} ---@type string[]
-  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  local clients = vim.lsp.get_clients({ bufnr = buf })
   clients = vim.tbl_filter(function(client)
     return not vim.tbl_contains(vim.g.root_lsp_ignore or {}, client.name)
   end, clients) ---@type vim.lsp.Client[]
@@ -48,28 +47,35 @@ function M.detectors.lsp(target)
   end
 
   return vim.tbl_filter(function(root)
-    return M.is_parentdir(path, root) == true
+    return M.is_valid(path, root) == true
   end, roots)
 end
 
 ---@param patterns string[]
 ---@param target number|string
 function M.detectors.pattern(patterns, target)
-  local path = type(target) == "string" and target or M.bufpath(target --[[@as number]])
+  local buf, path = M.parse_target(target)
 
   patterns = type(patterns) == "string" and { patterns } or patterns
   ---@cast patterns string[]
 
-  ---@diagnostic disable-next-line: redefined-local
-  local ret = vim.fs.find(function(name, path)
-    for _, pattern in ipairs(patterns) do
-      if pattern:find("%/", 1, true) and path:match(pattern) or name:match(pattern) then
-        return true
+  local ret = vim
+    .iter(vim.fs.find(function(name, path) ---@diagnostic disable-line: redefined-local
+      for _, pattern in ipairs(patterns) do
+        if pattern:find("%/", 1, true) then
+          return path:match(pattern)
+        else
+          return name:match(pattern)
+        end
       end
-    end
-    return false
-  end, { path = path, upward = true })[1]
-  return ret and { vim.fs.dirname(ret) } or {}
+    end, { path = M.bufpath(buf), upward = true }))
+    :map(vim.fs.dirname)
+    :filter(function(root)
+      return M.is_valid(path, root)
+    end)
+    :totable()
+
+  return ret
 end
 
 ---@param spec user.root.Spec
@@ -137,16 +143,17 @@ function M.info(opts)
   lines[#lines + 1] = "vim.g.root_spec = " .. vim.inspect(opts.specs)
   lines[#lines + 1] = "```"
   User.util.info(lines, { title = "Root" })
-  return roots[1] and roots[1].paths[1] or vim.uv.cwd()
+  return roots[1] and roots[1].paths[1]
 end
 
 function M.setup()
-  vim.api.nvim_create_user_command("Root", function(args)
-    M.info({ target = args.bang and vim.uv.cwd() or 0 })
-  end, {
-    bang = true,
-    desc = "Root Actions",
-  })
+  vim.api.nvim_create_user_command("Root", function(opts)
+    local root = M.info({ target = opts.bang and vim.uv.cwd() or 0 })
+    if opts.args ~= "" then
+      vim.cmd(("%s %s"):format(opts.args, root))
+    else
+    end
+  end, { bang = true, nargs = "?", complete = "command", desc = "Root" })
 
   vim.api.nvim_create_autocmd({ "LspAttach", "DirChanged", "BufDelete" }, {
     group = vim.api.nvim_create_augroup("user_root_cache", { clear = true }),
@@ -173,39 +180,20 @@ M.cache = setmetatable({}, {
 
 M.preset = {}
 
---- @param opts { buffer?: boolean, cwd?: boolean }
+--- @param opts { buffer?: boolean, cwd?: boolean }|user.root.Opts
 function M.preset.root(opts)
   local buf = vim.api.nvim_get_current_buf()
-  local target = opts.buffer and buf or opts.cwd and assert(vim.uv.cwd()) or nil
+  local target = opts.target or opts.buffer and buf or opts.cwd and assert(vim.uv.cwd()) or nil
+  local specs = opts.specs or nil
 
-  return M.cache(buf, ("root:%s"):format(target), function()
-    local ret = M.detect({ target = target })
-    return ret[1] and ret[1].paths[1]
-  end)
-end
-
---- @param opts user.root.Opts
-function M.preset.detect(opts)
-  local buf = vim.api.nvim_get_current_buf()
-  return M.cache(buf, ("detect:%s"):format(opts.specs), function()
-    local ret = M.detect(opts)
+  return M.cache(buf, ("root:%s:%s"):format(target, specs), function()
+    local ret = M.detect({ target = target, specs = specs })
     return ret[1] and ret[1].paths[1]
   end)
 end
 
 function M.preset.cwd()
   return vim.uv.cwd()
-end
-
---- @param opts { buffer?: boolean, cwd?: boolean }
-function M.preset.git(opts)
-  local path = M.preset.root(opts) or M.preset.cwd()
-
-  if path == nil then
-    return
-  end
-
-  return vim.fs.root(path, { ".git" })
 end
 
 ------------------------------------ Util ------------------------------------
@@ -230,13 +218,24 @@ function M.realpath(path, normalize)
   return vim.uv.fs_realpath(path) or path
 end
 
----@param buf number|string
+---@param path string
 ---@param dir string
-function M.is_parentdir(buf, dir)
-  vim.validate({ buf = { buf, { "s", "n" } }, dir = { dir, "s" } })
+function M.is_valid(path, dir)
+  vim.validate({ path = { path, "s" }, dir = { dir, "s" } })
 
-  local path = type(buf) == "string" and buf or M.bufpath(buf --[[@as number]])
-  return path and vim.startswith(path, dir)
+  if #path < #dir then
+    path, dir = dir, path
+  end
+  return vim.startswith(path, dir)
+end
+
+--- @param target number|string
+--- @return number buf
+--- @return string path
+function M.parse_target(target)
+  local buf = type(target) == "number" and target or 0
+  local path = type(target) == "string" and target or M.bufpath(buf) or assert(vim.uv.cwd())
+  return buf, path
 end
 
 function M.get() end
