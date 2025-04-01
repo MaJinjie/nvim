@@ -26,11 +26,8 @@ function M.diagnostic(default_opts, server_opts, opts)
     vim.diagnostic.enable(enabled, { bufnr = opts.bufnr, ns_id = ns })
   end
 
-  if vim.iter(server_opts):all(function(k)
-    return k == "enabled"
-  end) then
-    return
-  end
+  -- stylua: ignore
+  if vim.iter(server_opts):all(function(k) return k == "enabled" end) then return end
 
   local before_opts = vim.diagnostic.config(nil, ns)
   if not before_opts or vim.tbl_isempty(before_opts) then

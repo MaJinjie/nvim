@@ -4,6 +4,7 @@ return {
   opts = {},
   -- stylua: ignore
   keys = {
-    { "<leader>gG", function() require("neogit").open({cwd = User.root({ preset = "git", opts = { buffer = true } })}) end, desc = "Neogit" },
+    { "<leader>gn", function() require("neogit").open({cwd = User.root({ preset = "root", opts = { buffer = true } })}) end, desc = "Neogit (Root)" },
+    { "<leader>gN", function() require("neogit").open({cwd = User.root({ preset = "cwd" })}) end, desc = "Neogit (Cwd)" },
   },
 }

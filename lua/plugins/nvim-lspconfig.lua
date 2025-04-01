@@ -155,6 +155,11 @@ return {
     -- python
     basedpyright = {
       diagnostic = { enabled = false },
+      opts = {
+        handlers = {
+          ["textDocument/publishDiagnostics"] = function() end,
+        },
+      },
     },
     ruff = {
       hooks = {
@@ -165,6 +170,7 @@ return {
       },
     },
     bashls = {},
+    clangd = {},
   },
   keys = {
     { "<leader>ci", "<cmd>LspInfo<cr>", desc = "Lsp Info" },
